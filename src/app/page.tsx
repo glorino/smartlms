@@ -511,13 +511,19 @@ export default function HomePage() {
             <div className="relative overflow-hidden rounded-3xl bg-gray-950 p-1">
               <div className="relative aspect-video overflow-hidden rounded-2xl bg-black">
                 <video
+                  ref={(el) => {
+                    if (el) {
+                      el.play().catch(() => {});
+                    }
+                  }}
                   id="intro-video"
-                  src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+                  src="https://www.w3schools.com/html/mov_bbb.mp4"
                   muted
                   loop
                   playsInline
                   autoPlay
                   className="h-full w-full object-cover"
+                  poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%236366f1'/%3E%3Cstop offset='50%25' style='stop-color:%23a855f7'/%3E%3Cstop offset='100%25' style='stop-color:%23ec4899'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1920' height='1080' fill='url(%23g)'/%3E%3Ctext x='960' y='540' text-anchor='middle' dominant-baseline='middle' fill='white' font-size='48' font-family='system-ui'%3ESmartLMS%3C/text%3E%3C/svg%3E"
                 />
 
                 {/* Gradient overlay */}
