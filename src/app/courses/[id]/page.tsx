@@ -235,13 +235,11 @@ export default async function CourseDetailPage({
                       <div className="flex items-baseline gap-2">
                         {course.salePrice && (
                           <span className="text-lg text-gray-400 line-through">
-                            {course.currency}
-                            {course.price}
+                            ₦{course.price.toLocaleString()}
                           </span>
                         )}
                         <p className="text-3xl font-bold text-gray-900">
-                          {course.currency}
-                          {course.salePrice || course.price}
+                          ₦{(course.salePrice || course.price).toLocaleString()}
                         </p>
                       </div>
                     )}
@@ -251,7 +249,7 @@ export default async function CourseDetailPage({
                     courseId={course.id}
                     courseName={course.title}
                     price={course.salePrice || course.price}
-                    currency={course.currency || "NGN"}
+                    currency="NGN"
                   />
 
                   <p className="mt-3 text-center text-sm text-gray-500">

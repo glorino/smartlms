@@ -459,14 +459,12 @@ function CoursesContent() {
                           ) : course.salePrice ? (
                             <>
                               <span className="text-gray-400 line-through mr-2 text-sm font-normal">
-                                {course.currency}
-                                {course.price}
+                                ₦{course.price.toLocaleString()}
                               </span>
-                              {course.currency}
-                              {course.salePrice}
+                              ₦{course.salePrice.toLocaleString()}
                             </>
                           ) : (
-                            `${course.currency}${course.price}`
+                            `₦${course.price.toLocaleString()}`
                           )}
                         </p>
                       </CardFooter>

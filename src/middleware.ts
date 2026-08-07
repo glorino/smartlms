@@ -23,6 +23,13 @@ const publicRoutes = [
   "/terms",
   "/demo",
 ];
+const publicPageRoutes = [
+  /^\/certificate\/[^/]+$/,
+  /^\/verify-certificate$/,
+  /^\/courses\/[^/]+$/,
+  /^\/courses\/[^/]+\/learn$/,
+  /^\/quiz\/[^/]+$/,
+];
 const publicApiRoutes = [
   { path: /^\/api\/courses$/, method: "GET" },
   { path: /^\/api\/courses\/[^/]+$/, method: "GET" },
@@ -30,10 +37,6 @@ const publicApiRoutes = [
   { path: /^\/api\/chat$/, method: "ALL" },
   { path: /^\/api\/reviews$/, method: "GET" },
   { path: /^\/api\/quizzes$/, method: "GET" },
-];
-const publicPageRoutes = [
-  /^\/certificate\/[^/]+$/,
-  /^\/verify-certificate$/,
 ];
 
 export default auth((req) => {
