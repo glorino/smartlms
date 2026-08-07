@@ -17,50 +17,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import EnrollButton from "./enroll-button";
+import prisma from "@/lib/prisma";
 
-interface CourseDetail {
-  id: string;
-  title: string;
-  description?: string;
-  shortDescription?: string;
-  thumbnail?: string;
-  price: number;
-  salePrice?: number;
-  currency?: string;
-  category?: string;
-  level?: string;
-  language?: string;
-  rating?: number;
-  totalRatings?: number;
-  totalStudents?: number;
-  instructor?: {
-    id?: string;
-    name?: string;
-    avatar?: string;
-    bio?: string;
-  };
-  sections?: {
-    id: string;
-    title: string;
-    lessons?: {
-      id: string;
-      title: string;
-      type?: string;
-      duration?: number;
-      isPreview?: boolean;
-    }[];
-  }[];
-}
-
-async function getCourse(id: string): Promise<CourseDetail | null> {
+async function getCourse(id: string) {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/courses/${id}`,
-      { cache: "no-store" }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.course || data;
+    const course = await prisma.course.findUnique({
+      where: { id },
+      include: {
+        instructor: {
+          select: { id: true, name: true, email: true, avatar: true, bio: true },
+        },
+        sections: {
+          include: {
+            lessons: { orderBy: { order: "asc" } },
+          },
+          orderBy: { order: "asc" },
+        },
+        _count: { select: { enrollments: true, reviews: true } },
+      },
+    });
+    return course;
   } catch {
     return null;
   }
@@ -68,12 +44,13 @@ async function getCourse(id: string): Promise<CourseDetail | null> {
 
 async function getReviews(id: string) {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/courses/${id}/reviews`,
-      { cache: "no-store" }
-    );
-    if (!res.ok) return [];
-    return res.json();
+    const reviews = await prisma.review.findMany({
+      where: { courseId: id },
+      include: { user: { select: { id: true, name: true, avatar: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    });
+    return reviews;
   } catch {
     return [];
   }
@@ -179,7 +156,7 @@ export default async function CourseDetailPage({
               <div className="mt-4 flex items-center gap-3">
                 <img
                   src={course.instructor?.avatar || "/avatars/default.png"}
-                  alt={course.instructor?.name}
+                  alt={course.instructor?.name || "Instructor"}
                   className="h-8 w-8 rounded-full"
                 />
                 <span className="text-gray-300">
@@ -387,7 +364,7 @@ export default async function CourseDetailPage({
                   <div className="flex items-start gap-4">
                     <img
                       src={course.instructor.avatar || "/avatars/default.png"}
-                      alt={course.instructor.name}
+                      alt={course.instructor.name || "Instructor"}
                       className="h-16 w-16 rounded-full object-cover"
                     />
                     <div>
