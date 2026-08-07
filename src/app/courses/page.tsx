@@ -23,20 +23,42 @@ import { Spinner } from "@/components/ui/spinner";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Course } from "@/types";
 
+const categoryImages: Record<string, string> = {
+  "Web Development": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=450&fit=crop",
+  "Data Science": "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=450&fit=crop",
+  Marketing: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=450&fit=crop",
+  Programming: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&h=450&fit=crop",
+  Design: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&h=450&fit=crop",
+  Security: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&h=450&fit=crop",
+  Cloud: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&h=450&fit=crop",
+  Finance: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=450&fit=crop",
+  Mobile: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&h=450&fit=crop",
+  Data: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=450&fit=crop",
+};
+
+function getCourseImage(course: Course): string | null {
+  if (course.thumbnail) return course.thumbnail;
+  if (course.category && categoryImages[course.category]) return categoryImages[course.category];
+  return null;
+}
+
 const categories = [
   "Web Development",
-  "Mobile Development",
   "Data Science",
-  "Machine Learning",
-  "UI/UX Design",
-  "Digital Marketing",
-  "Business",
-  "Photography",
+  "Marketing",
+  "Programming",
+  "Design",
+  "Security",
+  "Cloud",
+  "Finance",
+  "Mobile",
+  "Data",
 ];
 
 const levels = ["Beginner", "Intermediate", "Expert"];
 const sortOptions = [
   { value: "newest", label: "Newest" },
+  { value: "oldest", label: "Oldest" },
   { value: "popular", label: "Most Popular" },
   { value: "rating", label: "Highest Rated" },
   { value: "price-low", label: "Price: Low to High" },
@@ -110,7 +132,7 @@ function CoursesContent() {
       const res = await fetch(`/api/courses?${params.toString()}`);
       const data = await res.json();
       setCourses(data.courses || []);
-      setTotalPages(data.totalPages || 1);
+      setTotalPages(data.pagination?.pages || 1);
     } catch {
       setCourses([]);
     } finally {
@@ -372,9 +394,9 @@ function CoursesContent() {
                   <Link key={course.id} href={`/courses/${course.id}`}>
                     <Card className="group h-full overflow-hidden transition-shadow hover:shadow-lg">
                       <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-600">
-                        {course.thumbnail ? (
+                        {getCourseImage(course) ? (
                           <img
-                            src={course.thumbnail}
+                            src={getCourseImage(course)!}
                             alt={course.title}
                             className="h-full w-full object-cover"
                           />

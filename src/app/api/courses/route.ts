@@ -8,6 +8,9 @@ export async function GET(request: Request) {
     const search = searchParams.get("search") || "";
     const category = searchParams.get("category") || "";
     const level = searchParams.get("level") || "";
+    const price = searchParams.get("price") || "";
+    const rating = searchParams.get("rating") || "";
+    const sort = searchParams.get("sort") || "newest";
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const skip = (page - 1) * limit;
@@ -31,6 +34,39 @@ export async function GET(request: Request) {
       where.level = level;
     }
 
+    if (price === "free") {
+      where.price = 0;
+    } else if (price === "paid") {
+      where.price = { gt: 0 };
+    }
+
+    if (rating) {
+      where.rating = { gte: parseFloat(rating) };
+    }
+
+    let orderBy: any;
+    switch (sort) {
+      case "oldest":
+        orderBy = { createdAt: "asc" };
+        break;
+      case "price-low":
+        orderBy = { price: "asc" };
+        break;
+      case "price-high":
+        orderBy = { price: "desc" };
+        break;
+      case "rating":
+        orderBy = { rating: "desc" };
+        break;
+      case "popular":
+        orderBy = { totalStudents: "desc" };
+        break;
+      case "newest":
+      default:
+        orderBy = { createdAt: "desc" };
+        break;
+    }
+
     const [courses, total] = await Promise.all([
       prisma.course.findMany({
         where,
@@ -42,7 +78,7 @@ export async function GET(request: Request) {
         },
         skip,
         take: limit,
-        orderBy: { createdAt: "desc" },
+        orderBy,
       }),
       prisma.course.count({ where }),
     ]);

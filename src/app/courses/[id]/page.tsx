@@ -26,7 +26,8 @@ async function getCourse(id: string) {
       cache: "no-store",
     });
     if (!res.ok) return null;
-    return res.json();
+    const data = await res.json();
+    return data.course || data;
   } catch {
     return null;
   }
@@ -65,15 +66,16 @@ function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "lg
 export default async function CourseDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const course = await getCourse(params.id);
+  const { id } = await params;
+  const course = await getCourse(id);
 
   if (!course) {
     notFound();
   }
 
-  const reviews = await getReviews(params.id);
+  const reviews = await getReviews(id);
   const totalLessons = course.sections?.reduce(
     (acc: number, s: any) => acc + (s.lessons?.length || 0),
     0

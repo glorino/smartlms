@@ -111,6 +111,7 @@ interface CourseData {
   rating: number;
   totalRatings: number;
   totalStudents: number;
+  thumbnail?: string;
   sections: CourseSectionData[];
   quiz: {
     title: string;
@@ -145,6 +146,7 @@ const coursesData: CourseData[] = [
     rating: 4.8,
     totalRatings: 1250,
     totalStudents: 5430,
+    thumbnail: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=450&fit=crop",
     sections: [
       {
         title: "HTML & CSS Fundamentals",
@@ -279,6 +281,7 @@ const coursesData: CourseData[] = [
     rating: 4.9,
     totalRatings: 890,
     totalStudents: 3210,
+    thumbnail: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=450&fit=crop",
     sections: [
       {
         title: "Foundations of Machine Learning",
@@ -413,6 +416,7 @@ const coursesData: CourseData[] = [
     rating: 4.7,
     totalRatings: 650,
     totalStudents: 2890,
+    thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=450&fit=crop",
     sections: [
       {
         title: "SEO & Content Strategy",
@@ -525,6 +529,7 @@ const coursesData: CourseData[] = [
     rating: 4.6,
     totalRatings: 420,
     totalStudents: 1850,
+    thumbnail: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&h=450&fit=crop",
     sections: [
       {
         title: "Functional Programming & Iterators",
@@ -659,6 +664,7 @@ const coursesData: CourseData[] = [
     rating: 4.8,
     totalRatings: 780,
     totalStudents: 3560,
+    thumbnail: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&h=450&fit=crop",
     sections: [
       {
         title: "Design Principles",
@@ -771,6 +777,7 @@ const coursesData: CourseData[] = [
     rating: 4.7,
     totalRatings: 540,
     totalStudents: 2100,
+    thumbnail: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&h=450&fit=crop",
     sections: [
       {
         title: "Security Fundamentals",
@@ -905,6 +912,7 @@ const coursesData: CourseData[] = [
     rating: 4.8,
     totalRatings: 620,
     totalStudents: 2450,
+    thumbnail: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&h=450&fit=crop",
     sections: [
       {
         title: "AWS Core Services",
@@ -1017,6 +1025,7 @@ const coursesData: CourseData[] = [
     rating: 4.5,
     totalRatings: 380,
     totalStudents: 1650,
+    thumbnail: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=450&fit=crop",
     sections: [
       {
         title: "Blockchain Fundamentals",
@@ -1129,6 +1138,7 @@ const coursesData: CourseData[] = [
     rating: 4.7,
     totalRatings: 520,
     totalStudents: 2300,
+    thumbnail: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&h=450&fit=crop",
     sections: [
       {
         title: "React Native Fundamentals",
@@ -1263,6 +1273,7 @@ const coursesData: CourseData[] = [
     rating: 4.6,
     totalRatings: 410,
     totalStudents: 1900,
+    thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=450&fit=crop",
     sections: [
       {
         title: "Excel for Data Analysis",
@@ -1367,12 +1378,15 @@ async function createCourseWithContent(
 ) {
   const course = await prisma.course.upsert({
     where: { slug: courseData.slug },
-    update: {},
+    update: {
+      thumbnail: courseData.thumbnail,
+    },
     create: {
       title: courseData.title,
       slug: courseData.slug,
       description: courseData.description,
       shortDescription: courseData.shortDescription,
+      thumbnail: courseData.thumbnail,
       price: courseData.price,
       salePrice: courseData.salePrice,
       level: courseData.level,

@@ -26,6 +26,9 @@ import {
   Activity,
   HelpCircle,
   LogOut,
+  ClipboardCheck,
+  BookMarked,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +41,8 @@ interface User {
 
 const commonItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/courses", label: "My Courses", icon: BookOpen },
+  { href: "/dashboard/onboarding", label: "Onboarding", icon: ClipboardCheck },
+  { href: "/dashboard/training", label: "Training", icon: BookMarked },
   { href: "/courses", label: "Browse Courses", icon: Search },
   { href: "/dashboard/quizzes", label: "Quizzes", icon: FileCheck },
   { href: "/dashboard/certificates", label: "Certificates", icon: Award },
