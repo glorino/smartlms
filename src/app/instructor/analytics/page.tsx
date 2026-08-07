@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   TrendingUp,
   Users,
@@ -20,46 +20,66 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-const coursePerformance = [
-  { name: "Web Development Bootcamp", students: 342, rating: 4.8, completion: 72, revenue: 12450, trend: "up" as const },
-  { name: "React Masterclass", students: 189, rating: 4.7, completion: 65, revenue: 8920, trend: "up" as const },
-  { name: "UI/UX Design", students: 256, rating: 4.9, completion: 81, revenue: 15200, trend: "up" as const },
-  { name: "DevOps & Cloud", students: 128, rating: 4.6, completion: 58, revenue: 6340, trend: "down" as const },
-];
-
-const engagementData = [
-  { day: "Mon", hours: 42 },
-  { day: "Tue", hours: 38 },
-  { day: "Wed", hours: 55 },
-  { day: "Thu", hours: 31 },
-  { day: "Fri", hours: 48 },
-  { day: "Sat", hours: 62 },
-  { day: "Sun", hours: 35 },
-];
-
-const enrollmentTrends = [
-  { month: "Mar", enrollments: 85 },
-  { month: "Apr", enrollments: 112 },
-  { month: "May", enrollments: 98 },
-  { month: "Jun", enrollments: 145 },
-  { month: "Jul", enrollments: 167 },
-  { month: "Aug", enrollments: 89 },
-];
-
-const demographics = [
-  { label: "18-24", percentage: 32 },
-  { label: "25-34", percentage: 41 },
-  { label: "35-44", percentage: 18 },
-  { label: "45+", percentage: 9 },
-];
-
-const maxEngagement = Math.max(...engagementData.map((d) => d.hours));
-const maxEnrollments = Math.max(...enrollmentTrends.map((e) => e.enrollments));
+interface AnalyticsData {
+  totalStudents: number;
+  totalCourses: number;
+  totalRevenue: number;
+  totalEnrollments: number;
+  activeUsers: number;
+  userGrowth: number;
+  enrollmentGrowth: number;
+  revenueGrowth: number;
+  completionRate: number;
+  monthlyRevenue: Record<string, number>;
+  monthlyEnrollments: Record<string, number>;
+  topCourses: Array<{ id: string; title: string; totalStudents: number; rating?: number; price?: number; _count: { enrollments: number } }>;
+  engagementMetrics: { avgSessionDuration: string; avgCompletionRate: string; dailyActiveUsers: number };
+}
 
 export default function InstructorAnalyticsPage() {
   const [timeRange, setTimeRange] = useState<"week" | "month" | "all">("month");
+  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchAnalytics() {
+      setLoading(true);
+      const rangeMap: Record<string, string> = { week: "7d", month: "30d", all: "1y" };
+      try {
+        const res = await fetch(`/api/analytics?range=${rangeMap[timeRange] || "30d"}`);
+        if (res.ok) {
+          const json = await res.json();
+          setData(json);
+        }
+      } catch {
+        // Use empty data
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchAnalytics();
+  }, [timeRange]);
+
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const engagementData = [
+    { day: "Mon", hours: 42 },
+    { day: "Tue", hours: 38 },
+    { day: "Wed", hours: 55 },
+    { day: "Thu", hours: 31 },
+    { day: "Fri", hours: 48 },
+    { day: "Sat", hours: 62 },
+    { day: "Sun", hours: 35 },
+  ];
+
+  const enrollmentData = months.map((m, i) => {
+    const key = `2026-${String(i + 1).padStart(2, "0")}`;
+    return { month: m, enrollments: data?.monthlyEnrollments?.[key] || 0 };
+  });
+
+  const maxEngagement = Math.max(...engagementData.map((d) => d.hours));
+  const maxEnrollments = Math.max(...enrollmentData.map((e) => e.enrollments), 1);
 
   return (
     <div className="space-y-6">
@@ -91,10 +111,10 @@ export default function InstructorAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Total Students</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">915</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">{loading ? "—" : (data?.totalStudents || 0).toLocaleString()}</p>
                 <div className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
                   <ArrowUpRight className="h-3 w-3" />
-                  +18% from last month
+                  {(data?.enrollmentGrowth || 0) >= 0 ? "+" : ""}{data?.enrollmentGrowth || 0}% from last period
                 </div>
               </div>
               <div className="rounded-xl bg-blue-500 p-3">
@@ -109,10 +129,10 @@ export default function InstructorAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Completion Rate</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">69%</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">{loading ? "—" : `${Math.round(data?.completionRate || 0)}%`}</p>
                 <div className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
                   <ArrowUpRight className="h-3 w-3" />
-                  +5% from last month
+                  {data?.engagementMetrics?.avgCompletionRate || "—"}
                 </div>
               </div>
               <div className="rounded-xl bg-emerald-500 p-3">
@@ -126,11 +146,10 @@ export default function InstructorAnalyticsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Avg. Rating</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">4.75</p>
-                <div className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
-                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  Excellent
+                <p className="text-sm font-medium text-gray-500">Total Courses</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">{loading ? "—" : (data?.totalCourses || 0)}</p>
+                <div className="mt-1 flex items-center gap-1 text-xs text-gray-500">
+                  Published courses
                 </div>
               </div>
               <div className="rounded-xl bg-amber-500 p-3">
@@ -145,10 +164,12 @@ export default function InstructorAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Total Revenue</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">₦40.9M</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">
+                  {loading ? "—" : `₦${(data?.totalRevenue || 0).toLocaleString()}`}
+                </p>
                 <div className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
                   <ArrowUpRight className="h-3 w-3" />
-                  +12% from last month
+                  {(data?.revenueGrowth || 0) >= 0 ? "+" : ""}{data?.revenueGrowth || 0}% from last period
                 </div>
               </div>
               <div className="rounded-xl bg-rose-500 p-3">
@@ -194,7 +215,7 @@ export default function InstructorAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-end gap-3 h-48">
-              {enrollmentTrends.map((item) => (
+              {enrollmentData.map((item) => (
                 <div key={item.month} className="flex flex-1 flex-col items-center gap-1">
                   <span className="text-xs font-medium text-gray-600">{item.enrollments}</span>
                   <div
@@ -218,114 +239,41 @@ export default function InstructorAnalyticsPage() {
           <CardDescription>Your courses ranked by performance</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {coursePerformance.map((course, idx) => (
-              <div
-                key={course.name}
-                className="flex items-center gap-4 rounded-lg border border-gray-200 p-4"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">
-                  #{idx + 1}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-gray-900">{course.name}</h3>
-                    {course.trend === "up" ? (
-                      <ArrowUpRight className="h-4 w-4 text-emerald-500" />
-                    ) : (
-                      <ArrowDownRight className="h-4 w-4 text-red-500" />
-                    )}
-                  </div>
-                  <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <Users className="h-3.5 w-3.5" />
-                      {course.students}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                      {course.rating}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <DollarSign className="h-3.5 w-3.5" />
-                      ${course.revenue.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="mt-2 max-w-md">
-                    <Progress value={course.completion} className="h-2" color="blue" showValue />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PieChart className="h-5 w-5 text-purple-500" />
-              Student Demographics
-            </CardTitle>
-            <CardDescription>Age distribution of your students</CardDescription>
-          </CardHeader>
-          <CardContent>
+          {loading ? (
+            <div className="flex justify-center py-8 text-gray-400">Loading...</div>
+          ) : !data?.topCourses?.length ? (
+            <div className="flex justify-center py-8 text-gray-400">No course data</div>
+          ) : (
             <div className="space-y-4">
-              {demographics.map((demo) => (
-                <div key={demo.label} className="flex items-center gap-4">
-                  <span className="w-12 text-sm font-medium text-gray-700">{demo.label}</span>
-                  <div className="flex-1">
-                    <div className="h-6 overflow-hidden rounded-full bg-gray-100">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-500"
-                        style={{ width: `${demo.percentage}%` }}
-                      />
+              {data.topCourses.map((course, idx) => (
+                <div
+                  key={course.id}
+                  className="flex items-center gap-4 rounded-lg border border-gray-200 p-4"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">
+                    #{idx + 1}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-gray-900">{course.title}</h3>
+                    </div>
+                    <div className="mt-1 flex items-center gap-4 text-sm text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <Users className="h-3.5 w-3.5" />
+                        {course.totalStudents || course._count.enrollments}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                        {course.rating || "N/A"}
+                      </span>
                     </div>
                   </div>
-                  <span className="w-12 text-right text-sm font-semibold text-gray-900">
-                    {demo.percentage}%
-                  </span>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-rose-500" />
-              Revenue by Course
-            </CardTitle>
-            <CardDescription>Revenue breakdown across courses</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {coursePerformance.map((course) => {
-                const maxRev = Math.max(...coursePerformance.map((c) => c.revenue));
-                return (
-                  <div key={course.name}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-gray-700 truncate max-w-[200px]">
-                        {course.name}
-                      </span>
-                      <span className="text-sm font-semibold text-gray-900">
-                        ${course.revenue.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="h-3 overflow-hidden rounded-full bg-gray-100">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-rose-500 to-pink-500 transition-all duration-500"
-                        style={{ width: `${(course.revenue / maxRev) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -14,10 +14,20 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const skip = (page - 1) * limit;
+    const instructorId = searchParams.get("instructorId") || "";
+    const allStatus = searchParams.get("allStatus") === "true";
 
-    const where: any = {
-      status: "PUBLISHED",
-    };
+    const session = await auth();
+    const userRole = (session?.user as any)?.role;
+    const userId = session?.user?.id;
+
+    const where: any = {};
+
+    if (allStatus && (userRole === "ADMIN" || userRole === "INSTRUCTOR")) {
+      // Don't filter by status - admin and instructor can see all
+    } else {
+      where.status = "PUBLISHED";
+    }
 
     if (search) {
       where.OR = [
@@ -42,6 +52,12 @@ export async function GET(request: Request) {
 
     if (rating) {
       where.rating = { gte: parseFloat(rating) };
+    }
+
+    if (instructorId) {
+      where.instructorId = instructorId;
+    } else if (userRole === "INSTRUCTOR" && userId) {
+      where.instructorId = userId;
     }
 
     let orderBy: any;

@@ -55,147 +55,164 @@ const motivationalQuotes = [
   "Education is the passport to the future.",
 ];
 
-const recentActivityData = [
-  {
-    id: 1,
-    type: "quiz",
-    title: "Completed Quiz: React Hooks",
-    course: "Complete Web Development Bootcamp",
-    time: "2 hours ago",
-    score: 92,
-    icon: FileCheck,
-    color: "bg-blue-100 text-blue-600",
-  },
-  {
-    id: 2,
-    type: "lesson",
-    title: "Completed Lesson: Node.js Basics",
-    course: "Node.js Masterclass",
-    time: "5 hours ago",
-    icon: CheckCircle2,
-    color: "bg-green-100 text-green-600",
-  },
-  {
-    id: 3,
-    type: "certificate",
-    title: "Earned Certificate",
-    course: "UI/UX Design Fundamentals",
-    time: "2 days ago",
-    icon: Award,
-    color: "bg-amber-100 text-amber-600",
-  },
-  {
-    id: 4,
-    type: "quiz",
-    title: "Completed Quiz: CSS Grid",
-    course: "Complete Web Development Bootcamp",
-    time: "3 days ago",
-    score: 88,
-    icon: FileCheck,
-    color: "bg-blue-100 text-blue-600",
-  },
-];
+interface Enrollment {
+  id: string;
+  courseId: string;
+  progress: number;
+  status: string;
+  enrolledAt: string;
+  course: { id: string; title: string; slug: string; thumbnail?: string; category?: string; price?: number; level?: string; instructor?: { id: string; name: string; avatar?: string } };
+  user?: { id: string; name: string; email: string; avatar?: string };
+}
 
-const upcomingDeadlines = [
-  {
-    id: 1,
-    title: "JavaScript Advanced Quiz",
-    course: "Web Development Bootcamp",
-    dueDate: "Tomorrow, 11:59 PM",
-    type: "quiz",
-    urgent: true,
-  },
-  {
-    id: 2,
-    title: "ML Model Assignment",
-    course: "Machine Learning & AI",
-    dueDate: "Aug 12, 2026",
-    type: "assignment",
-    urgent: false,
-  },
-  {
-    id: 3,
-    title: "Design Portfolio Submission",
-    course: "UI/UX Design Fundamentals",
-    dueDate: "Aug 15, 2026",
-    type: "assignment",
-    urgent: false,
-  },
-];
+interface QuizAttempt {
+  id: string;
+  quizTitle: string;
+  courseName: string;
+  score: number;
+  totalPoints: number;
+  passed: boolean;
+  completedAt: string;
+}
 
-const recommendedCourses = [
-  {
-    id: 1,
-    title: "TypeScript Mastery",
-    category: "Web Development",
-    rating: 4.8,
-    students: 1234,
-    image: "/courses/typescript.jpg",
-    price: "Free",
-  },
-  {
-    id: 2,
-    title: "Python for Data Science",
-    category: "Data Science",
-    rating: 4.9,
-    students: 2345,
-    image: "/courses/python.jpg",
-    price: "₦28,000",
-  },
-  {
-    id: 3,
-    title: "Docker & Kubernetes",
-    category: "DevOps",
-    rating: 4.7,
-    students: 987,
-    image: "/courses/docker.jpg",
-    price: "₦38,000",
-  },
-];
+interface Certificate {
+  id: string;
+  title: string;
+  certificateId: string;
+  issuedAt: string;
+  course: { id: string; title: string; slug: string };
+}
+
+interface Course {
+  id: string;
+  title: string;
+  slug: string;
+  category?: string;
+  rating?: number;
+  totalStudents: number;
+  price: number;
+  thumbnail?: string;
+  status: string;
+}
 
 export default function DashboardPage() {
   const { data: session } = useSession();
   const user = session?.user;
   const role = (user as any)?.role || "STUDENT";
+  const userId = (user as any)?.id;
 
   const [quote] = useState(
     () => motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]
   );
 
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [quizAttempts, setQuizAttempts] = useState<QuizAttempt[]>([]);
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [recommendedCourses, setRecommendedCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchAll() {
+      try {
+        const [enrollRes, quizRes, certRes, courseRes] = await Promise.allSettled([
+          fetch("/api/enrollments"),
+          fetch("/api/quizzes/attempts"),
+          fetch("/api/certificates"),
+          fetch("/api/courses?limit=6"),
+        ]);
+
+        if (enrollRes.status === "fulfilled" && enrollRes.value.ok) {
+          const data = await enrollRes.value.json();
+          setEnrollments(data.enrollments || []);
+        }
+        if (quizRes.status === "fulfilled" && quizRes.value.ok) {
+          const data = await quizRes.value.json();
+          setQuizAttempts(data.attempts || []);
+        }
+        if (certRes.status === "fulfilled" && certRes.value.ok) {
+          const data = await certRes.value.json();
+          setCertificates(data.certificates || []);
+        }
+        if (courseRes.status === "fulfilled" && courseRes.value.ok) {
+          const data = await courseRes.value.json();
+          setRecommendedCourses(data.courses || []);
+        }
+      } catch {
+        // Use empty state
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchAll();
+  }, []);
+
+  const completedEnrollments = enrollments.filter((e) => e.status === "COMPLETED");
+  const activeEnrollments = enrollments.filter((e) => e.status === "ACTIVE");
+  const avgScore = quizAttempts.length > 0
+    ? Math.round(quizAttempts.reduce((acc, a) => acc + a.score, 0) / quizAttempts.length)
+    : 0;
+
   const stats =
     role === "ADMIN"
       ? [
-          { label: "Total Users", value: "1,234", icon: Users, color: "bg-blue-500", change: "+12%", trend: "up" as const, subtitle: "users" },
-          { label: "Total Courses", value: "56", icon: BookOpen, color: "bg-emerald-500", change: "+8%", trend: "up" as const, subtitle: "courses" },
-          { label: "Revenue", value: "₦12,000,000", icon: DollarSign, color: "bg-amber-500", change: "+23%", trend: "up" as const, subtitle: "revenue" },
-          { label: "Enrollments", value: "3,456", icon: TrendingUp, color: "bg-rose-500", change: "+15%", trend: "up" as const, subtitle: "enrollments" },
+          { label: "Total Users", value: "—", icon: Users, color: "bg-blue-500", change: "", trend: "up" as const, subtitle: "users" },
+          { label: "Total Courses", value: "—", icon: BookOpen, color: "bg-emerald-500", change: "", trend: "up" as const, subtitle: "courses" },
+          { label: "Revenue", value: "—", icon: DollarSign, color: "bg-amber-500", change: "", trend: "up" as const, subtitle: "revenue" },
+          { label: "Enrollments", value: "—", icon: TrendingUp, color: "bg-rose-500", change: "", trend: "up" as const, subtitle: "enrollments" },
         ]
       : role === "INSTRUCTOR"
         ? [
-            { label: "My Courses", value: "8", icon: Package, color: "bg-blue-500", change: "+2", trend: "up" as const, subtitle: "courses" },
-            { label: "Total Students", value: "456", icon: Users, color: "bg-emerald-500", change: "+34", trend: "up" as const, subtitle: "students" },
-            { label: "Earnings", value: "₦3,000,000", icon: DollarSign, color: "bg-amber-500", change: "+₦420,000", trend: "up" as const, subtitle: "earnings" },
-            { label: "Active Courses", value: "6", icon: BookOpen, color: "bg-rose-500", change: "100%", trend: "up" as const, subtitle: "active" },
+            { label: "My Courses", value: "—", icon: Package, color: "bg-blue-500", change: "", trend: "up" as const, subtitle: "courses" },
+            { label: "Total Students", value: "—", icon: Users, color: "bg-emerald-500", change: "", trend: "up" as const, subtitle: "students" },
+            { label: "Earnings", value: "—", icon: DollarSign, color: "bg-amber-500", change: "", trend: "up" as const, subtitle: "earnings" },
+            { label: "Active Courses", value: "—", icon: BookOpen, color: "bg-rose-500", change: "", trend: "up" as const, subtitle: "active" },
           ]
         : [
-            { label: "Enrolled Courses", value: "4", icon: BookOpen, color: "bg-blue-500", change: "+2 this month", trend: "up" as const, subtitle: "courses" },
-            { label: "Completed Courses", value: "1", icon: Award, color: "bg-emerald-500", change: "25%", trend: "up" as const, subtitle: "completed" },
-            { label: "Quiz Scores", value: "87%", icon: Target, color: "bg-amber-500", change: "+5%", trend: "up" as const, subtitle: "average" },
-            { label: "Certificates", value: "1", icon: Trophy, color: "bg-rose-500", change: "Latest: Aug 5", trend: "neutral" as const, subtitle: "earned" },
+            { label: "Enrolled Courses", value: enrollments.length || 0, icon: BookOpen, color: "bg-blue-500", change: `${activeEnrollments.length} active`, trend: "up" as const, subtitle: "courses" },
+            { label: "Completed Courses", value: completedEnrollments.length || 0, icon: Award, color: "bg-emerald-500", change: enrollments.length > 0 ? `${Math.round((completedEnrollments.length / enrollments.length) * 100)}%` : "0%", trend: "up" as const, subtitle: "completed" },
+            { label: "Quiz Scores", value: `${avgScore}%`, icon: Target, color: "bg-amber-500", change: quizAttempts.length > 0 ? `${quizAttempts.length} quizzes` : "No quizzes", trend: "up" as const, subtitle: "average" },
+            { label: "Certificates", value: certificates.length || 0, icon: Trophy, color: "bg-rose-500", change: certificates.length > 0 ? `Latest: ${new Date(certificates[0].issuedAt).toLocaleDateString()}` : "None yet", trend: "neutral" as const, subtitle: "earned" },
           ];
 
-  const recentCourses =
-    role === "INSTRUCTOR"
-      ? [
-          { title: "Complete Web Development", students: 234, status: "Published", progress: 100, lastAccessed: "", lastLesson: "" },
-          { title: "Advanced React Patterns", students: 189, status: "Published", progress: 100, lastAccessed: "", lastLesson: "" },
-          { title: "Node.js Masterclass", students: 0, status: "Draft", progress: 65, lastAccessed: "", lastLesson: "" },
-        ]
-      : [
-          { title: "Complete Web Development Bootcamp", progress: 35, lastAccessed: "2 hours ago", lastLesson: "Chapter 5: React State Management", students: 0, status: "" },
-          { title: "Machine Learning & AI Masterclass", progress: 12, lastAccessed: "1 day ago", lastLesson: "Lesson 3: Linear Regression", students: 0, status: "" },
-          { title: "UI/UX Design Fundamentals", progress: 68, lastAccessed: "3 days ago", lastLesson: "Chapter 8: Prototyping in Figma", students: 0, status: "" },
-        ];
+  const recentActivityData = [
+    ...quizAttempts.slice(0, 2).map((a) => ({
+      id: a.id,
+      type: "quiz" as const,
+      title: `Quiz: ${a.quizTitle}`,
+      course: a.courseName,
+      time: a.completedAt,
+      score: Math.round(a.score),
+      icon: FileCheck,
+      color: "bg-blue-100 text-blue-600",
+    })),
+    ...certificates.slice(0, 2).map((c) => ({
+      id: c.id,
+      type: "certificate" as const,
+      title: "Earned Certificate",
+      course: c.course.title,
+      time: c.issuedAt,
+      icon: Award,
+      color: "bg-amber-100 text-amber-600",
+    })),
+  ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 4);
+
+  const recentCourses = role === "INSTRUCTOR"
+    ? enrollments.slice(0, 3).map((e) => ({
+        title: e.course.title,
+        students: 0,
+        status: "Published",
+        progress: Math.round(e.progress),
+        lastAccessed: "",
+        lastLesson: "",
+      }))
+    : activeEnrollments.slice(0, 3).map((e) => ({
+        title: e.course.title,
+        progress: Math.round(e.progress),
+        lastAccessed: e.enrolledAt,
+        lastLesson: "Continue learning",
+        students: 0,
+        status: "",
+      }));
 
   const quickActions =
     role === "ADMIN"
@@ -218,6 +235,16 @@ export default function DashboardPage() {
           ];
 
   const learningStreak = 7;
+
+  function formatTimeAgo(dateStr: string) {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d ago`;
+  }
 
   if (role === "ADMIN" || role === "INSTRUCTOR") {
     return (
@@ -259,7 +286,9 @@ export default function DashboardPage() {
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                      <p className="text-4xl font-extrabold tracking-tight text-gray-900">{stat.value}</p>
+                      <p className="text-4xl font-extrabold tracking-tight text-gray-900">
+                        {loading ? "—" : stat.value}
+                      </p>
                       <div className="flex items-center gap-1.5 pt-1">
                         {stat.trend === "up" ? (
                           <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
@@ -277,7 +306,6 @@ export default function DashboardPage() {
                       <stat.icon className="h-6 w-6 text-white" />
                     </div>
                   </div>
-                  {/* Mini sparkline placeholder */}
                   <div className="mt-4 flex items-end gap-0.5 h-8">
                     {[40, 65, 45, 80, 55, 90, 70].map((h, i) => (
                       <div
@@ -293,135 +321,6 @@ export default function DashboardPage() {
           })}
         </div>
 
-        {/* AI Insights Section */}
-        <Card className="overflow-hidden border-0 shadow-lg">
-          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-1">
-            <div className="rounded-xl bg-white">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-3">
-                  <div className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 p-2.5">
-                    <Brain className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <span className="text-lg font-bold text-gray-900">AI Insights</span>
-                    <Badge className="ml-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[10px] px-2 py-0.5">
-                      <Sparkles className="mr-1 h-3 w-3" />
-                      AI Generated
-                    </Badge>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pb-6">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {role === "ADMIN" ? (
-                    <>
-                      <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50 p-5 transition-all hover:shadow-md">
-                        <div className="flex items-start gap-3">
-                          <div className="rounded-xl bg-emerald-100 p-2.5">
-                            <TrendingUp className="h-5 w-5 text-emerald-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-gray-900">Platform Growth</p>
-                            <p className="mt-1 text-sm text-gray-600">+12% new enrollments this week</p>
-                            <p className="mt-2 text-xs text-emerald-600 font-medium">Continuing upward trend</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-5 transition-all hover:shadow-md">
-                        <div className="flex items-start gap-3">
-                          <div className="rounded-xl bg-blue-100 p-2.5">
-                            <Trophy className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-gray-900">Top Performing Course</p>
-                            <p className="mt-1 text-sm text-gray-600">Complete Web Dev Bootcamp with 95% completion rate</p>
-                            <p className="mt-2 text-xs text-blue-600 font-medium">Highest engagement this month</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5 transition-all hover:shadow-md">
-                        <div className="flex items-start gap-3">
-                          <div className="rounded-xl bg-amber-100 p-2.5">
-                            <AlertTriangle className="h-5 w-5 text-amber-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-gray-900">Courses Need Attention</p>
-                            <p className="mt-1 text-sm text-gray-600">5 courses have low ratings. Review recommended</p>
-                            <p className="mt-2 text-xs text-amber-600 font-medium">Action required</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 p-5 transition-all hover:shadow-md">
-                        <div className="flex items-start gap-3">
-                          <div className="rounded-xl bg-purple-100 p-2.5">
-                            <DollarSign className="h-5 w-5 text-purple-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-gray-900">Revenue Forecast</p>
-                            <p className="mt-1 text-sm text-gray-600">₦14,500,000 based on current enrollment trends</p>
-                            <p className="mt-2 text-xs text-purple-600 font-medium">+22% projected growth</p>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-5 transition-all hover:shadow-md">
-                        <div className="flex items-start gap-3">
-                          <div className="rounded-xl bg-blue-100 p-2.5">
-                            <Users className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-gray-900">Students Struggling</p>
-                            <p className="mt-1 text-sm text-gray-600">3 students are struggling with React Hooks</p>
-                            <p className="mt-2 text-xs text-blue-600 font-medium">Consider creating supplementary material</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50 p-5 transition-all hover:shadow-md">
-                        <div className="flex items-start gap-3">
-                          <div className="rounded-xl bg-emerald-100 p-2.5">
-                            <ThumbsUp className="h-5 w-5 text-emerald-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-gray-900">Course Rating</p>
-                            <p className="mt-1 text-sm text-gray-600">Your React Masterclass has a 4.8 rating!</p>
-                            <p className="mt-2 text-xs text-emerald-600 font-medium">Students love your teaching style</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5 transition-all hover:shadow-md">
-                        <div className="flex items-start gap-3">
-                          <div className="rounded-xl bg-amber-100 p-2.5">
-                            <BarChart className="h-5 w-5 text-amber-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-gray-900">Quiz Completion Rate</p>
-                            <p className="mt-1 text-sm text-gray-600">87% completion rate. 13% haven&apos;t attempted yet</p>
-                            <p className="mt-2 text-xs text-amber-600 font-medium">Send reminder notifications</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="rounded-xl border border-rose-200 bg-gradient-to-br from-rose-50 to-pink-50 p-5 transition-all hover:shadow-md">
-                        <div className="flex items-start gap-3">
-                          <div className="rounded-xl bg-rose-100 p-2.5">
-                            <Rocket className="h-5 w-5 text-rose-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-gray-900">Engagement Suggestion</p>
-                            <p className="mt-1 text-sm text-gray-600">Add a live class for JavaScript to boost engagement</p>
-                            <p className="mt-2 text-xs text-rose-600 font-medium">Based on student interest data</p>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </div>
-          </div>
-        </Card>
-
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <Card>
@@ -435,7 +334,9 @@ export default function DashboardPage() {
                 </Link>
               </CardHeader>
               <CardContent>
-                {recentCourses.length > 0 ? (
+                {loading ? (
+                  <div className="py-12 text-center text-gray-400">Loading...</div>
+                ) : recentCourses.length > 0 ? (
                   <div className="space-y-4">
                     {recentCourses.map((course, i) => (
                       <div
@@ -453,7 +354,7 @@ export default function DashboardPage() {
                             <Progress value={course.progress} className="h-2" />
                             <p className="mt-1 text-xs text-gray-400">
                               {course.progress}% complete
-                              {course.lastAccessed && ` · ${course.lastAccessed}`}
+                              {course.lastAccessed && ` · ${formatTimeAgo(course.lastAccessed)}`}
                             </p>
                           </div>
                         </div>
@@ -510,17 +411,23 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {recentActivityData.slice(0, 3).map((activity) => (
-                    <div key={activity.id} className="flex items-center gap-3 rounded-xl border border-gray-100 p-3">
-                      <div className={`rounded-lg p-2 ${activity.color}`}>
-                        <activity.icon className="h-4 w-4" />
+                  {loading ? (
+                    <div className="py-4 text-center text-gray-400">Loading...</div>
+                  ) : recentActivityData.length > 0 ? (
+                    recentActivityData.slice(0, 3).map((activity) => (
+                      <div key={activity.id} className="flex items-center gap-3 rounded-xl border border-gray-100 p-3">
+                        <div className={`rounded-lg p-2 ${activity.color}`}>
+                          <activity.icon className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{activity.title}</p>
+                          <p className="text-xs text-gray-500">{formatTimeAgo(activity.time)}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{activity.title}</p>
-                        <p className="text-xs text-gray-500">{activity.time}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <div className="py-4 text-center text-gray-400 text-sm">No recent activity</div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -530,6 +437,7 @@ export default function DashboardPage() {
     );
   }
 
+  // Student view
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
@@ -583,7 +491,9 @@ export default function DashboardPage() {
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                    <p className="text-4xl font-extrabold tracking-tight text-gray-900">{stat.value}</p>
+                    <p className="text-4xl font-extrabold tracking-tight text-gray-900">
+                      {loading ? "—" : stat.value}
+                    </p>
                     <div className="flex items-center gap-1.5 pt-1">
                       {stat.trend === "up" ? (
                         <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
@@ -604,7 +514,6 @@ export default function DashboardPage() {
                     <stat.icon className="h-6 w-6 text-white" />
                   </div>
                 </div>
-                {/* Mini sparkline placeholder */}
                 <div className="mt-4 flex items-end gap-0.5 h-8">
                   {[35, 60, 42, 75, 50, 85, 65].map((h, i) => (
                     <div
@@ -619,80 +528,6 @@ export default function DashboardPage() {
           );
         })}
       </div>
-
-      {/* AI Insights Section - Student */}
-      <Card className="overflow-hidden border-0 shadow-lg">
-        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-1">
-          <div className="rounded-xl bg-white">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-3">
-                <div className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 p-2.5">
-                  <Brain className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <span className="text-lg font-bold text-gray-900">AI Insights</span>
-                  <Badge className="ml-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[10px] px-2 py-0.5">
-                    <Sparkles className="mr-1 h-3 w-3" />
-                    AI Generated
-                  </Badge>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pb-6">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50 p-5 transition-all hover:shadow-md">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-xl bg-emerald-100 p-2.5">
-                      <Trophy className="h-5 w-5 text-emerald-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">Your Strength</p>
-                      <p className="mt-1 text-sm text-gray-600">Based on your quiz scores, you excel in Web Development. Consider advanced courses in React Patterns.</p>
-                      <p className="mt-2 text-xs text-emerald-600 font-medium">Keep up the great work!</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5 transition-all hover:shadow-md">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-xl bg-amber-100 p-2.5">
-                      <RefreshCw className="h-5 w-5 text-amber-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">Course Reminder</p>
-                      <p className="mt-1 text-sm text-gray-600">You haven&apos;t accessed UI/UX Design in 3 days. Here&apos;s a quick recap to help you continue.</p>
-                      <p className="mt-2 text-xs text-amber-600 font-medium">Resume learning</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-5 transition-all hover:shadow-md">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-xl bg-blue-100 p-2.5">
-                      <Activity className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">Learning Pace</p>
-                      <p className="mt-1 text-sm text-gray-600">Your learning pace is faster than average. You&apos;re making excellent progress this week!</p>
-                      <p className="mt-2 text-xs text-blue-600 font-medium">Top 15% of learners</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 p-5 transition-all hover:shadow-md">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-xl bg-purple-100 p-2.5">
-                      <Rocket className="h-5 w-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">Recommended Next</p>
-                      <p className="mt-1 text-sm text-gray-600">Based on your completed courses, try TypeScript Mastery or Python for Data Science.</p>
-                      <p className="mt-2 text-xs text-purple-600 font-medium">Matches your skill level</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </div>
-        </div>
-      </Card>
 
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
@@ -712,7 +547,9 @@ export default function DashboardPage() {
               </Link>
             </CardHeader>
             <CardContent className="p-6">
-              {recentCourses.length > 0 ? (
+              {loading ? (
+                <div className="py-12 text-center text-gray-400">Loading...</div>
+              ) : recentCourses.length > 0 ? (
                 <div className="space-y-4">
                   {recentCourses.map((course, i) => (
                     <div
@@ -749,7 +586,7 @@ export default function DashboardPage() {
                           <div className="mt-3 flex items-center justify-between">
                             <p className="text-xs text-gray-400">
                               <Clock className="mr-1 inline h-3 w-3" />
-                              {course.lastAccessed}
+                              {formatTimeAgo(course.lastAccessed)}
                             </p>
                             <Link
                               href="/courses/1/learn"
@@ -794,41 +631,55 @@ export default function DashboardPage() {
               </Link>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                {recommendedCourses.map((course) => (
-                  <div
-                    key={course.id}
-                    className="group rounded-xl border border-gray-100 p-4 transition-all hover:border-indigo-200 hover:shadow-md"
-                  >
-                    <div className="flex h-24 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100">
-                      <BookOpen className="h-10 w-10 text-indigo-400" />
-                    </div>
-                    <div className="mt-3">
-                      <Badge variant="secondary" className="text-[10px]">
-                        {course.category}
-                      </Badge>
-                      <h4 className="mt-2 font-semibold text-gray-900 group-hover:text-indigo-600">
-                        {course.title}
-                      </h4>
-                      <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
-                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                        <span>{course.rating}</span>
-                        <span className="text-gray-300">·</span>
-                        <span>{course.students} students</span>
+              {loading ? (
+                <div className="py-8 text-center text-gray-400">Loading...</div>
+              ) : recommendedCourses.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  {recommendedCourses.slice(0, 3).map((course) => (
+                    <div
+                      key={course.id}
+                      className="group rounded-xl border border-gray-100 p-4 transition-all hover:border-indigo-200 hover:shadow-md"
+                    >
+                      <div className="flex h-24 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100">
+                        <BookOpen className="h-10 w-10 text-indigo-400" />
                       </div>
-                      <div className="mt-3 flex items-center justify-between">
-                        <span className="font-bold text-indigo-600">{course.price}</span>
-                        <Link
-                          href={`/courses/${course.id}`}
-                          className="text-sm font-medium text-gray-600 hover:text-indigo-600"
-                        >
-                          Enroll →
-                        </Link>
+                      <div className="mt-3">
+                        {course.category && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            {course.category}
+                          </Badge>
+                        )}
+                        <h4 className="mt-2 font-semibold text-gray-900 group-hover:text-indigo-600">
+                          {course.title}
+                        </h4>
+                        <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
+                          {course.rating && (
+                            <>
+                              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                              <span>{course.rating}</span>
+                              <span className="text-gray-300">·</span>
+                            </>
+                          )}
+                          <span>{course.totalStudents} students</span>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between">
+                          <span className="font-bold text-indigo-600">
+                            {course.price === 0 ? "Free" : `₦${course.price.toLocaleString()}`}
+                          </span>
+                          <Link
+                            href={`/courses/${course.id}`}
+                            className="text-sm font-medium text-gray-600 hover:text-indigo-600"
+                          >
+                            Enroll →
+                          </Link>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center text-gray-400 text-sm">No courses available</div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -881,44 +732,30 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {upcomingDeadlines.map((deadline) => (
-                  <div
-                    key={deadline.id}
-                    className={`rounded-xl border p-3 ${
-                      deadline.urgent
-                        ? "border-red-200 bg-red-50/50"
-                        : "border-gray-100"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={`mt-0.5 rounded-lg p-1.5 ${
-                          deadline.urgent ? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
-                        {deadline.type === "quiz" ? (
-                          <FileCheck className="h-4 w-4" />
-                        ) : (
+                {activeEnrollments.length === 0 ? (
+                  <div className="py-4 text-center text-gray-400 text-sm">No active deadlines</div>
+                ) : (
+                  activeEnrollments.slice(0, 3).map((enrollment) => (
+                    <div
+                      key={enrollment.id}
+                      className="rounded-xl border border-gray-100 p-3"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5 rounded-lg p-1.5 bg-gray-100 text-gray-600">
                           <AlertCircle className="h-4 w-4" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900">
-                          {deadline.title}
-                        </p>
-                        <p className="text-xs text-gray-500">{deadline.course}</p>
-                        <p
-                          className={`mt-1 text-xs font-medium ${
-                            deadline.urgent ? "text-red-600" : "text-gray-500"
-                          }`}
-                        >
-                          {deadline.urgent && "⚠️ "}
-                          Due: {deadline.dueDate}
-                        </p>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900">
+                            {enrollment.course.title}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {Math.round(enrollment.progress)}% complete
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -935,29 +772,35 @@ export default function DashboardPage() {
               <div className="relative">
                 <div className="absolute left-[17px] top-0 bottom-0 w-0.5 bg-gray-100" />
                 <div className="space-y-4">
-                  {recentActivityData.map((activity, index) => (
-                    <div key={activity.id} className="relative flex gap-3">
-                      <div
-                        className={`relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${activity.color}`}
-                      >
-                        <activity.icon className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900">
-                          {activity.title}
-                        </p>
-                        <p className="text-xs text-gray-500">{activity.course}</p>
-                        <div className="mt-1 flex items-center gap-2">
-                          <p className="text-xs text-gray-400">{activity.time}</p>
-                          {activity.score && (
-                            <Badge variant="success" className="text-[10px]">
-                              {activity.score}%
-                            </Badge>
-                          )}
+                  {loading ? (
+                    <div className="py-4 text-center text-gray-400 text-sm">Loading...</div>
+                  ) : recentActivityData.length > 0 ? (
+                    recentActivityData.map((activity) => (
+                      <div key={activity.id} className="relative flex gap-3">
+                        <div
+                          className={`relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${activity.color}`}
+                        >
+                          <activity.icon className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900">
+                            {activity.title}
+                          </p>
+                          <p className="text-xs text-gray-500">{activity.course}</p>
+                          <div className="mt-1 flex items-center gap-2">
+                            <p className="text-xs text-gray-400">{formatTimeAgo(activity.time)}</p>
+                            {"score" in activity && activity.score != null && (
+                              <Badge variant="success" className="text-[10px]">
+                                {(activity as any).score}%
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <div className="py-4 text-center text-gray-400 text-sm">No recent activity</div>
+                  )}
                 </div>
               </div>
             </CardContent>

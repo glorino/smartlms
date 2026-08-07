@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Search,
   Download,
@@ -16,104 +16,77 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar } from "@/components/ui/avatar";
 
-interface Student {
-  id: string;
+interface StudentData {
+  userId: string;
   name: string;
   email: string;
   avatar?: string;
   coursesEnrolled: string[];
   progress: number;
   lastActive: string;
-  enrolledAt: string;
 }
 
-const mockStudents: Student[] = [
-  {
-    id: "1",
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    coursesEnrolled: ["Complete Web Development Bootcamp", "UI/UX Design Fundamentals"],
-    progress: 78,
-    lastActive: "2026-08-06",
-    enrolledAt: "2026-06-15",
-  },
-  {
-    id: "2",
-    name: "Bob Smith",
-    email: "bob@example.com",
-    coursesEnrolled: ["Advanced React & Next.js Masterclass"],
-    progress: 45,
-    lastActive: "2026-08-05",
-    enrolledAt: "2026-07-01",
-  },
-  {
-    id: "3",
-    name: "Carol Williams",
-    email: "carol@example.com",
-    coursesEnrolled: ["Complete Web Development Bootcamp", "DevOps & Cloud Computing"],
-    progress: 92,
-    lastActive: "2026-08-07",
-    enrolledAt: "2026-05-20",
-  },
-  {
-    id: "4",
-    name: "David Brown",
-    email: "david@example.com",
-    coursesEnrolled: ["UI/UX Design Fundamentals"],
-    progress: 60,
-    lastActive: "2026-08-03",
-    enrolledAt: "2026-07-10",
-  },
-  {
-    id: "5",
-    name: "Emma Davis",
-    email: "emma@example.com",
-    coursesEnrolled: ["Advanced React & Next.js Masterclass", "DevOps & Cloud Computing"],
-    progress: 35,
-    lastActive: "2026-08-04",
-    enrolledAt: "2026-07-20",
-  },
-  {
-    id: "6",
-    name: "Frank Miller",
-    email: "frank@example.com",
-    coursesEnrolled: ["Complete Web Development Bootcamp"],
-    progress: 88,
-    lastActive: "2026-08-07",
-    enrolledAt: "2026-06-01",
-  },
-  {
-    id: "7",
-    name: "Grace Wilson",
-    email: "grace@example.com",
-    coursesEnrolled: ["UI/UX Design Fundamentals", "Advanced React & Next.js Masterclass"],
-    progress: 52,
-    lastActive: "2026-08-02",
-    enrolledAt: "2026-07-05",
-  },
-  {
-    id: "8",
-    name: "Henry Taylor",
-    email: "henry@example.com",
-    coursesEnrolled: ["DevOps & Cloud Computing"],
-    progress: 15,
-    lastActive: "2026-07-28",
-    enrolledAt: "2026-07-25",
-  },
-];
-
-const allCourses = [
-  "All Courses",
-  "Complete Web Development Bootcamp",
-  "Advanced React & Next.js Masterclass",
-  "UI/UX Design Fundamentals",
-  "DevOps & Cloud Computing",
-];
+interface Enrollment {
+  id: string;
+  progress: number;
+  status: string;
+  enrolledAt: string;
+  course: { id: string; title: string };
+  user: { id: string; name: string; email: string; avatar?: string };
+}
 
 export default function InstructorStudentsPage() {
-  const [students] = useState<Student[]>(mockStudents);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCourse, setFilterCourse] = useState("All Courses");
+
+  useEffect(() => {
+    async function fetchStudents() {
+      try {
+        const res = await fetch("/api/enrollments");
+        if (res.ok) {
+          const data = await res.json();
+          setEnrollments(data.enrollments || []);
+        }
+      } catch {
+        // Use empty state
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStudents();
+  }, []);
+
+  const students = useMemo(() => {
+    const map = new Map<string, StudentData>();
+    for (const e of enrollments) {
+      const uid = e.user.id;
+      if (!map.has(uid)) {
+        map.set(uid, {
+          userId: uid,
+          name: e.user.name,
+          email: e.user.email,
+          avatar: e.user.avatar,
+          coursesEnrolled: [],
+          progress: 0,
+          lastActive: e.enrolledAt,
+        });
+      }
+      const s = map.get(uid)!;
+      s.coursesEnrolled.push(e.course.title);
+      s.progress = Math.max(s.progress, Math.round(e.progress));
+      if (new Date(e.enrolledAt) > new Date(s.lastActive)) {
+        s.lastActive = e.enrolledAt;
+      }
+    }
+    return Array.from(map.values());
+  }, [enrollments]);
+
+  const allCourses = useMemo(() => {
+    const titles = new Set(enrollments.map((e) => e.course.title));
+    return ["All Courses", ...Array.from(titles)];
+  }, [enrollments]);
 
   const filtered = useMemo(() => {
     return students.filter((student) => {
@@ -129,20 +102,20 @@ export default function InstructorStudentsPage() {
   const stats = {
     totalStudents: students.length,
     activeStudents: students.filter(
-      (s) => new Date(s.lastActive) >= new Date("2026-08-01")
+      (s) => new Date(s.lastActive) >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     ).length,
-    avgProgress: Math.round(
-      students.reduce((acc, s) => acc + s.progress, 0) / students.length
-    ),
-    totalEnrollments: students.reduce((acc, s) => acc + s.coursesEnrolled.length, 0),
+    avgProgress: students.length > 0
+      ? Math.round(students.reduce((acc, s) => acc + s.progress, 0) / students.length)
+      : 0,
+    totalEnrollments: enrollments.length,
   };
 
   const handleExport = () => {
     const csv = [
-      "Name,Email,Courses Enrolled,Progress,Last Active,Enrolled At",
+      "Name,Email,Courses Enrolled,Progress,Last Active",
       ...filtered.map(
         (s) =>
-          `"${s.name}","${s.email}","${s.coursesEnrolled.join("; ")}",${s.progress}%,"${s.lastActive}","${s.enrolledAt}"`
+          `"${s.name}","${s.email}","${s.coursesEnrolled.join("; ")}",${s.progress}%,"${new Date(s.lastActive).toLocaleDateString()}"`
       ),
     ].join("\n");
 
@@ -176,7 +149,7 @@ export default function InstructorStudentsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Total Students</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">{stats.totalStudents}</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">{loading ? "—" : stats.totalStudents}</p>
               </div>
               <div className="rounded-xl bg-blue-500 p-3">
                 <Users className="h-6 w-6 text-white" />
@@ -190,7 +163,7 @@ export default function InstructorStudentsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Active This Month</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">{stats.activeStudents}</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">{loading ? "—" : stats.activeStudents}</p>
               </div>
               <div className="rounded-xl bg-emerald-500 p-3">
                 <Clock className="h-6 w-6 text-white" />
@@ -204,7 +177,7 @@ export default function InstructorStudentsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Avg. Progress</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">{stats.avgProgress}%</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">{loading ? "—" : `${stats.avgProgress}%`}</p>
               </div>
               <div className="rounded-xl bg-amber-500 p-3">
                 <BookOpen className="h-6 w-6 text-white" />
@@ -218,7 +191,7 @@ export default function InstructorStudentsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Total Enrollments</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">{stats.totalEnrollments}</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">{loading ? "—" : stats.totalEnrollments}</p>
               </div>
               <div className="rounded-xl bg-rose-500 p-3">
                 <BookOpen className="h-6 w-6 text-white" />
@@ -260,7 +233,11 @@ export default function InstructorStudentsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <p className="text-sm text-gray-400">Loading students...</p>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
               <Users className="h-12 w-12 text-gray-400" />
               <h3 className="mt-4 text-lg font-medium text-gray-900">No students found</h3>
@@ -272,7 +249,7 @@ export default function InstructorStudentsPage() {
             <div className="space-y-3">
               {filtered.map((student) => (
                 <div
-                  key={student.id}
+                  key={student.userId}
                   className="flex items-center gap-4 rounded-lg border border-gray-200 p-4 transition-shadow hover:shadow-md"
                 >
                   <Avatar name={student.name} src={student.avatar} size="lg" />

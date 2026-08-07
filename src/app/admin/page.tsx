@@ -22,7 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 interface PlatformStats {
-  totalUsers: number;
+  totalStudents: number;
   totalCourses: number;
   totalRevenue: number;
   totalEnrollments: number;
@@ -33,7 +33,6 @@ interface PlatformStats {
 }
 
 interface RecentActivity {
-  id: string;
   type: string;
   title: string;
   description: string;
@@ -41,28 +40,20 @@ interface RecentActivity {
 }
 
 const fallbackStats: PlatformStats = {
-  totalUsers: 12845,
-  totalCourses: 324,
-  totalRevenue: 84254,
-  totalEnrollments: 8432,
-  userGrowth: 12.5,
-  courseGrowth: 8.2,
-  revenueGrowth: 23.1,
-  enrollmentGrowth: -2.4,
+  totalStudents: 0,
+  totalCourses: 0,
+  totalRevenue: 0,
+  totalEnrollments: 0,
+  userGrowth: 0,
+  courseGrowth: 0,
+  revenueGrowth: 0,
+  enrollmentGrowth: 0,
 };
 
-const fallbackActivity: RecentActivity[] = [
-  { id: "1", type: "enrollment", title: "New enrollment", description: "Sarah Johnson enrolled in Advanced React Patterns", time: "2 minutes ago" },
-  { id: "2", type: "course", title: "Course published", description: "TypeScript Mastery was published by Mike Chen", time: "15 minutes ago" },
-  { id: "3", type: "payment", title: "Payment received", description: "₦95,000 payment from Emily Davis", time: "1 hour ago" },
-  { id: "4", type: "user", title: "New user registered", description: "Alex Wilson joined as a student", time: "2 hours ago" },
-  { id: "5", type: "review", title: "New review", description: "5-star review on Node.js Backend Development", time: "3 hours ago" },
-];
-
 const statCards = [
-  { label: "Total Users", key: "totalUsers" as const, icon: Users, color: "bg-blue-500", growthKey: "userGrowth" as const },
+  { label: "Total Students", key: "totalStudents" as const, icon: Users, color: "bg-blue-500", growthKey: "userGrowth" as const },
   { label: "Total Courses", key: "totalCourses" as const, icon: BookOpen, color: "bg-emerald-500", growthKey: "courseGrowth" as const },
-  { label: "Revenue", key: "totalRevenue" as const, icon: DollarSign, color: "bg-purple-500", growthKey: "revenueGrowth" as const, prefix: "$" },
+  { label: "Revenue", key: "totalRevenue" as const, icon: DollarSign, color: "bg-purple-500", growthKey: "revenueGrowth" as const, prefix: "₦" },
   { label: "Enrollments", key: "totalEnrollments" as const, icon: TrendingUp, color: "bg-orange-500", growthKey: "enrollmentGrowth" as const },
 ];
 
@@ -82,27 +73,43 @@ const activityIcons: Record<string, { icon: any; color: string }> = {
   review: { icon: CheckCircle2, color: "bg-green-100 text-green-600" },
 };
 
+function formatTimeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<PlatformStats>(fallbackStats);
-  const [activities, setActivities] = useState<RecentActivity[]>(fallbackActivity);
+  const [activities, setActivities] = useState<RecentActivity[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [statsRes, activityRes] = await Promise.all([
-          fetch("/api/analytics/platform"),
-          fetch("/api/analytics/activity"),
-        ]);
-        if (statsRes.ok) {
-          const data = await statsRes.json();
-          setStats(data);
-        }
-        if (activityRes.ok) {
-          const data = await activityRes.json();
-          setActivities(data.activities || data || []);
+        const res = await fetch("/api/analytics?range=30d");
+        if (res.ok) {
+          const data = await res.json();
+          setStats({
+            totalStudents: data.totalStudents || 0,
+            totalCourses: data.totalCourses || 0,
+            totalRevenue: data.totalRevenue || 0,
+            totalEnrollments: data.totalEnrollments || 0,
+            userGrowth: data.userGrowth || 0,
+            courseGrowth: 0,
+            revenueGrowth: data.revenueGrowth || 0,
+            enrollmentGrowth: data.enrollmentGrowth || 0,
+          });
+          setActivities(data.recentActivity || []);
         }
       } catch {
         // Use fallback data
+      } finally {
+        setLoading(false);
       }
     }
     fetchData();
@@ -135,7 +142,7 @@ export default function AdminDashboardPage() {
                   <div>
                     <p className="text-sm font-medium text-gray-500">{stat.label}</p>
                     <p className="mt-1 text-3xl font-bold text-gray-900">
-                      {formatValue(stats[stat.key], stat.prefix)}
+                      {loading ? "—" : formatValue(stats[stat.key], stat.prefix)}
                     </p>
                     <div className="mt-1 flex items-center gap-1">
                       {isUp ? (
@@ -235,24 +242,30 @@ export default function AdminDashboardPage() {
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {activities.map((activity) => {
-              const iconData = activityIcons[activity.type] || { icon: Activity, color: "bg-gray-100 text-gray-600" };
-              const Icon = iconData.icon;
-              return (
-                <div key={activity.id} className="flex items-start gap-4 rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50">
-                  <div className={`rounded-xl p-2.5 ${iconData.color}`}>
-                    <Icon className="h-5 w-5" />
+          {loading ? (
+            <div className="flex justify-center py-8 text-gray-400">Loading...</div>
+          ) : activities.length === 0 ? (
+            <div className="flex justify-center py-8 text-gray-400">No recent activity</div>
+          ) : (
+            <div className="space-y-4">
+              {activities.map((activity, i) => {
+                const iconData = activityIcons[activity.type] || { icon: Activity, color: "bg-gray-100 text-gray-600" };
+                const Icon = iconData.icon;
+                return (
+                  <div key={i} className="flex items-start gap-4 rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50">
+                    <div className={`rounded-xl p-2.5 ${iconData.color}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900">{activity.title}</p>
+                      <p className="text-sm text-gray-500">{activity.description}</p>
+                      <p className="mt-1 text-xs text-gray-400">{formatTimeAgo(activity.time)}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900">{activity.title}</p>
-                    <p className="text-sm text-gray-500">{activity.description}</p>
-                    <p className="mt-1 text-xs text-gray-400">{activity.time}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

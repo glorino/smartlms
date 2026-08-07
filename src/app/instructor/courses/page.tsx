@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   Plus,
   Search,
@@ -18,87 +19,44 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
 
 interface InstructorCourse {
   id: string;
   title: string;
   status: "PUBLISHED" | "DRAFT";
-  studentsCount: number;
+  totalStudents: number;
   rating: number;
-  earnings: number;
+  price: number;
   thumbnail?: string;
   category: string;
   updatedAt: string;
+  _count: { enrollments: number; reviews: number };
 }
 
-const mockCourses: InstructorCourse[] = [
-  {
-    id: "1",
-    title: "Complete Web Development Bootcamp",
-    status: "PUBLISHED",
-    studentsCount: 342,
-    rating: 4.8,
-    earnings: 12450,
-    category: "Web Development",
-    updatedAt: "2026-08-05",
-  },
-  {
-    id: "2",
-    title: "Advanced React & Next.js Masterclass",
-    status: "PUBLISHED",
-    studentsCount: 189,
-    rating: 4.7,
-    earnings: 8920,
-    category: "Frontend",
-    updatedAt: "2026-08-03",
-  },
-  {
-    id: "3",
-    title: "Node.js Backend Development",
-    status: "DRAFT",
-    studentsCount: 0,
-    rating: 0,
-    earnings: 0,
-    category: "Backend",
-    updatedAt: "2026-08-01",
-  },
-  {
-    id: "4",
-    title: "UI/UX Design Fundamentals",
-    status: "PUBLISHED",
-    studentsCount: 256,
-    rating: 4.9,
-    earnings: 15200,
-    category: "Design",
-    updatedAt: "2026-07-28",
-  },
-  {
-    id: "5",
-    title: "Python for Data Science",
-    status: "DRAFT",
-    studentsCount: 0,
-    rating: 0,
-    earnings: 0,
-    category: "Data Science",
-    updatedAt: "2026-07-25",
-  },
-  {
-    id: "6",
-    title: "DevOps & Cloud Computing",
-    status: "PUBLISHED",
-    studentsCount: 128,
-    rating: 4.6,
-    earnings: 6340,
-    category: "DevOps",
-    updatedAt: "2026-07-20",
-  },
-];
-
 export default function InstructorCoursesPage() {
-  const [courses, setCourses] = useState<InstructorCourse[]>(mockCourses);
+  const { data: session } = useSession();
+  const [courses, setCourses] = useState<InstructorCourse[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "PUBLISHED" | "DRAFT">("all");
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchCourses() {
+      try {
+        const res = await fetch("/api/courses?allStatus=true&limit=50");
+        if (res.ok) {
+          const data = await res.json();
+          setCourses(data.courses || []);
+        }
+      } catch {
+        // Use empty state
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCourses();
+  }, []);
 
   const filtered = courses.filter((course) => {
     const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -108,17 +66,26 @@ export default function InstructorCoursesPage() {
 
   const stats = {
     totalCourses: courses.length,
-    totalStudents: courses.reduce((acc, c) => acc + c.studentsCount, 0),
+    totalStudents: courses.reduce((acc, c) => acc + (c.totalStudents || c._count?.enrollments || 0), 0),
     averageRating: Number(
       (courses.filter((c) => c.rating > 0).reduce((acc, c) => acc + c.rating, 0) /
-        courses.filter((c) => c.rating > 0).length).toFixed(1)
+        (courses.filter((c) => c.rating > 0).length || 1)).toFixed(1)
     ),
-    totalEarnings: courses.reduce((acc, c) => acc + c.earnings, 0),
+    publishedCourses: courses.filter((c) => c.status === "PUBLISHED").length,
   };
 
-  const handleDelete = (courseId: string) => {
-    if (confirm("Are you sure you want to delete this course?")) {
-      setCourses(courses.filter((c) => c.id !== courseId));
+  const handleDelete = async (courseId: string) => {
+    if (!confirm("Are you sure you want to delete this course?")) return;
+    setDeleting(courseId);
+    try {
+      const res = await fetch(`/api/courses/${courseId}`, { method: "DELETE" });
+      if (res.ok) {
+        setCourses(courses.filter((c) => c.id !== courseId));
+      }
+    } catch {
+      // Handle error
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -143,7 +110,7 @@ export default function InstructorCoursesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Total Courses</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">{stats.totalCourses}</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">{loading ? "—" : stats.totalCourses}</p>
               </div>
               <div className="rounded-xl bg-blue-500 p-3">
                 <BookOpen className="h-6 w-6 text-white" />
@@ -157,7 +124,7 @@ export default function InstructorCoursesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Total Students</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">{stats.totalStudents.toLocaleString()}</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">{loading ? "—" : stats.totalStudents.toLocaleString()}</p>
               </div>
               <div className="rounded-xl bg-emerald-500 p-3">
                 <Users className="h-6 w-6 text-white" />
@@ -171,7 +138,7 @@ export default function InstructorCoursesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Average Rating</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">{stats.averageRating}</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">{loading ? "—" : stats.averageRating}</p>
               </div>
               <div className="rounded-xl bg-amber-500 p-3">
                 <Star className="h-6 w-6 text-white" />
@@ -184,10 +151,8 @@ export default function InstructorCoursesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Total Earnings</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">
-                  ${stats.totalEarnings.toLocaleString()}
-                </p>
+                <p className="text-sm font-medium text-gray-500">Published</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">{loading ? "—" : stats.publishedCourses}</p>
               </div>
               <div className="rounded-xl bg-rose-500 p-3">
                 <DollarSign className="h-6 w-6 text-white" />
@@ -227,7 +192,11 @@ export default function InstructorCoursesPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <p className="text-sm text-gray-400">Loading courses...</p>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
               <BookOpen className="h-12 w-12 text-gray-400" />
               <h3 className="mt-4 text-lg font-medium text-gray-900">No courses found</h3>
@@ -274,7 +243,7 @@ export default function InstructorCoursesPage() {
                     <div className="mt-2 flex items-center gap-6 text-sm text-gray-500">
                       <span className="flex items-center gap-1">
                         <Users className="h-3.5 w-3.5" />
-                        {course.studentsCount} students
+                        {course.totalStudents || course._count?.enrollments || 0} students
                       </span>
                       {course.rating > 0 && (
                         <span className="flex items-center gap-1">
@@ -282,10 +251,6 @@ export default function InstructorCoursesPage() {
                           {course.rating}
                         </span>
                       )}
-                      <span className="flex items-center gap-1">
-                        <DollarSign className="h-3.5 w-3.5" />
-                        ${course.earnings.toLocaleString()}
-                      </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -304,6 +269,7 @@ export default function InstructorCoursesPage() {
                       size="icon"
                       title="Delete"
                       onClick={() => handleDelete(course.id)}
+                      disabled={deleting === course.id}
                       className="text-red-500 hover:text-red-700"
                     >
                       <Trash2 className="h-4 w-4" />

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 
 export async function GET(
   request: Request,
@@ -7,6 +8,7 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params;
+    const session = await auth();
 
     const certificate = await prisma.certificate.findUnique({
       where: { certificateId: id },
@@ -38,16 +40,32 @@ export async function GET(
       );
     }
 
+    const isOwner = session?.user?.id === certificate.user.id;
+
+    if (isOwner) {
+      return NextResponse.json({
+        certificate: {
+          id: certificate.id,
+          title: certificate.title,
+          certificateId: certificate.certificateId,
+          status: certificate.status,
+          issuedAt: certificate.issuedAt,
+          expiresAt: certificate.expiresAt,
+          course: certificate.course,
+          user: certificate.user,
+        },
+      });
+    }
+
     return NextResponse.json({
       certificate: {
-        id: certificate.id,
         title: certificate.title,
         certificateId: certificate.certificateId,
-        status: certificate.status,
         issuedAt: certificate.issuedAt,
-        expiresAt: certificate.expiresAt,
-        course: certificate.course,
-        user: certificate.user,
+        status: certificate.status,
+        course: {
+          title: certificate.course.title,
+        },
       },
     });
   } catch (error) {

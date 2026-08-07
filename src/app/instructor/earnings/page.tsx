@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DollarSign,
   TrendingUp,
@@ -19,6 +19,12 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 
+interface Enrollment {
+  id: string;
+  enrolledAt: string;
+  course: { id: string; title: string; price: number };
+}
+
 interface Transaction {
   id: string;
   type: "sale" | "payout" | "refund";
@@ -28,35 +34,65 @@ interface Transaction {
   status: "completed" | "pending" | "processing";
 }
 
-const mockTransactions: Transaction[] = [
-  { id: "1", type: "sale", description: "Course Sale - Web Development Bootcamp", amount: 49.99, date: "2026-08-07", status: "completed" },
-  { id: "2", type: "sale", description: "Course Sale - React Masterclass", amount: 79.99, date: "2026-08-06", status: "completed" },
-  { id: "3", type: "payout", description: "Monthly Payout - July 2026", amount: -2450.00, date: "2026-08-01", status: "completed" },
-  { id: "4", type: "sale", description: "Course Sale - UI/UX Design", amount: 39.99, date: "2026-07-30", status: "completed" },
-  { id: "5", type: "sale", description: "Course Sale - DevOps Computing", amount: 59.99, date: "2026-07-28", status: "completed" },
-  { id: "6", type: "refund", description: "Refund - Web Development Bootcamp", amount: -49.99, date: "2026-07-25", status: "completed" },
-  { id: "7", type: "sale", description: "Course Sale - React Masterclass", amount: 79.99, date: "2026-07-22", status: "completed" },
-  { id: "8", type: "sale", description: "Course Sale - UI/UX Design", amount: 39.99, date: "2026-07-20", status: "pending" },
-];
-
-const monthlyEarnings = [
-  { month: "Mar", amount: 3200 },
-  { month: "Apr", amount: 4100 },
-  { month: "May", amount: 3800 },
-  { month: "Jun", amount: 5200 },
-  { month: "Jul", amount: 4800 },
-  { month: "Aug", amount: 2150 },
-];
-
-const maxMonthly = Math.max(...monthlyEarnings.map((m) => m.amount));
-
 export default function InstructorEarningsPage() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const totalEarnings = 42910;
-  const thisMonth = 2150;
-  const pending = 39.99;
-  const withdrawn = 15000;
+  useEffect(() => {
+    async function fetchEarnings() {
+      try {
+        const res = await fetch("/api/enrollments");
+        if (res.ok) {
+          const data = await res.json();
+          setEnrollments(data.enrollments || []);
+        }
+      } catch {
+        // Use empty state
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchEarnings();
+  }, []);
+
+  const totalEarnings = enrollments.reduce((acc, e) => acc + (e.course?.price || 0), 0);
+  const thisMonth = enrollments
+    .filter((e) => {
+      const d = new Date(e.enrolledAt);
+      const now = new Date();
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    })
+    .reduce((acc, e) => acc + (e.course?.price || 0), 0);
+
+  const pending = 0;
+  const withdrawn = 0;
+
+  const monthlyData = (() => {
+    const months = ["Mar", "Apr", "May", "Jun", "Jul", "Aug"];
+    const now = new Date();
+    return months.map((m, i) => {
+      const monthIndex = i + 2;
+      const amount = enrollments
+        .filter((e) => {
+          const d = new Date(e.enrolledAt);
+          return d.getMonth() === monthIndex && d.getFullYear() === now.getFullYear();
+        })
+        .reduce((acc, e) => acc + (e.course?.price || 0), 0);
+      return { month: m, amount };
+    });
+  })();
+
+  const maxMonthly = Math.max(...monthlyData.map((m) => m.amount), 1);
+
+  const transactions: Transaction[] = enrollments.slice(0, 10).map((e) => ({
+    id: e.id,
+    type: "sale" as const,
+    description: `Course Sale - ${e.course.title}`,
+    amount: e.course?.price || 0,
+    date: e.enrolledAt,
+    status: "completed" as const,
+  }));
 
   return (
     <div className="space-y-6">
@@ -78,7 +114,7 @@ export default function InstructorEarningsPage() {
               <div>
                 <p className="text-sm font-medium text-gray-500">Total Earnings</p>
                 <p className="mt-1 text-3xl font-bold text-gray-900">
-                  ${totalEarnings.toLocaleString()}
+                  {loading ? "—" : `₦${totalEarnings.toLocaleString()}`}
                 </p>
               </div>
               <div className="rounded-xl bg-blue-500 p-3">
@@ -94,12 +130,8 @@ export default function InstructorEarningsPage() {
               <div>
                 <p className="text-sm font-medium text-gray-500">This Month</p>
                 <p className="mt-1 text-3xl font-bold text-gray-900">
-                  ${thisMonth.toLocaleString()}
+                  {loading ? "—" : `₦${thisMonth.toLocaleString()}`}
                 </p>
-                <div className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
-                  <TrendingUp className="h-3 w-3" />
-                  +12% from last month
-                </div>
               </div>
               <div className="rounded-xl bg-emerald-500 p-3">
                 <TrendingUp className="h-6 w-6 text-white" />
@@ -114,7 +146,7 @@ export default function InstructorEarningsPage() {
               <div>
                 <p className="text-sm font-medium text-gray-500">Pending</p>
                 <p className="mt-1 text-3xl font-bold text-gray-900">
-                  ${pending.toFixed(2)}
+                  ₦{pending.toLocaleString()}
                 </p>
               </div>
               <div className="rounded-xl bg-amber-500 p-3">
@@ -130,7 +162,7 @@ export default function InstructorEarningsPage() {
               <div>
                 <p className="text-sm font-medium text-gray-500">Withdrawn</p>
                 <p className="mt-1 text-3xl font-bold text-gray-900">
-                  ${withdrawn.toLocaleString()}
+                  ₦{withdrawn.toLocaleString()}
                 </p>
               </div>
               <div className="rounded-xl bg-rose-500 p-3">
@@ -156,10 +188,10 @@ export default function InstructorEarningsPage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-end gap-3 h-64">
-                {monthlyEarnings.map((item) => (
+                {monthlyData.map((item) => (
                   <div key={item.month} className="flex flex-1 flex-col items-center gap-2">
                     <span className="text-xs font-semibold text-gray-700">
-                      ${item.amount.toLocaleString()}
+                      ₦{item.amount.toLocaleString()}
                     </span>
                     <div
                       className="w-full rounded-t-lg bg-gradient-to-t from-blue-600 to-blue-400 transition-all duration-300"
@@ -182,63 +214,69 @@ export default function InstructorEarningsPage() {
               <CardDescription>All your recent transactions</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {mockTransactions.map((tx) => (
-                  <div
-                    key={tx.id}
-                    className="flex items-center gap-4 rounded-lg border border-gray-200 p-4"
-                  >
+              {loading ? (
+                <div className="flex justify-center py-8 text-gray-400">Loading...</div>
+              ) : transactions.length === 0 ? (
+                <div className="flex justify-center py-8 text-gray-400">No transactions yet</div>
+              ) : (
+                <div className="space-y-3">
+                  {transactions.map((tx) => (
                     <div
-                      className={`rounded-xl p-3 ${
-                        tx.type === "sale"
-                          ? "bg-emerald-500"
-                          : tx.type === "refund"
-                          ? "bg-red-500"
-                          : "bg-blue-500"
-                      }`}
+                      key={tx.id}
+                      className="flex items-center gap-4 rounded-lg border border-gray-200 p-4"
                     >
-                      {tx.type === "sale" ? (
-                        <ArrowUpRight className="h-5 w-5 text-white" />
-                      ) : tx.type === "refund" ? (
-                        <ArrowDownRight className="h-5 w-5 text-white" />
-                      ) : (
-                        <Wallet className="h-5 w-5 text-white" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-900">{tx.description}</p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(tx.date).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p
-                        className={`text-sm font-semibold ${
-                          tx.amount > 0 ? "text-emerald-600" : "text-red-600"
+                      <div
+                        className={`rounded-xl p-3 ${
+                          tx.type === "sale"
+                            ? "bg-emerald-500"
+                            : tx.type === "refund"
+                            ? "bg-red-500"
+                            : "bg-blue-500"
                         }`}
                       >
-                        {tx.amount > 0 ? "+" : ""}${Math.abs(tx.amount).toFixed(2)}
-                      </p>
-                      <Badge
-                        variant={
-                          tx.status === "completed"
-                            ? "success"
-                            : tx.status === "pending"
-                            ? "warning"
-                            : "default"
-                        }
-                        className="text-xs"
-                      >
-                        {tx.status}
-                      </Badge>
+                        {tx.type === "sale" ? (
+                          <ArrowUpRight className="h-5 w-5 text-white" />
+                        ) : tx.type === "refund" ? (
+                          <ArrowDownRight className="h-5 w-5 text-white" />
+                        ) : (
+                          <Wallet className="h-5 w-5 text-white" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-gray-900">{tx.description}</p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(tx.date).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p
+                          className={`text-sm font-semibold ${
+                            tx.amount > 0 ? "text-emerald-600" : "text-red-600"
+                          }`}
+                        >
+                          {tx.amount > 0 ? "+" : ""}₦{Math.abs(tx.amount).toFixed(2)}
+                        </p>
+                        <Badge
+                          variant={
+                            tx.status === "completed"
+                              ? "success"
+                              : tx.status === "pending"
+                              ? "warning"
+                              : "default"
+                          }
+                          className="text-xs"
+                        >
+                          {tx.status}
+                        </Badge>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -300,5 +338,3 @@ export default function InstructorEarningsPage() {
     </div>
   );
 }
-
-

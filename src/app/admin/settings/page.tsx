@@ -71,7 +71,7 @@ export default function AdminSettingsPage() {
   const [payment, setPayment] = useState<PaymentSettings>({
     stripePublicKey: "",
     stripeSecretKey: "",
-    currency: "USD",
+    currency: "NGN",
     commissionRate: 10,
   });
   const [features, setFeatures] = useState<FeatureToggles>({
@@ -310,10 +310,10 @@ export default function AdminSettingsPage() {
                   onChange={(e) => setPayment({ ...payment, currency: e.target.value })}
                   className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none"
                 >
+                  <option value="NGN">NGN - Nigerian Naira</option>
                   <option value="USD">USD - US Dollar</option>
                   <option value="EUR">EUR - Euro</option>
                   <option value="GBP">GBP - British Pound</option>
-                  <option value="NGN">NGN - Nigerian Naira</option>
                 </select>
               </div>
               <div>
