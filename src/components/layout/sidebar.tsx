@@ -181,7 +181,7 @@ export default function Sidebar({ user }: { user?: User }) {
                   role === "INSTRUCTOR"
                     ? { href: "/instructor/courses", label: "My Courses", icon: Search }
                     : role === "STUDENT"
-                    ? { href: "/dashboard/courses", label: "Enrolled Courses", icon: Search }
+                    ? { href: "/dashboard/courses", label: "My Courses", icon: Search }
                     : item;
                 const isActive = pathname.startsWith(courseItem.href);
                 return (
