@@ -12,6 +12,7 @@ import {
   BookOpen,
   Filter,
   ChevronRight,
+  AlertCircle,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,7 @@ export default function MyQuizzesPage() {
   const [quizzes, setQuizzes] = useState<QuizItem[]>([]);
   const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [courseFilter, setCourseFilter] = useState("all");
   const [difficultyFilter, setDifficultyFilter] = useState("all");
 
@@ -57,15 +59,23 @@ export default function MyQuizzesPage() {
           fetch("/api/quizzes"),
           fetch("/api/quizzes/attempts"),
         ]);
+
         if (quizzesRes.ok) {
           const data = await quizzesRes.json();
-          setQuizzes(data.quizzes || data || []);
+          const quizList = Array.isArray(data) ? data : data.quizzes || data.data || [];
+          setQuizzes(quizList);
+        } else if (quizzesRes.status === 500) {
+          setError("Failed to load quizzes. Please try again later.");
         }
+
         if (attemptsRes.ok) {
           const data = await attemptsRes.json();
-          setAttempts(data.attempts || data || []);
+          const attemptList = Array.isArray(data) ? data : data.attempts || data.data || [];
+          setAttempts(attemptList);
         }
-      } catch {
+      } catch (e) {
+        console.error("Failed to load quiz data:", e);
+        setError("Failed to connect to the server. Please check your connection.");
         setQuizzes([]);
         setAttempts([]);
       } finally {
@@ -106,8 +116,47 @@ export default function MyQuizzesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div className="flex flex-col items-center justify-center py-24 gap-4">
         <Spinner size="lg" />
+        <p className="text-sm text-gray-500">Loading quizzes...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">My Quizzes</h1>
+          <p className="mt-1 text-gray-600">Test your knowledge and track your progress</p>
+        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="rounded-full bg-red-100 p-4">
+              <AlertCircle className="h-8 w-8 text-red-600" />
+            </div>
+            <h3 className="mt-4 text-lg font-medium text-gray-900">Something went wrong</h3>
+            <p className="mt-1 text-sm text-gray-500">{error}</p>
+            <Button
+              className="mt-4"
+              variant="outline"
+              onClick={() => {
+                setLoading(true);
+                setError(null);
+                fetch("/api/quizzes")
+                  .then((r) => r.json())
+                  .then((data) => {
+                    const list = Array.isArray(data) ? data : data.quizzes || data.data || [];
+                    setQuizzes(list);
+                  })
+                  .catch(() => setError("Failed to connect to the server."))
+                  .finally(() => setLoading(false));
+              }}
+            >
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -115,11 +164,11 @@ export default function MyQuizzesPage() {
   return (
     <div className="space-y-6">
       <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">My Quizzes</h1>
-          <p className="mt-1 text-gray-600">
-            Test your knowledge and track your progress
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold text-gray-900">My Quizzes</h1>
+        <p className="mt-1 text-gray-600">
+          Test your knowledge and track your progress
+        </p>
+      </div>
 
         {/* Filters */}
         <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -165,13 +214,23 @@ export default function MyQuizzesPage() {
             {filteredQuizzes.length === 0 ? (
               <Card className="mt-6">
                 <CardContent className="flex flex-col items-center justify-center py-16">
-                  <FileQuestion className="h-12 w-12 text-gray-400" />
+                  <div className="rounded-full bg-gray-100 p-4">
+                    <FileQuestion className="h-10 w-10 text-gray-400" />
+                  </div>
                   <h3 className="mt-4 text-lg font-medium text-gray-900">
                     No quizzes available
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Complete courses to unlock quizzes
+                  <p className="mt-1 text-sm text-gray-500 max-w-sm text-center">
+                    {quizzes.length === 0
+                      ? "No quizzes have been published yet. Enroll in a course to unlock quizzes."
+                      : "No quizzes match your current filters. Try adjusting your filters."}
                   </p>
+                  <Link href="/courses" className="mt-4">
+                    <Button variant="outline">
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Browse Courses
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ) : (
@@ -226,11 +285,13 @@ export default function MyQuizzesPage() {
             {attempts.length === 0 ? (
               <Card className="mt-6">
                 <CardContent className="flex flex-col items-center justify-center py-16">
-                  <Award className="h-12 w-12 text-gray-400" />
+                  <div className="rounded-full bg-gray-100 p-4">
+                    <Award className="h-10 w-10 text-gray-400" />
+                  </div>
                   <h3 className="mt-4 text-lg font-medium text-gray-900">
                     No quiz attempts yet
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 max-w-sm text-center">
                     Start a quiz to see your results here
                   </p>
                 </CardContent>

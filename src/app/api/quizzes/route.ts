@@ -7,18 +7,13 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get("courseId");
 
-    if (!courseId) {
-      return NextResponse.json(
-        { error: "Course ID is required" },
-        { status: 400 }
-      );
+    const where: any = { isPublished: true };
+    if (courseId) {
+      where.courseId = courseId;
     }
 
     const quizzes = await prisma.quiz.findMany({
-      where: {
-        courseId,
-        isPublished: true,
-      },
+      where,
       select: {
         id: true,
         title: true,
@@ -28,12 +23,20 @@ export async function GET(request: Request) {
         maxAttempts: true,
         difficulty: true,
         points: true,
+        courseId: true,
+        course: { select: { title: true } },
         _count: { select: { questions: true } },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ quizzes });
+    const mapped = quizzes.map((q) => ({
+      ...q,
+      totalQuestions: q._count.questions,
+      courseName: q.course?.title || "Unknown Course",
+    }));
+
+    return NextResponse.json({ quizzes: mapped });
   } catch (error) {
     return NextResponse.json(
       { error: "Internal server error" },

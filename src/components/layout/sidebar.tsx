@@ -176,6 +176,28 @@ export default function Sidebar({ user }: { user?: User }) {
           <nav className="flex-1 space-y-1 overflow-y-auto p-3">
             {/* Common Items */}
             {commonItems.map((item) => {
+              if (item.href === "/courses") {
+                const courseItem =
+                  role === "INSTRUCTOR"
+                    ? { href: "/instructor/courses", label: "My Courses", icon: Search }
+                    : role === "STUDENT"
+                    ? { href: "/dashboard/courses", label: "Enrolled Courses", icon: Search }
+                    : item;
+                const isActive = pathname.startsWith(courseItem.href);
+                return (
+                  <NavItem
+                    key={courseItem.href}
+                    item={courseItem}
+                    isActive={isActive}
+                    collapsed={collapsed}
+                  />
+                );
+              }
+
+              if (item.href === "/dashboard/certificates" && isInstructor) {
+                return null;
+              }
+
               const isActive =
                 item.href === "/dashboard"
                   ? pathname === "/dashboard"
@@ -271,7 +293,9 @@ export default function Sidebar({ user }: { user?: User }) {
             { href: "/dashboard", label: "Home", icon: LayoutDashboard },
             { href: "/courses", label: "Courses", icon: BookOpen },
             { href: "/dashboard/quizzes", label: "Quizzes", icon: FileCheck },
-            { href: "/dashboard/certificates", label: "Certs", icon: Award },
+            ...(!isInstructor
+              ? [{ href: "/dashboard/certificates", label: "Certs", icon: Award }]
+              : []),
             { href: "/dashboard/settings", label: "More", icon: Settings },
           ].map((item) => {
             const isActive =
