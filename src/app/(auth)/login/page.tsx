@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { GraduationCap, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { GraduationCap, Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -59,6 +59,15 @@ export default function LoginPage() {
   return (
     <div className="w-full max-w-md">
       <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-xl">
+        <div className="mb-4">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-700"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+        </div>
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2">
             <GraduationCap className="h-10 w-10 text-primary" />
@@ -75,6 +84,7 @@ export default function LoginPage() {
         <div className="mb-6 grid grid-cols-2 gap-3">
           <button
             type="button"
+            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
             className="flex items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -99,6 +109,7 @@ export default function LoginPage() {
           </button>
           <button
             type="button"
+            onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
             className="flex items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
           >
             <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">

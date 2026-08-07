@@ -48,3 +48,5 @@ prisma/migrations/
 # IDE
 .vscode
 .idea
+
+.vercel
