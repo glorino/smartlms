@@ -14,6 +14,7 @@ import {
   Settings,
   ChevronDown,
   GraduationCap,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +41,7 @@ export default function Navbar({ session }: { session?: Session }) {
     { href: "/live-classes", label: "Live Classes" },
     { href: "/pricing", label: "Pricing" },
     { href: "/about", label: "About" },
+    { href: "/verify-certificate", label: "Verify", icon: ShieldCheck },
   ];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -68,12 +70,13 @@ export default function Navbar({ session }: { session?: Session }) {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary",
+                  "flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary",
                   pathname === link.href
                     ? "text-primary"
                     : "text-gray-600"
                 )}
               >
+                {link.icon && <link.icon className="h-4 w-4" />}
                 {link.label}
               </Link>
             ))}
@@ -228,12 +231,13 @@ export default function Navbar({ session }: { session?: Session }) {
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "block rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                   pathname === link.href
                     ? "bg-primary/10 text-primary"
                     : "text-gray-600 hover:bg-gray-50"
                 )}
               >
+                {link.icon && <link.icon className="h-4 w-4" />}
                 {link.label}
               </Link>
             ))}

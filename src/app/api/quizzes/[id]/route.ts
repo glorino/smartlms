@@ -37,7 +37,32 @@ export async function GET(
       return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ quiz });
+    const attemptCount = await prisma.quizAttempt.count({
+      where: {
+        userId: session.user.id,
+        quizId: id,
+      },
+    });
+
+    const previousAttempts = await prisma.quizAttempt.findMany({
+      where: {
+        userId: session.user.id,
+        quizId: id,
+      },
+      select: {
+        score: true,
+        passed: true,
+        completedAt: true,
+      },
+      orderBy: { completedAt: "asc" },
+    });
+
+    return NextResponse.json({
+      quiz,
+      attemptCount,
+      previousAttempts,
+      maxAttempts: quiz.maxAttempts,
+    });
   } catch (error) {
     return NextResponse.json(
       { error: "Internal server error" },
@@ -59,7 +84,7 @@ export async function POST(
     const userId = session.user.id;
     const { id } = await context.params;
     const body = await request.json();
-    const { answers, timeTaken } = body;
+    const { answers, timeTaken, attemptNumber } = body;
 
     if (!answers || typeof answers !== "object") {
       return NextResponse.json(
@@ -83,20 +108,18 @@ export async function POST(
       return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }
 
-    if (quiz.maxAttempts) {
-      const attemptCount = await prisma.quizAttempt.count({
-        where: {
-          userId,
-          quizId: id,
-        },
-      });
+    const attemptCount = await prisma.quizAttempt.count({
+      where: {
+        userId,
+        quizId: id,
+      },
+    });
 
-      if (attemptCount >= quiz.maxAttempts) {
-        return NextResponse.json(
-          { error: "Maximum attempts reached" },
-          { status: 400 }
-        );
-      }
+    if (quiz.maxAttempts && attemptCount >= quiz.maxAttempts) {
+      return NextResponse.json(
+        { error: "Maximum attempts reached" },
+        { status: 400 }
+      );
     }
 
     let totalScore = 0;
@@ -155,6 +178,9 @@ export async function POST(
       totalPoints,
       passed,
       passingScore: quiz.passingScore,
+      attemptNumber: (attemptCount || 0) + 1,
+      totalAttempts: (attemptCount || 0) + 1,
+      maxAttempts: quiz.maxAttempts,
     });
   } catch (error) {
     return NextResponse.json(
