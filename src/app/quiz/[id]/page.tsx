@@ -4,21 +4,19 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Clock,
-  ChevronLeft,
-  ChevronRight,
-  Check,
-  X,
   Award,
   RotateCcw,
   ArrowLeft,
   AlertCircle,
+  Trophy,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
+import QuizEngine from "@/components/quiz/quiz-engine";
 import type { Quiz, Question } from "@/types";
 
 type Screen = "info" | "quiz" | "results";
@@ -32,6 +30,12 @@ interface QuizResult {
   answers: Record<string, string>;
 }
 
+interface AttemptHistory {
+  score: number;
+  passed: boolean;
+  completedAt: string;
+}
+
 export default function QuizPage() {
   const params = useParams();
   const router = useRouter();
@@ -40,12 +44,13 @@ export default function QuizPage() {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
   const [screen, setScreen] = useState<Screen>("info");
+  const [attemptCount, setAttemptCount] = useState(0);
+  const [previousAttempts, setPreviousAttempts] = useState<AttemptHistory[]>([]);
+  const [maxAttempts, setMaxAttempts] = useState<number | null>(null);
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [timeLeft, setTimeLeft] = useState(0);
   const [result, setResult] = useState<QuizResult | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     async function loadQuiz() {
@@ -53,10 +58,10 @@ export default function QuizPage() {
         const res = await fetch(`/api/quizzes/${quizId}`);
         if (res.ok) {
           const data = await res.json();
-          setQuiz(data);
-          if (data.timeLimit) {
-            setTimeLeft(data.timeLimit * 60);
-          }
+          setQuiz(data.quiz);
+          setAttemptCount(data.attemptCount || 0);
+          setPreviousAttempts(data.previousAttempts || []);
+          setMaxAttempts(data.maxAttempts || null);
         }
       } catch {
         console.error("Failed to load quiz");
@@ -67,48 +72,10 @@ export default function QuizPage() {
     loadQuiz();
   }, [quizId]);
 
-  const startTimer = useCallback(() => {
-    if (!quiz?.timeLimit) return;
-    setTimeLeft(quiz.timeLimit * 60);
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, [quiz]);
-
-  useEffect(() => {
-    if (screen === "quiz" && quiz?.timeLimit) {
-      startTimer();
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [screen, quiz, startTimer]);
-
-  useEffect(() => {
-    if (timeLeft === 0 && screen === "quiz" && quiz?.timeLimit) {
-      handleSubmit();
-    }
-  }, [timeLeft, screen, quiz]);
-
-  const startQuiz = () => {
-    setScreen("quiz");
-    setCurrentQuestion(0);
-    setAnswers({});
-  };
-
-  const selectAnswer = (questionId: string, answerId: string) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: answerId }));
-  };
-
-  const handleSubmit = async () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-
+  const handleSubmit = async (
+    quizAnswers: Record<string, string | string[] | Record<string, string>>,
+    attemptNumber: number
+  ) => {
     if (!quiz) return;
 
     let correctCount = 0;
@@ -118,7 +85,7 @@ export default function QuizPage() {
 
     quiz.questions.forEach((q: Question) => {
       totalPoints += q.points;
-      const selectedAnswerId = answers[q.id];
+      const selectedAnswerId = quizAnswers[q.id] as string;
       const correctAnswer = q.answers.find((a) => a.isCorrect);
       if (selectedAnswerId && correctAnswer && selectedAnswerId === correctAnswer.id) {
         correctCount++;
@@ -136,20 +103,18 @@ export default function QuizPage() {
       passed,
       correctCount,
       incorrectCount,
-      answers,
+      answers: quizAnswers as Record<string, string>,
     });
     setScreen("results");
 
     try {
-      await fetch(`/api/quizzes/${quizId}/attempts`, {
+      await fetch(`/api/quizzes/${quizId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          score,
-          totalPoints,
-          passed,
-          answers,
-          timeTaken: quiz.timeLimit ? quiz.timeLimit * 60 - timeLeft : null,
+          answers: quizAnswers,
+          timeTaken: null,
+          attemptNumber,
         }),
       });
     } catch (err) {
@@ -157,10 +122,10 @@ export default function QuizPage() {
     }
   };
 
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  const startQuiz = () => {
+    setScreen("quiz");
+    setCurrentQuestion(0);
+    setAnswers({});
   };
 
   const getQuestionTypeLabel = (type: string) => {
@@ -206,6 +171,9 @@ export default function QuizPage() {
     );
   }
 
+  const currentAttemptNumber = attemptCount + 1;
+  const maxAttemptsReached = maxAttempts !== null && attemptCount >= maxAttempts;
+
   // INFO SCREEN
   if (screen === "info") {
     return (
@@ -230,6 +198,54 @@ export default function QuizPage() {
               )}
             </CardHeader>
             <CardContent>
+              {/* Attempt Info Banner */}
+              <div className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
+                    <Trophy className="h-5 w-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-indigo-800">
+                      Attempt {currentAttemptNumber} of {maxAttempts ?? "∞"}
+                    </p>
+                    <p className="text-xs text-indigo-600">
+                      {maxAttemptsReached
+                        ? "You have used all your attempts"
+                        : `${maxAttempts ? maxAttempts - attemptCount : "Unlimited"} attempts remaining`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Previous Attempts */}
+              {previousAttempts.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="mb-3 text-sm font-semibold text-gray-700">
+                    Previous Attempts
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {previousAttempts.map((attempt, i) => (
+                      <div
+                        key={i}
+                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${
+                          attempt.passed
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {attempt.passed ? (
+                          <ShieldCheck className="h-3 w-3" />
+                        ) : (
+                          <AlertCircle className="h-3 w-3" />
+                        )}
+                        #{i + 1}: {Math.round(attempt.score)}% —{" "}
+                        {attempt.passed ? "Passed" : "Failed"}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <div className="rounded-xl bg-gray-50 p-4 text-center">
                   <p className="text-2xl font-bold text-gray-900">
@@ -267,9 +283,19 @@ export default function QuizPage() {
                 </ul>
               </div>
 
-              <Button onClick={startQuiz} className="mt-6 w-full" size="lg">
-                Start Quiz
-              </Button>
+              {maxAttemptsReached ? (
+                <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-center">
+                  <AlertCircle className="mx-auto mb-2 h-8 w-8 text-red-500" />
+                  <p className="font-semibold text-red-700">Max Attempts Reached</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    You have used all {maxAttempts} allowed attempts for this quiz.
+                  </p>
+                </div>
+              ) : (
+                <Button onClick={startQuiz} className="mt-6 w-full" size="lg">
+                  Start Quiz
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -279,197 +305,16 @@ export default function QuizPage() {
 
   // QUIZ SCREEN
   if (screen === "quiz") {
-    const q = quiz.questions[currentQuestion];
-    const answered = Object.keys(answers).length;
-    const percentage = Math.round((answered / quiz.questions.length) * 100);
-
     return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Timer Bar */}
-        <div className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
-          <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-4">
-              <h2 className="text-sm font-semibold text-gray-900">
-                {quiz.title}
-              </h2>
-              <Badge variant="secondary">
-                {answered}/{quiz.questions.length} answered
-              </Badge>
-            </div>
-            {quiz.timeLimit && (
-              <div
-                className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-mono text-sm font-bold ${
-                  timeLeft < 60
-                    ? "bg-red-50 text-red-600"
-                    : timeLeft < 300
-                    ? "bg-yellow-50 text-yellow-600"
-                    : "bg-gray-100 text-gray-700"
-                }`}
-              >
-                <Clock className="h-4 w-4" />
-                {formatTime(timeLeft)}
-              </div>
-            )}
-          </div>
-          <Progress value={percentage} color="blue" />
-        </div>
-
-        <div className="mx-auto max-w-3xl px-4 py-8">
-          {/* Question */}
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <div className="mb-4 flex items-start justify-between">
-                <Badge variant="outline">
-                  Question {currentQuestion + 1} of {quiz.questions.length}
-                </Badge>
-                <Badge variant="secondary">{q.points} pts</Badge>
-              </div>
-
-              <p className="text-lg font-medium text-gray-900">{q.content}</p>
-              {q.imageUrl && (
-                <img
-                  src={q.imageUrl}
-                  alt="Question"
-                  className="mt-4 max-h-64 rounded-lg border object-contain"
-                />
-              )}
-
-              {/* Answers */}
-              <div className="mt-6 space-y-3">
-                {(q.type === "SINGLE_CHOICE" || q.type === "MULTIPLE_CHOICE" || q.type === "TRUE_FALSE") &&
-                  q.answers.map((answer) => {
-                    const isSelected = answers[q.id] === answer.id;
-                    return (
-                      <button
-                        key={answer.id}
-                        onClick={() => selectAnswer(q.id, answer.id)}
-                        className={`flex w-full items-center gap-3 rounded-xl border-2 p-4 text-left transition-all ${
-                          isSelected
-                            ? "border-primary bg-primary/5"
-                            : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                        }`}
-                      >
-                        <div
-                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${
-                            isSelected
-                              ? "border-primary bg-primary text-white"
-                              : "border-gray-300"
-                          }`}
-                        >
-                          {isSelected && <Check className="h-4 w-4" />}
-                        </div>
-                        <span className="text-sm text-gray-700">
-                          {answer.content}
-                        </span>
-                      </button>
-                    );
-                  })}
-
-                {q.type === "SHORT_ANSWER" && (
-                  <input
-                    type="text"
-                    value={answers[q.id] || ""}
-                    onChange={(e) => selectAnswer(q.id, e.target.value)}
-                    placeholder="Type your answer..."
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                )}
-
-                {q.type === "LONG_ANSWER" && (
-                  <textarea
-                    value={answers[q.id] || ""}
-                    onChange={(e) => selectAnswer(q.id, e.target.value)}
-                    placeholder="Type your answer..."
-                    rows={4}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                )}
-
-                {q.type === "FILL_IN_BLANK" && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-700">The answer is:</span>
-                    <input
-                      type="text"
-                      value={answers[q.id] || ""}
-                      onChange={(e) => selectAnswer(q.id, e.target.value)}
-                      className="w-48 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
-                  </div>
-                )}
-
-                {q.type === "NUMERIC" && (
-                  <input
-                    type="number"
-                    value={answers[q.id] || ""}
-                    onChange={(e) => selectAnswer(q.id, e.target.value)}
-                    placeholder="Enter a number..."
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                )}
-              </div>
-
-              {q.hint && (
-                <p className="mt-4 text-sm text-gray-500 italic">
-                  Hint: {q.hint}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Question Navigation */}
-          <div className="mb-6 flex flex-wrap items-center justify-center gap-2">
-            {quiz.questions.map((_, i) => {
-              const questionId = quiz.questions[i].id;
-              const isAnswered = !!answers[questionId];
-              return (
-                <button
-                  key={i}
-                  onClick={() => setCurrentQuestion(i)}
-                  className={`flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                    i === currentQuestion
-                      ? "bg-primary text-white"
-                      : isAnswered
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Navigation Buttons */}
-          <div className="flex items-center justify-between">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentQuestion((p) => Math.max(0, p - 1))}
-              disabled={currentQuestion === 0}
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Previous
-            </Button>
-
-            {currentQuestion === quiz.questions.length - 1 ? (
-              <Button
-                onClick={handleSubmit}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                Submit Quiz
-              </Button>
-            ) : (
-              <Button
-                onClick={() =>
-                  setCurrentQuestion((p) =>
-                    Math.min(quiz.questions.length - 1, p + 1)
-                  )
-                }
-              >
-                Next
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            )}
-          </div>
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="mx-auto max-w-5xl px-4">
+          <QuizEngine
+            quiz={quiz}
+            maxAttempts={maxAttempts}
+            currentAttempt={currentAttemptNumber}
+            previousAttempts={previousAttempts}
+            onSubmit={handleSubmit}
+          />
         </div>
       </div>
     );
@@ -495,7 +340,7 @@ export default function QuizPage() {
                 {result.passed ? (
                   <Award className="h-10 w-10 text-green-600" />
                 ) : (
-                  <X className="h-10 w-10 text-red-600" />
+                  <RotateCcw className="h-10 w-10 text-red-600" />
                 )}
               </div>
 
@@ -507,6 +352,14 @@ export default function QuizPage() {
                   ? "You passed the quiz!"
                   : "You didn't pass this time, but don't give up!"}
               </p>
+
+              {/* Attempt badge */}
+              <div className="mt-4">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+                  <Trophy className="h-3 w-3" />
+                  Attempt {currentAttemptNumber} of {maxAttempts ?? "∞"}
+                </span>
+              </div>
 
               <div className="mt-8 grid grid-cols-3 gap-4">
                 <div className="rounded-xl bg-gray-50 p-4">
@@ -563,9 +416,9 @@ export default function QuizPage() {
                             }`}
                           >
                             {isCorrect ? (
-                              <Check className="h-4 w-4 text-white" />
+                              <span className="text-xs text-white">✓</span>
                             ) : (
-                              <X className="h-4 w-4 text-white" />
+                              <span className="text-xs text-white">✗</span>
                             )}
                           </div>
                           <div className="flex-1">
@@ -597,14 +450,16 @@ export default function QuizPage() {
               </div>
 
               <div className="mt-8 flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={startQuiz}
-                  className="flex-1"
-                >
-                  <RotateCcw className="mr-2 h-4 w-4" />
-                  Retry
-                </Button>
+                {!maxAttemptsReached && (
+                  <Button
+                    variant="outline"
+                    onClick={startQuiz}
+                    className="flex-1"
+                  >
+                    <RotateCcw className="mr-2 h-4 w-4" />
+                    Retry
+                  </Button>
+                )}
                 <Link href="/dashboard/quizzes" className="flex-1">
                   <Button className="w-full">Back to Quizzes</Button>
                 </Link>

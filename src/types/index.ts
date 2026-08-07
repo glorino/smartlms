@@ -107,6 +107,7 @@ export interface QuizAttempt {
   passed: boolean;
   answers: Record<string, string>;
   timeTaken: number | null;
+  attemptNumber: number;
   startedAt: string;
   completedAt: string | null;
 }
