@@ -2,16 +2,32 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PaymentModal from "@/components/payment/payment-modal";
 
-export default function EnrollButton({ courseId }: { courseId: string }) {
+interface EnrollButtonProps {
+  courseId: string;
+  courseName?: string;
+  price?: number;
+  currency?: string;
+}
+
+export default function EnrollButton({
+  courseId,
+  courseName = "",
+  price = 0,
+  currency = "NGN",
+}: EnrollButtonProps) {
   const router = useRouter();
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [enrolled, setEnrolled] = useState(false);
   const [error, setError] = useState("");
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  const handleEnroll = async () => {
+  const isFree = price === 0 || price === undefined;
+
+  const handleFreeEnroll = async () => {
     setIsEnrolling(true);
     setError("");
     try {
@@ -34,6 +50,11 @@ export default function EnrollButton({ courseId }: { courseId: string }) {
     }
   };
 
+  const handlePaidEnroll = () => {
+    setError("");
+    setShowPaymentModal(true);
+  };
+
   if (enrolled) {
     return (
       <Button className="w-full text-base" size="lg" disabled>
@@ -48,7 +69,7 @@ export default function EnrollButton({ courseId }: { courseId: string }) {
       <Button
         className="w-full text-base"
         size="lg"
-        onClick={handleEnroll}
+        onClick={isFree ? handleFreeEnroll : handlePaidEnroll}
         disabled={isEnrolling}
       >
         {isEnrolling ? (
@@ -56,12 +77,28 @@ export default function EnrollButton({ courseId }: { courseId: string }) {
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Enrolling...
           </>
-        ) : (
+        ) : isFree ? (
           "Enroll Now"
+        ) : (
+          <>
+            <ShoppingCart className="mr-2 h-4 w-4" />
+            Buy Now
+          </>
         )}
       </Button>
       {error && (
         <p className="mt-2 text-center text-sm text-red-600">{error}</p>
+      )}
+
+      {!isFree && (
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          courseId={courseId}
+          courseName={courseName}
+          amount={price}
+          currency={currency}
+        />
       )}
     </div>
   );

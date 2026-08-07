@@ -247,7 +247,12 @@ export default async function CourseDetailPage({
                     )}
                   </div>
 
-                  <EnrollButton courseId={course.id} />
+                  <EnrollButton
+                    courseId={course.id}
+                    courseName={course.title}
+                    price={course.salePrice || course.price}
+                    currency={course.currency || "NGN"}
+                  />
 
                   <p className="mt-3 text-center text-sm text-gray-500">
                     30-day money-back guarantee

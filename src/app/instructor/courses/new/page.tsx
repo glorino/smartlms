@@ -739,7 +739,7 @@ export default function NewCoursePage() {
                       type="file"
                       accept="image/*"
                       onChange={handleFileUpload}
-                      className="block w-full text-sm text-gray-500 file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90 file:cursor-pointer"
+                      className="block w-full text-sm text-gray-500 file:mr-3 file:rounded-md file:border-0 file:bg-gradient-to-r file:from-indigo-500 file:to-purple-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:from-indigo-600 hover:file:to-purple-700 file:cursor-pointer file:shadow-md"
                     />
                   </div>
                 </div>
