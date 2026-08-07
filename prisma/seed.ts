@@ -137,7 +137,7 @@ const coursesData: CourseData[] = [
       "Master HTML, CSS, JavaScript, React, Node.js, and more. Build real-world projects and become a full-stack developer. This comprehensive bootcamp takes you from zero to hero in web development with hands-on projects and expert instruction.",
     shortDescription:
       "Learn web development from scratch. HTML, CSS, JavaScript, React, Node.js and more.",
-    price: 49.99,
+    price: 45000,
     level: "BEGINNER",
     category: "Web Development",
     tags: ["javascript", "react", "nodejs", "html", "css", "web development"],
@@ -271,8 +271,8 @@ const coursesData: CourseData[] = [
       "Deep dive into machine learning algorithms, neural networks, and AI applications using Python and TensorFlow. From linear regression to deep learning, master the techniques powering the AI revolution.",
     shortDescription:
       "Learn ML and AI from fundamentals to advanced topics with hands-on projects.",
-    price: 79.99,
-    salePrice: 59.99,
+    price: 75000,
+    salePrice: 55000,
     level: "INTERMEDIATE",
     category: "Data Science",
     tags: ["machine learning", "AI", "python", "tensorflow", "neural networks"],
@@ -407,7 +407,8 @@ const coursesData: CourseData[] = [
       "Learn SEO, social media marketing, content marketing, email marketing, and paid advertising strategies. Master the tools and techniques that drive real business results in the digital landscape.",
     shortDescription:
       "Master digital marketing strategies to grow your business online.",
-    price: 39.99,
+    price: 38000,
+
     level: "BEGINNER",
     category: "Marketing",
     tags: ["SEO", "social media", "content marketing", "advertising", "email marketing"],
@@ -520,7 +521,8 @@ const coursesData: CourseData[] = [
       "Master advanced Python concepts including decorators, generators, async programming, metaclasses, and design patterns. Write production-ready, clean, and efficient Python code.",
     shortDescription:
       "Take your Python skills to the next level with advanced concepts.",
-    price: 59.99,
+    price: 55000,
+
     level: "ADVANCED",
     category: "Programming",
     tags: ["python", "programming", "advanced", "design patterns", "async"],
@@ -655,7 +657,8 @@ const coursesData: CourseData[] = [
       "Learn the principles of user interface and user experience design. Create stunning designs with Figma. From color theory to interactive prototypes, master the art of designing for humans.",
     shortDescription:
       "Design beautiful, user-friendly interfaces with modern tools and techniques.",
-    price: 44.99,
+    price: 42000,
+
     level: "BEGINNER",
     category: "Design",
     tags: ["UI", "UX", "figma", "design", "prototyping"],
@@ -768,7 +771,8 @@ const coursesData: CourseData[] = [
       "Learn ethical hacking, network security, cryptography, and incident response. Prepare for security certifications and protect organizations from cyber threats with hands-on labs.",
     shortDescription:
       "Protect systems and networks from cyber threats with hands-on labs.",
-    price: 69.99,
+    price: 65000,
+
     level: "INTERMEDIATE",
     category: "Security",
     tags: ["cybersecurity", "ethical hacking", "network security", "cryptography", "penetration testing"],
@@ -903,7 +907,8 @@ const coursesData: CourseData[] = [
       "Master Amazon Web Services: EC2, S3, Lambda, RDS, and more. Deploy scalable, highly available applications on the world's leading cloud platform. Prepare for the AWS Solutions Architect certification.",
     shortDescription:
       "Learn AWS cloud services and deploy scalable applications.",
-    price: 74.99,
+    price: 70000,
+
     level: "INTERMEDIATE",
     category: "Cloud",
     tags: ["AWS", "cloud", "EC2", "S3", "Lambda", "DevOps"],
@@ -1016,7 +1021,8 @@ const coursesData: CourseData[] = [
       "Understand blockchain technology, cryptocurrency economics, smart contracts, and decentralized applications. From Bitcoin to DeFi, explore the future of finance and decentralized systems.",
     shortDescription:
       "Explore blockchain technology, smart contracts, and decentralized finance.",
-    price: 54.99,
+    price: 52000,
+
     level: "BEGINNER",
     category: "Finance",
     tags: ["blockchain", "cryptocurrency", "bitcoin", "ethereum", "DeFi", "smart contracts"],
@@ -1129,7 +1135,8 @@ const coursesData: CourseData[] = [
       "Build cross-platform mobile applications for iOS and Android using React Native and Expo. Learn navigation, state management, native APIs, and app store deployment from concept to launch.",
     shortDescription:
       "Build cross-platform mobile apps for iOS and Android with React Native.",
-    price: 64.99,
+    price: 60000,
+
     level: "INTERMEDIATE",
     category: "Mobile",
     tags: ["react native", "mobile", "iOS", "Android", "Expo", "cross-platform"],
@@ -1264,7 +1271,8 @@ const coursesData: CourseData[] = [
       "Master data analysis with Excel and SQL. Learn pivot tables, VLOOKUP, advanced formulas, SQL queries, joins, and data visualization. Turn raw data into actionable business insights.",
     shortDescription:
       "Analyze data effectively with Excel and SQL skills.",
-    price: 34.99,
+    price: 33000,
+
     level: "BEGINNER",
     category: "Data",
     tags: ["data analytics", "Excel", "SQL", "database", "pivot tables", "visualization"],
@@ -1738,16 +1746,16 @@ async function main() {
   // 9. Purchases
   console.log("\n--- Creating Purchases ---");
   const purchaseData = [
-    { userId: student1.id, slug: "complete-web-development-bootcamp", amount: 49.99 },
-    { userId: student1.id, slug: "machine-learning-ai-masterclass", amount: 59.99 },
-    { userId: student1.id, slug: "digital-marketing-mastery", amount: 39.99 },
-    { userId: student1.id, slug: "advanced-python-programming", amount: 59.99 },
-    { userId: student1.id, slug: "ui-ux-design-fundamentals", amount: 44.99 },
-    { userId: student2.id, slug: "cybersecurity-essentials", amount: 69.99 },
-    { userId: student2.id, slug: "cloud-computing-with-aws", amount: 74.99 },
-    { userId: student2.id, slug: "blockchain-cryptocurrency", amount: 54.99 },
-    { userId: student2.id, slug: "mobile-app-development-react-native", amount: 64.99 },
-    { userId: student2.id, slug: "data-analytics-excel-sql", amount: 34.99 },
+    { userId: student1.id, slug: "complete-web-development-bootcamp", amount: 45000 },
+    { userId: student1.id, slug: "machine-learning-ai-masterclass", amount: 55000 },
+    { userId: student1.id, slug: "digital-marketing-mastery", amount: 38000 },
+    { userId: student1.id, slug: "advanced-python-programming", amount: 55000 },
+    { userId: student1.id, slug: "ui-ux-design-fundamentals", amount: 42000 },
+    { userId: student2.id, slug: "cybersecurity-essentials", amount: 65000 },
+    { userId: student2.id, slug: "cloud-computing-with-aws", amount: 72000 },
+    { userId: student2.id, slug: "blockchain-cryptocurrency", amount: 52000 },
+    { userId: student2.id, slug: "mobile-app-development-react-native", amount: 62000 },
+    { userId: student2.id, slug: "data-analytics-excel-sql", amount: 32000 },
   ];
 
   for (const p of purchaseData) {
@@ -1759,7 +1767,7 @@ async function main() {
         userId: p.userId,
         courseId: course.id,
         amount: p.amount,
-        currency: "USD",
+        currency: "NGN",
         status: PaymentStatus.COMPLETED,
         paymentMethod: "card",
         stripePaymentId: `pi_demo_${Math.random().toString(36).substring(2, 15)}`,

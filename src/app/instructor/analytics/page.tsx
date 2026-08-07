@@ -145,7 +145,7 @@ export default function InstructorAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Total Revenue</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">$42.9K</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">₦40.9M</p>
                 <div className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
                   <ArrowUpRight className="h-3 w-3" />
                   +12% from last month

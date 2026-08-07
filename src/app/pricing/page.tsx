@@ -51,8 +51,8 @@ const plans = [
   },
   {
     name: "Professional",
-    price: 29,
-    annualPrice: 23,
+    price: 28000,
+    annualPrice: 22000,
     period: "/mo",
     description: "For serious course creators",
     gradient: "from-purple-500 to-pink-500",
@@ -79,8 +79,8 @@ const plans = [
   },
   {
     name: "Enterprise",
-    price: 99,
-    annualPrice: 79,
+    price: 95000,
+    annualPrice: 76000,
     period: "/mo",
     description: "For organizations and teams",
     gradient: "from-amber-400 to-orange-500",
@@ -284,8 +284,8 @@ export default function PricingPage() {
                       <div className="flex items-baseline gap-1">
                         <span className="text-5xl font-extrabold text-gray-900">
                           {annual
-                            ? `$${plan.annualPrice}`
-                            : `$${plan.price}`}
+                            ? `₦${plan.annualPrice.toLocaleString()}`
+                            : `₦${plan.price.toLocaleString()}`}
                         </span>
                         {plan.price > 0 && (
                           <span className="text-gray-400">
@@ -295,7 +295,7 @@ export default function PricingPage() {
                       </div>
                       {annual && plan.price > 0 && (
                         <p className="mt-1 text-sm text-green-600 font-medium">
-                          Save ${(plan.price - plan.annualPrice) * 12}/year
+                          Save ₦{((plan.price - plan.annualPrice) * 12).toLocaleString()}/year
                         </p>
                       )}
                       {plan.price === 0 && (
@@ -380,13 +380,13 @@ export default function PricingPage() {
                   <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
                     <div className="flex flex-col items-center gap-1">
                       <span className="text-purple-600">Professional</span>
-                      <span className="text-xs font-normal text-gray-400">$29/mo</span>
+                      <span className="text-xs font-normal text-gray-400">₦28,000/mo</span>
                     </div>
                   </th>
                   <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
                     <div className="flex flex-col items-center gap-1">
                       <span className="text-amber-600">Enterprise</span>
-                      <span className="text-xs font-normal text-gray-400">$99/mo</span>
+                      <span className="text-xs font-normal text-gray-400">₦95,000/mo</span>
                     </div>
                   </th>
                 </tr>

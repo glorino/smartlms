@@ -105,7 +105,7 @@ model Course {
   trailerVideo    String?
   price           Float        @default(0)
   salePrice       Float?
-  currency        String       @default("USD")
+  currency        String       @default("NGN")
   status          CourseStatus @default(DRAFT)
   level           String       @default("BEGINNER")
   language        String       @default("en")
@@ -413,7 +413,7 @@ model LiveClassAttendance {
 model Purchase {
   id          String        @id @default(cuid())
   amount      Float
-  currency    String        @default("USD")
+  currency    String        @default("NGN")
   status      PaymentStatus @default(PENDING)
   paymentMethod String?
   stripePaymentId String?
