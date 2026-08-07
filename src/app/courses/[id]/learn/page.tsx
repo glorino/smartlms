@@ -21,6 +21,7 @@ import {
   Menu,
   ArrowLeft,
 } from "lucide-react";
+import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -325,7 +326,7 @@ export default function CourseLearnPage() {
               <div className="border-b border-gray-800 bg-gray-900 px-6 py-6">
                 <div
                   className="prose prose-invert max-w-none text-sm text-gray-300"
-                  dangerouslySetInnerHTML={{ __html: currentLesson.content }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentLesson.content) }}
                 />
               </div>
             )}

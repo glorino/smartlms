@@ -1,18 +1,35 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    if (!checkRateLimit("enrollments", 10, 3600000)) {
+      return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
+    }
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userId = session.user.id;
+    const userRole = (session.user as any).role;
+    const { searchParams } = new URL(request.url);
+    const instructorId = searchParams.get("instructorId") || "";
+
+    const where: any = {};
+
+    if (userRole === "INSTRUCTOR") {
+      where.course = { instructorId: userId };
+    } else if (instructorId) {
+      where.course = { instructorId };
+    } else if (userRole !== "ADMIN") {
+      where.userId = userId;
+    }
 
     const enrollments = await prisma.enrollment.findMany({
-      where: { userId },
+      where,
       include: {
         course: {
           select: {
@@ -21,12 +38,17 @@ export async function GET() {
             slug: true,
             thumbnail: true,
             price: true,
+            salePrice: true,
+            currency: true,
             level: true,
             category: true,
             instructor: {
               select: { id: true, name: true, avatar: true },
             },
           },
+        },
+        user: {
+          select: { id: true, name: true, email: true, avatar: true },
         },
       },
       orderBy: { enrolledAt: "desc" },
@@ -43,6 +65,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    if (!checkRateLimit("enrollments-post", 10, 3600000)) {
+      return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
+    }
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -88,20 +113,10 @@ export async function POST(request: Request) {
     }
 
     if (course.price > 0) {
-      const purchase = await prisma.purchase.create({
-        data: {
-          userId,
-          courseId,
-          amount: course.salePrice || course.price,
-          currency: course.currency,
-          status: "COMPLETED",
-        },
-      });
-
-      await prisma.course.update({
-        where: { id: courseId },
-        data: { revenue: { increment: purchase.amount } },
-      });
+      return NextResponse.json(
+        { error: "This is a paid course. Please use the payment flow to enroll." },
+        { status: 403 }
+      );
     }
 
     const enrollment = await prisma.enrollment.create({

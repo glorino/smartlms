@@ -461,11 +461,13 @@ model Assignment {
   userId      String
   user        User     @relation(fields: [userId], references: [id])
   lessonId    String?
+  courseId    String?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([userId])
+  @@index([courseId])
 }
 
 model Grade {
@@ -479,8 +481,12 @@ model Grade {
 
   userId      String
   user        User     @relation(fields: [userId], references: [id])
+  courseId    String?
+  quizId      String?
 
   @@index([userId])
+  @@index([courseId])
+  @@index([quizId])
 }
 
 model Note {
@@ -495,9 +501,11 @@ model Note {
   user        User     @relation(fields: [userId], references: [id])
   lessonId    String
   lesson      Lesson   @relation(fields: [lessonId], references: [id])
+  courseId    String
 
   @@index([userId])
   @@index([lessonId])
+  @@index([courseId])
 }
 
 model Achievement {

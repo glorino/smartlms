@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const FLUTTERWAVE_SECRET = process.env.FLUTTERWAVE_SECRET_KEY;
 const FLUTTERWAVE_PUBLIC = process.env.FLUTTERWAVE_PUBLIC_KEY;
 
 export async function POST(request: Request) {
   try {
+    if (!checkRateLimit("payments-initiate", 10, 3600000)) {
+      return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
+    }
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

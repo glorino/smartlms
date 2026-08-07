@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
+    if (!checkRateLimit("forgot-password", 3, 3600000)) {
+      return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
+    }
     const body = await request.json();
     const { email } = body;
 
