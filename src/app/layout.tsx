@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import Providers from "@/components/providers";
 import Chatbot from "@/components/chatbot/chatbot";
+import VoiceCommand from "@/components/voice-command/voice-command";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -60,6 +61,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
         <Chatbot />
+        <VoiceCommand />
         <Toaster
           position="top-right"
           toastOptions={{

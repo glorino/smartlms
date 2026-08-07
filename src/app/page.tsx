@@ -482,6 +482,122 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* See SmartLMS in Action - Video Section */}
+      <section className="relative bg-[var(--background)] py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.06),transparent_70%)]" />
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <span className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-4 py-1.5 text-sm font-medium text-indigo-400 backdrop-blur-sm">
+              <Play className="h-3.5 w-3.5 fill-indigo-400" />
+              Watch the Demo
+            </span>
+            <h2 className="mt-5 text-3xl font-bold text-gray-900 sm:text-4xl lg:text-5xl">
+              See SmartLMS in{" "}
+              <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                Action
+              </span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-lg text-gray-500">
+              See how SmartLMS transforms learning
+            </p>
+          </div>
+
+          {/* Video Player */}
+          <div className="group relative mx-auto max-w-4xl">
+            {/* Gradient border glow */}
+            <div className="absolute -inset-[2px] rounded-3xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-60 blur-sm transition-opacity group-hover:opacity-100" />
+            <div className="absolute -inset-[1px] rounded-3xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+
+            <div className="relative overflow-hidden rounded-3xl bg-gray-950 p-1">
+              <div className="relative aspect-video overflow-hidden rounded-2xl bg-black">
+                <video
+                  id="intro-video"
+                  src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+                  muted
+                  loop
+                  playsInline
+                  autoPlay
+                  className="h-full w-full object-cover"
+                />
+
+                {/* Gradient overlay */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
+
+                {/* Play/Pause button */}
+                <button
+                  onClick={() => {
+                    const video = document.getElementById("intro-video") as HTMLVideoElement;
+                    if (video) {
+                      if (video.paused) {
+                        video.play();
+                      } else {
+                        video.pause();
+                      }
+                    }
+                  }}
+                  className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex h-20 w-20 items-center justify-center rounded-full border-2 border-white/20 bg-white/10 backdrop-blur-md transition-all hover:scale-110 hover:bg-white/20 hover:border-white/40 cursor-pointer"
+                  aria-label="Play or Pause"
+                >
+                  <Play className="h-9 w-9 text-white fill-white ml-1" />
+                </button>
+
+                {/* Caption */}
+                <div className="pointer-events-none absolute bottom-0 inset-x-0 p-6 text-center">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-5 py-2 backdrop-blur-md">
+                    <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                    <span className="text-sm font-medium text-white/90">
+                      See how SmartLMS transforms learning
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Feature Highlights Below Video */}
+          <div className="mt-12 grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-3 mx-auto">
+            {[
+              {
+                icon: Brain,
+                title: "AI-Powered",
+                description: "Generate courses, quizzes, and content with advanced AI",
+                gradient: "from-indigo-500 to-blue-500",
+                shadow: "shadow-indigo-500/20",
+              },
+              {
+                icon: Sparkles,
+                title: "Beautiful Design",
+                description: "Stunning interfaces that learners actually enjoy using",
+                gradient: "from-purple-500 to-pink-500",
+                shadow: "shadow-purple-500/20",
+              },
+              {
+                icon: BarChart3,
+                title: "Track Progress",
+                description: "Real-time analytics and insights on every learner",
+                gradient: "from-amber-500 to-orange-500",
+                shadow: "shadow-amber-500/20",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-sm transition-all hover:shadow-xl hover:-translate-y-1"
+              >
+                <div
+                  className={`mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${item.gradient} text-white shadow-lg ${item.shadow}`}
+                >
+                  <item.icon className="h-6 w-6" />
+                </div>
+                <h3 className="text-base font-bold text-gray-900">{item.title}</h3>
+                <p className="mt-1.5 text-sm text-gray-500 leading-relaxed">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Stats Counter */}
       <section ref={statsRef} className="relative bg-[var(--background)] pb-20">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">

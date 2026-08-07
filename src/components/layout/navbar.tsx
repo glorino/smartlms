@@ -107,69 +107,71 @@ export default function Navbar({ session }: { session?: Session }) {
             </button>
 
             {user ? (
-              /* User Dropdown */
-              <div className="relative">
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-gray-100"
+              /* Logged In: Dashboard Button + Avatar Dropdown */
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-indigo-500/20 transition-all hover:shadow-lg hover:shadow-indigo-500/30 hover:-translate-y-0.5"
                 >
-                  <img
-                    src={user.image || "/avatars/default.png"}
-                    alt={user.name || "User"}
-                    className="h-8 w-8 rounded-full object-cover"
-                  />
-                  <span className="hidden text-sm font-medium text-gray-700 sm:block">
-                    {user.name}
-                  </span>
-                  <ChevronDown className="hidden h-4 w-4 text-gray-500 sm:block" />
-                </button>
+                  <BookOpen className="h-4 w-4" />
+                  Dashboard
+                </Link>
 
-                {dropdownOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setDropdownOpen(false)}
+                <div className="relative">
+                  <button
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-gray-100"
+                  >
+                    <img
+                      src={user.image || "/avatars/default.png"}
+                      alt={user.name || "User"}
+                      className="h-8 w-8 rounded-full object-cover ring-2 ring-indigo-500/20"
                     />
-                    <div className="absolute right-0 z-50 mt-2 w-64 rounded-xl border border-gray-200 bg-white py-2 shadow-lg">
-                      <div className="border-b border-gray-100 px-4 py-3">
-                        <p className="text-sm font-medium text-gray-900">
-                          {user.name}
-                        </p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
-                        <span className="mt-1 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                          {user.role || "STUDENT"}
-                        </span>
+                    <span className="hidden text-sm font-medium text-gray-700 sm:block">
+                      {user.name}
+                    </span>
+                    <ChevronDown className="hidden h-4 w-4 text-gray-500 sm:block" />
+                  </button>
+
+                  {dropdownOpen && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setDropdownOpen(false)}
+                      />
+                      <div className="absolute right-0 z-50 mt-2 w-56 rounded-xl border border-gray-200 bg-white py-2 shadow-lg">
+                        <div className="border-b border-gray-100 px-4 py-3">
+                          <p className="text-sm font-medium text-gray-900">
+                            {user.name}
+                          </p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
+                          <span className="mt-1 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                            {user.role || "STUDENT"}
+                          </span>
+                        </div>
+                        <div className="py-1">
+                          <Link
+                            href="/dashboard/settings"
+                            onClick={() => setDropdownOpen(false)}
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          >
+                            <Settings className="h-4 w-4" />
+                            Settings
+                          </Link>
+                        </div>
+                        <div className="border-t border-gray-100 py-1">
+                          <button
+                            onClick={() => signOut({ callbackUrl: "/" })}
+                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                          >
+                            <LogOut className="h-4 w-4" />
+                            Logout
+                          </button>
+                        </div>
                       </div>
-                      <div className="py-1">
-                        <Link
-                          href="/dashboard"
-                          onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          <BookOpen className="h-4 w-4" />
-                          Dashboard
-                        </Link>
-                        <Link
-                          href="/dashboard/settings"
-                          onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          <Settings className="h-4 w-4" />
-                          Settings
-                        </Link>
-                      </div>
-                      <div className="border-t border-gray-100 py-1">
-                        <button
-                          onClick={() => signOut({ callbackUrl: "/" })}
-                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                        >
-                          <LogOut className="h-4 w-4" />
-                          Logout
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
+                    </>
+                  )}
+                </div>
               </div>
             ) : (
               /* Login / Register Buttons */
