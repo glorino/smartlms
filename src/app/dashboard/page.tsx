@@ -140,7 +140,7 @@ const recommendedCourses = [
     rating: 4.9,
     students: 2345,
     image: "/courses/python.jpg",
-    price: "$29.99",
+    price: "₦28,000",
   },
   {
     id: 3,
@@ -149,7 +149,7 @@ const recommendedCourses = [
     rating: 4.7,
     students: 987,
     image: "/courses/docker.jpg",
-    price: "$39.99",
+    price: "₦38,000",
   },
 ];
 
@@ -167,14 +167,14 @@ export default function DashboardPage() {
       ? [
           { label: "Total Users", value: "1,234", icon: Users, color: "bg-blue-500", change: "+12%", trend: "up" as const, subtitle: "users" },
           { label: "Total Courses", value: "56", icon: BookOpen, color: "bg-emerald-500", change: "+8%", trend: "up" as const, subtitle: "courses" },
-          { label: "Revenue", value: "$12,450", icon: DollarSign, color: "bg-amber-500", change: "+23%", trend: "up" as const, subtitle: "revenue" },
+          { label: "Revenue", value: "₦12,000,000", icon: DollarSign, color: "bg-amber-500", change: "+23%", trend: "up" as const, subtitle: "revenue" },
           { label: "Enrollments", value: "3,456", icon: TrendingUp, color: "bg-rose-500", change: "+15%", trend: "up" as const, subtitle: "enrollments" },
         ]
       : role === "INSTRUCTOR"
         ? [
             { label: "My Courses", value: "8", icon: Package, color: "bg-blue-500", change: "+2", trend: "up" as const, subtitle: "courses" },
             { label: "Total Students", value: "456", icon: Users, color: "bg-emerald-500", change: "+34", trend: "up" as const, subtitle: "students" },
-            { label: "Earnings", value: "$3,200", icon: DollarSign, color: "bg-amber-500", change: "+$450", trend: "up" as const, subtitle: "earnings" },
+            { label: "Earnings", value: "₦3,000,000", icon: DollarSign, color: "bg-amber-500", change: "+₦420,000", trend: "up" as const, subtitle: "earnings" },
             { label: "Active Courses", value: "6", icon: BookOpen, color: "bg-rose-500", change: "100%", trend: "up" as const, subtitle: "active" },
           ]
         : [
@@ -358,7 +358,7 @@ export default function DashboardPage() {
                           </div>
                           <div>
                             <p className="text-sm font-bold text-gray-900">Revenue Forecast</p>
-                            <p className="mt-1 text-sm text-gray-600">$15,200 based on current enrollment trends</p>
+                            <p className="mt-1 text-sm text-gray-600">₦14,500,000 based on current enrollment trends</p>
                             <p className="mt-2 text-xs text-purple-600 font-medium">+22% projected growth</p>
                           </div>
                         </div>

@@ -54,7 +54,7 @@ const fallbackStats: PlatformStats = {
 const fallbackActivity: RecentActivity[] = [
   { id: "1", type: "enrollment", title: "New enrollment", description: "Sarah Johnson enrolled in Advanced React Patterns", time: "2 minutes ago" },
   { id: "2", type: "course", title: "Course published", description: "TypeScript Mastery was published by Mike Chen", time: "15 minutes ago" },
-  { id: "3", type: "payment", title: "Payment received", description: "$99 payment from Emily Davis", time: "1 hour ago" },
+  { id: "3", type: "payment", title: "Payment received", description: "₦95,000 payment from Emily Davis", time: "1 hour ago" },
   { id: "4", type: "user", title: "New user registered", description: "Alex Wilson joined as a student", time: "2 hours ago" },
   { id: "5", type: "review", title: "New review", description: "5-star review on Node.js Backend Development", time: "3 hours ago" },
 ];

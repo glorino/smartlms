@@ -241,7 +241,7 @@ const smartResponses: SmartResponse[] = [
   {
     patterns: [/instructor|teach|create.*course|build.*course|sell.*course|earn.*money/i],
     responses: [
-      "Becoming an instructor is easy:\n\n1. **Apply** - Submit your expertise and course idea\n2. **Create** - Use our AI Course Builder to structure content\n3. **Upload** - Add videos, quizzes, and resources\n4. **Publish** - We review within 48 hours\n5. **Earn** - Get paid monthly via PayPal or bank transfer\n\nInstructors earn 70% revenue share. Top creators earn $5,000+/month!",
+      "Becoming an instructor is easy:\n\n1. **Apply** - Submit your expertise and course idea\n2. **Create** - Use our AI Course Builder to structure content\n3. **Upload** - Add videos, quizzes, and resources\n4. **Publish** - We review within 48 hours\n5. **Earn** - Get paid monthly via PayPal or bank transfer\n\nInstructors earn 70% revenue share. Top creators earn ₦5,000,000+/month!",
       "Want to teach on SmartLMS? Here's how:\n\n1. **Sign up as instructor** - Quick application process\n2. **Build your course** - AI-assisted course builder\n3. **Upload content** - Videos, docs, quizzes\n4. **Get approved** - Quality check in 24-48 hours\n5. **Start earning** - 70% revenue share\n\nWe provide marketing, hosting, and student support. You focus on creating great content!",
     ],
     quickReplies: ["Apply Now", "Instructor FAQ", "Revenue Calculator"],
@@ -351,7 +351,7 @@ function getSmartResponse(
       },
       payments: {
         response:
-          "Our pricing is simple: Free tier (limited courses), Pro ($19/month for everything), and Enterprise (custom). Want details on any of these?",
+          "Our pricing is simple: Free tier (limited courses), Pro (₦18,000/month for everything), and Enterprise (custom). Want details on any of these?",
         topic: "payment-followup",
       },
       refunds: {

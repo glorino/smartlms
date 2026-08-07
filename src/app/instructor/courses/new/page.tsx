@@ -694,7 +694,7 @@ export default function NewCoursePage() {
                     onChange={setLanguage}
                   />
                   <Input
-                    label="Price ($)"
+                    label="Price (₦)"
                     type="number"
                     min="0"
                     step="0.01"
@@ -1135,7 +1135,7 @@ export default function NewCoursePage() {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-500">Price</span>
                   <span className="font-semibold">
-                    {price && parseFloat(price) > 0 ? `$${parseFloat(price).toFixed(2)}` : "Free"}
+                    {price && parseFloat(price) > 0 ? `₦${parseFloat(price).toLocaleString()}` : "Free"}
                   </span>
                 </div>
                 {tags.trim() && (

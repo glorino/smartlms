@@ -26,18 +26,18 @@ interface AnalyticsMetrics {
 }
 
 const fallbackMetrics: AnalyticsMetrics = {
-  revenue: { value: "$84,254", change: 23.1, trend: "up" },
+  revenue: { value: "₦80,000,000", change: 23.1, trend: "up" },
   enrollments: { value: "1,234", change: 18.2, trend: "up" },
   completions: { value: "856", change: 12.5, trend: "up" },
   activeUsers: { value: "4,321", change: -3.2, trend: "down" },
 };
 
 const topCoursesByRevenue = [
-  { title: "Advanced React Patterns", revenue: "$231,759", percentage: 28 },
-  { title: "TypeScript Mastery", revenue: "$148,204", percentage: 18 },
-  { title: "Node.js Backend Development", revenue: "$147,206", percentage: 17 },
-  { title: "Python for Data Science", revenue: "$134,608", percentage: 16 },
-  { title: "UI/UX Design Fundamentals", revenue: "$83,490", percentage: 10 },
+  { title: "Advanced React Patterns", revenue: "₦220,000,000", percentage: 28 },
+  { title: "TypeScript Mastery", revenue: "₦140,000,000", percentage: 18 },
+  { title: "Node.js Backend Development", revenue: "₦140,000,000", percentage: 17 },
+  { title: "Python for Data Science", revenue: "₦128,000,000", percentage: 16 },
+  { title: "UI/UX Design Fundamentals", revenue: "₦80,000,000", percentage: 10 },
 ];
 
 const topCoursesByCompletions = [
