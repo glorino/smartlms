@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   BookOpen,
   Award,
@@ -13,358 +14,237 @@ import {
   ChevronRight,
   FileCheck,
   ArrowUpRight,
+  Users,
+  DollarSign,
+  Package,
+  PlusCircle,
 } from "lucide-react";
-import Sidebar from "@/components/layout/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Spinner } from "@/components/ui/spinner";
-import type { Enrollment, LiveClass, ActivityLog } from "@/types";
-
-interface DashboardData {
-  enrolledCourses: number;
-  completedCourses: number;
-  inProgressCourses: number;
-  certificates: number;
-  enrollments: Enrollment[];
-  upcomingClasses: LiveClass[];
-  recentActivity: ActivityLog[];
-}
 
 export default function DashboardPage() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: session } = useSession();
+  const user = session?.user;
+  const role = (user as any)?.role || "STUDENT";
 
-  useEffect(() => {
-    async function loadDashboard() {
-      try {
-        const res = await fetch("/api/dashboard");
-        if (res.ok) {
-          const result = await res.json();
-          setData(result);
-        }
-      } catch {
-        // Fallback demo data
-        setData({
-          enrolledCourses: 12,
-          completedCourses: 5,
-          inProgressCourses: 7,
-          certificates: 5,
-          enrollments: [],
-          upcomingClasses: [],
-          recentActivity: [],
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadDashboard();
-  }, []);
+  const stats =
+    role === "ADMIN"
+      ? [
+          { label: "Total Users", value: "1,234", icon: Users, color: "bg-blue-500", change: "+12%" },
+          { label: "Total Courses", value: "56", icon: BookOpen, color: "bg-emerald-500", change: "+8%" },
+          { label: "Revenue", value: "$12,450", icon: DollarSign, color: "bg-amber-500", change: "+23%" },
+          { label: "Enrollments", value: "3,456", icon: TrendingUp, color: "bg-rose-500", change: "+15%" },
+        ]
+      : role === "INSTRUCTOR"
+        ? [
+            { label: "My Courses", value: "8", icon: Package, color: "bg-blue-500", change: "+2" },
+            { label: "Total Students", value: "456", icon: Users, color: "bg-emerald-500", change: "+34" },
+            { label: "Earnings", value: "$3,200", icon: DollarSign, color: "bg-amber-500", change: "+$450" },
+            { label: "Active Courses", value: "6", icon: BookOpen, color: "bg-rose-500", change: "100%" },
+          ]
+        : [
+            { label: "Enrolled Courses", value: "4", icon: BookOpen, color: "bg-blue-500", change: "+2 this month" },
+            { label: "Completed", value: "1", icon: Award, color: "bg-emerald-500", change: "+1 this week" },
+            { label: "In Progress", value: "3", icon: TrendingUp, color: "bg-amber-500", change: "Keep going!" },
+            { label: "Certificates", value: "1", icon: FileCheck, color: "bg-rose-500", change: "View all" },
+          ];
 
-  const stats = [
-    {
-      title: "Enrolled Courses",
-      value: data?.enrolledCourses ?? 0,
-      icon: BookOpen,
-      color: "bg-blue-500",
-      change: "+2 this month",
-    },
-    {
-      title: "Completed",
-      value: data?.completedCourses ?? 0,
-      icon: Award,
-      color: "bg-green-500",
-      change: "+1 this week",
-    },
-    {
-      title: "In Progress",
-      value: data?.inProgressCourses ?? 0,
-      icon: TrendingUp,
-      color: "bg-orange-500",
-      change: "Keep going!",
-    },
-    {
-      title: "Certificates",
-      value: data?.certificates ?? 0,
-      icon: FileCheck,
-      color: "bg-purple-500",
-      change: "View all",
-    },
-  ];
+  const recentCourses =
+    role === "INSTRUCTOR"
+      ? [
+          { title: "Complete Web Development", students: 234, status: "Published", progress: 100 },
+          { title: "Advanced React Patterns", students: 189, status: "Published", progress: 100 },
+          { title: "Node.js Masterclass", students: 0, status: "Draft", progress: 65 },
+        ].map((c) => ({ ...c, lastAccessed: "" }))
+      : [
+          { title: "Complete Web Development Bootcamp", progress: 35, lastAccessed: "2 hours ago", students: 0, status: "" },
+          { title: "Machine Learning & AI Masterclass", progress: 12, lastAccessed: "1 day ago", students: 0, status: "" },
+          { title: "UI/UX Design Fundamentals", progress: 68, lastAccessed: "3 days ago", students: 0, status: "" },
+        ];
 
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
+  const quickActions =
+    role === "ADMIN"
+      ? [
+          { label: "Manage Users", href: "/admin/users", icon: Users },
+          { label: "Manage Courses", href: "/admin/courses", icon: BookOpen },
+          { label: "View Analytics", href: "/admin/analytics", icon: BarChart3 },
+        ]
+      : role === "INSTRUCTOR"
+        ? [
+            { label: "Create Course", href: "/instructor/courses/new", icon: PlusCircle },
+            { label: "View Students", href: "/instructor/students", icon: Users },
+            { label: "Analytics", href: "/instructor/analytics", icon: BarChart3 },
+          ]
+        : [
+            { label: "Browse Courses", href: "/courses", icon: BookOpen },
+            { label: "Take Quiz", href: "/dashboard/quizzes", icon: FileCheck },
+            { label: "View Certificates", href: "/dashboard/certificates", icon: Award },
+          ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
+    <div className="space-y-8">
+      {/* Welcome Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Welcome back, {user?.name || "User"} 👋
+        </h1>
+        <p className="mt-1 text-gray-500">
+          {role === "ADMIN"
+            ? "Here's your platform overview."
+            : role === "INSTRUCTOR"
+              ? "Manage your courses and track performance."
+              : "Continue your learning journey. You're doing great!"}
+        </p>
+        <Badge className="mt-2" variant={role === "ADMIN" ? "danger" : role === "INSTRUCTOR" ? "warning" : "success"}>
+          {role}
+        </Badge>
+      </div>
 
-      <main className="flex-1 overflow-y-auto p-6 pb-20 md:p-8 md:pb-8">
-        {/* Welcome */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Welcome back, Student 👋
-          </h1>
-          <p className="mt-1 text-gray-600">
-            Continue your learning journey. You&apos;re doing great!
-          </p>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => (
-            <Card key={stat.title} className="relative overflow-hidden">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      {stat.title}
-                    </p>
-                    <p className="mt-1 text-3xl font-bold text-gray-900">
-                      {stat.value}
-                    </p>
-                    <p className="mt-1 text-xs text-gray-500">{stat.change}</p>
-                  </div>
-                  <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.color}`}
-                  >
-                    <stat.icon className="h-6 w-6 text-white" />
-                  </div>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <Card key={stat.label}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">{stat.label}</p>
+                  <p className="mt-1 text-3xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="mt-1 text-xs text-gray-400">{stat.change}</p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                <div className={`rounded-xl p-3 ${stat.color}`}>
+                  <stat.icon className="h-6 w-6 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Recent Courses */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                My Courses
-              </h2>
+      {/* Main Content Grid */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Recent Courses */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>
+                {role === "INSTRUCTOR" ? "My Courses" : "My Courses"}
+              </CardTitle>
               <Link
-                href="/dashboard/courses"
-                className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                href={role === "INSTRUCTOR" ? "/instructor/courses" : "/dashboard/courses"}
+                className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
               >
-                View All
-                <ChevronRight className="h-4 w-4" />
+                View All <ChevronRight className="inline h-4 w-4" />
               </Link>
-            </div>
-
-            {data?.enrollments && data.enrollments.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {data.enrollments.slice(0, 4).map((enrollment) => (
-                  <Card
-                    key={enrollment.id}
-                    className="group cursor-pointer transition-shadow hover:shadow-md"
-                  >
-                    <Link href={`/courses/${enrollment.course.id}/learn`}>
-                      <div className="relative h-32 bg-gradient-to-br from-blue-500 to-purple-600">
-                        {enrollment.course.thumbnail ? (
-                          <img
-                            src={enrollment.course.thumbnail}
-                            alt={enrollment.course.title}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center">
-                            <BookOpen className="h-10 w-10 text-white/80" />
-                          </div>
-                        )}
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30">
-                          <Play className="h-12 w-12 text-white opacity-0 transition-opacity group-hover:opacity-100" />
+            </CardHeader>
+            <CardContent>
+              {recentCourses.length > 0 ? (
+                <div className="space-y-4">
+                  {recentCourses.map((course, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-4 rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50"
+                    >
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+                        <BookOpen className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="truncate font-medium text-gray-900">
+                          {course.title}
+                        </h4>
+                        <div className="mt-2">
+                          <Progress value={course.progress} className="h-2" />
+                          <p className="mt-1 text-xs text-gray-400">
+                            {course.progress}% complete
+                            {course.lastAccessed && ` · ${course.lastAccessed}`}
+                          </p>
                         </div>
                       </div>
-                      <CardContent className="p-4">
-                        <h3 className="line-clamp-1 font-medium text-gray-900">
-                          {enrollment.course.title}
-                        </h3>
-                        <p className="mt-1 text-sm text-gray-500">
-                          {enrollment.course.instructor?.name}
-                        </p>
-                        <div className="mt-3">
-                          <Progress
-                            value={enrollment.progress}
-                            showValue
-                            color="blue"
-                          />
-                        </div>
-                        <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
-                          <span>
-                            Last accessed:{" "}
-                            {new Date(enrollment.enrolledAt).toLocaleDateString()}
-                          </span>
-                          <Badge
-                            variant={
-                              enrollment.status === "COMPLETED"
-                                ? "success"
-                                : "default"
-                            }
-                          >
-                            {enrollment.status}
-                          </Badge>
-                        </div>
-                      </CardContent>
-                    </Link>
-                  </Card>
+                      <Link
+                        href="/courses/1/learn"
+                        className="shrink-0 rounded-lg bg-indigo-600 p-2 text-white transition-colors hover:bg-indigo-700"
+                      >
+                        <Play className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-12 text-center">
+                  <BookOpen className="mx-auto h-12 w-12 text-gray-300" />
+                  <p className="mt-4 text-gray-500">No courses yet</p>
+                  <Link
+                    href="/courses"
+                    className="mt-4 inline-block rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                  >
+                    Browse Courses
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sidebar Content */}
+        <div className="space-y-6">
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {quickActions.map((action) => (
+                  <Link
+                    key={action.label}
+                    href={action.href}
+                    className="flex items-center gap-3 rounded-xl border border-gray-100 p-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                  >
+                    <action.icon className="h-5 w-5 text-indigo-600" />
+                    {action.label}
+                    <ArrowUpRight className="ml-auto h-4 w-4 text-gray-400" />
+                  </Link>
                 ))}
               </div>
-            ) : (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <BookOpen className="h-12 w-12 text-gray-400" />
-                  <p className="mt-4 text-gray-500">No courses yet</p>
-                  <Link href="/courses">
-                    <Button className="mt-4">Browse Courses</Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* Right Sidebar */}
-          <div className="space-y-6">
-            {/* Upcoming Live Classes */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Upcoming Classes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {data?.upcomingClasses && data.upcomingClasses.length > 0 ? (
-                  <div className="space-y-3">
-                    {data.upcomingClasses.slice(0, 3).map((cls) => (
-                      <div
-                        key={cls.id}
-                        className="flex items-start gap-3 rounded-lg border border-gray-100 p-3"
-                      >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-                          <Calendar className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="line-clamp-1 text-sm font-medium text-gray-900">
-                            {cls.title}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(cls.scheduledAt).toLocaleDateString()} at{" "}
-                            {new Date(cls.scheduledAt).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+          {/* Upcoming / Recent Activity */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {role === "INSTRUCTOR" ? "Recent Activity" : "Upcoming Classes"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 rounded-xl border border-gray-100 p-3">
+                  <div className="rounded-lg bg-blue-100 p-2">
+                    <Calendar className="h-4 w-4 text-blue-600" />
                   </div>
-                ) : (
-                  <div className="py-8 text-center">
-                    <Calendar className="mx-auto h-8 w-8 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-500">
-                      No upcoming classes
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      Advanced React Patterns
                     </p>
+                    <p className="text-xs text-gray-500">Tomorrow, 2:00 PM</p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {data?.recentActivity && data.recentActivity.length > 0 ? (
-                  <div className="space-y-3">
-                    {data.recentActivity.slice(0, 5).map((activity) => (
-                      <div key={activity.id} className="flex items-start gap-3">
-                        <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blue-500" />
-                        <div>
-                          <p className="text-sm text-gray-700">
-                            {activity.action}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(activity.createdAt).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                </div>
+                <div className="flex items-center gap-3 rounded-xl border border-gray-100 p-3">
+                  <div className="rounded-lg bg-green-100 p-2">
+                    <Calendar className="h-4 w-4 text-green-600" />
                   </div>
-                ) : (
-                  <div className="py-8 text-center">
-                    <BarChart3 className="mx-auto h-8 w-8 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-500">
-                      No recent activity
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      ML Workshop
                     </p>
+                    <p className="text-xs text-gray-500">Wednesday, 6:00 PM</p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-
-        {/* Quick Actions */}
-        <div className="mt-8">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">
-            Quick Actions
-          </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Link href="/courses">
-              <Card className="group cursor-pointer transition-all hover:border-primary hover:shadow-md">
-                <CardContent className="flex items-center gap-4 p-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 group-hover:bg-blue-100">
-                    <BookOpen className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">Browse Courses</p>
-                    <p className="text-sm text-gray-500">
-                      Discover new skills
-                    </p>
-                  </div>
-                  <ArrowUpRight className="ml-auto h-5 w-5 text-gray-400 group-hover:text-primary" />
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/dashboard/certificates">
-              <Card className="group cursor-pointer transition-all hover:border-primary hover:shadow-md">
-                <CardContent className="flex items-center gap-4 p-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 group-hover:bg-green-100">
-                    <Award className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      View Certificates
-                    </p>
-                    <p className="text-sm text-gray-500">Your achievements</p>
-                  </div>
-                  <ArrowUpRight className="ml-auto h-5 w-5 text-gray-400 group-hover:text-primary" />
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/dashboard/quizzes">
-              <Card className="group cursor-pointer transition-all hover:border-primary hover:shadow-md">
-                <CardContent className="flex items-center gap-4 p-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 group-hover:bg-purple-100">
-                    <FileCheck className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">Take Quiz</p>
-                    <p className="text-sm text-gray-500">Test your knowledge</p>
-                  </div>
-                  <ArrowUpRight className="ml-auto h-5 w-5 text-gray-400 group-hover:text-primary" />
-                </CardContent>
-              </Card>
-            </Link>
-          </div>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
