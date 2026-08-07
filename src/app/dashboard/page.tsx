@@ -31,6 +31,17 @@ import {
   GraduationCap,
   Timer,
   Medal,
+  Brain,
+  Lightbulb,
+  TrendingDown,
+  RefreshCw,
+  Shield,
+  Activity,
+  BarChart,
+  PieChart,
+  Rocket,
+  AlertTriangle,
+  ThumbsUp,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -244,6 +255,135 @@ export default function DashboardPage() {
           ))}
         </div>
 
+        {/* AI Insights Section */}
+        <Card className="overflow-hidden border-0 shadow-lg">
+          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-1">
+            <div className="rounded-xl bg-white">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-3">
+                  <div className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 p-2.5">
+                    <Brain className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <span className="text-lg font-bold text-gray-900">AI Insights</span>
+                    <Badge className="ml-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[10px] px-2 py-0.5">
+                      <Sparkles className="mr-1 h-3 w-3" />
+                      AI Generated
+                    </Badge>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pb-6">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {role === "ADMIN" ? (
+                    <>
+                      <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50 p-5 transition-all hover:shadow-md">
+                        <div className="flex items-start gap-3">
+                          <div className="rounded-xl bg-emerald-100 p-2.5">
+                            <TrendingUp className="h-5 w-5 text-emerald-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-900">Platform Growth</p>
+                            <p className="mt-1 text-sm text-gray-600">+12% new enrollments this week</p>
+                            <p className="mt-2 text-xs text-emerald-600 font-medium">Continuing upward trend</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-5 transition-all hover:shadow-md">
+                        <div className="flex items-start gap-3">
+                          <div className="rounded-xl bg-blue-100 p-2.5">
+                            <Trophy className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-900">Top Performing Course</p>
+                            <p className="mt-1 text-sm text-gray-600">Complete Web Dev Bootcamp with 95% completion rate</p>
+                            <p className="mt-2 text-xs text-blue-600 font-medium">Highest engagement this month</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5 transition-all hover:shadow-md">
+                        <div className="flex items-start gap-3">
+                          <div className="rounded-xl bg-amber-100 p-2.5">
+                            <AlertTriangle className="h-5 w-5 text-amber-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-900">Courses Need Attention</p>
+                            <p className="mt-1 text-sm text-gray-600">5 courses have low ratings. Review recommended</p>
+                            <p className="mt-2 text-xs text-amber-600 font-medium">Action required</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 p-5 transition-all hover:shadow-md">
+                        <div className="flex items-start gap-3">
+                          <div className="rounded-xl bg-purple-100 p-2.5">
+                            <DollarSign className="h-5 w-5 text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-900">Revenue Forecast</p>
+                            <p className="mt-1 text-sm text-gray-600">$15,200 based on current enrollment trends</p>
+                            <p className="mt-2 text-xs text-purple-600 font-medium">+22% projected growth</p>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-5 transition-all hover:shadow-md">
+                        <div className="flex items-start gap-3">
+                          <div className="rounded-xl bg-blue-100 p-2.5">
+                            <Users className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-900">Students Struggling</p>
+                            <p className="mt-1 text-sm text-gray-600">3 students are struggling with React Hooks</p>
+                            <p className="mt-2 text-xs text-blue-600 font-medium">Consider creating supplementary material</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50 p-5 transition-all hover:shadow-md">
+                        <div className="flex items-start gap-3">
+                          <div className="rounded-xl bg-emerald-100 p-2.5">
+                            <ThumbsUp className="h-5 w-5 text-emerald-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-900">Course Rating</p>
+                            <p className="mt-1 text-sm text-gray-600">Your React Masterclass has a 4.8 rating!</p>
+                            <p className="mt-2 text-xs text-emerald-600 font-medium">Students love your teaching style</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5 transition-all hover:shadow-md">
+                        <div className="flex items-start gap-3">
+                          <div className="rounded-xl bg-amber-100 p-2.5">
+                            <BarChart className="h-5 w-5 text-amber-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-900">Quiz Completion Rate</p>
+                            <p className="mt-1 text-sm text-gray-600">87% completion rate. 13% haven&apos;t attempted yet</p>
+                            <p className="mt-2 text-xs text-amber-600 font-medium">Send reminder notifications</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-rose-200 bg-gradient-to-br from-rose-50 to-pink-50 p-5 transition-all hover:shadow-md">
+                        <div className="flex items-start gap-3">
+                          <div className="rounded-xl bg-rose-100 p-2.5">
+                            <Rocket className="h-5 w-5 text-rose-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-900">Engagement Suggestion</p>
+                            <p className="mt-1 text-sm text-gray-600">Add a live class for JavaScript to boost engagement</p>
+                            <p className="mt-2 text-xs text-rose-600 font-medium">Based on student interest data</p>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </div>
+          </div>
+        </Card>
+
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <Card>
@@ -410,6 +550,80 @@ export default function DashboardPage() {
           </Card>
         ))}
       </div>
+
+      {/* AI Insights Section - Student */}
+      <Card className="overflow-hidden border-0 shadow-lg">
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-1">
+          <div className="rounded-xl bg-white">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-3">
+                <div className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 p-2.5">
+                  <Brain className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <span className="text-lg font-bold text-gray-900">AI Insights</span>
+                  <Badge className="ml-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[10px] px-2 py-0.5">
+                    <Sparkles className="mr-1 h-3 w-3" />
+                    AI Generated
+                  </Badge>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pb-6">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50 p-5 transition-all hover:shadow-md">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-xl bg-emerald-100 p-2.5">
+                      <Trophy className="h-5 w-5 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">Your Strength</p>
+                      <p className="mt-1 text-sm text-gray-600">Based on your quiz scores, you excel in Web Development. Consider advanced courses in React Patterns.</p>
+                      <p className="mt-2 text-xs text-emerald-600 font-medium">Keep up the great work!</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5 transition-all hover:shadow-md">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-xl bg-amber-100 p-2.5">
+                      <RefreshCw className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">Course Reminder</p>
+                      <p className="mt-1 text-sm text-gray-600">You haven&apos;t accessed UI/UX Design in 3 days. Here&apos;s a quick recap to help you continue.</p>
+                      <p className="mt-2 text-xs text-amber-600 font-medium">Resume learning</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-5 transition-all hover:shadow-md">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-xl bg-blue-100 p-2.5">
+                      <Activity className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">Learning Pace</p>
+                      <p className="mt-1 text-sm text-gray-600">Your learning pace is faster than average. You&apos;re making excellent progress this week!</p>
+                      <p className="mt-2 text-xs text-blue-600 font-medium">Top 15% of learners</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 p-5 transition-all hover:shadow-md">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-xl bg-purple-100 p-2.5">
+                      <Rocket className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">Recommended Next</p>
+                      <p className="mt-1 text-sm text-gray-600">Based on your completed courses, try TypeScript Mastery or Python for Data Science.</p>
+                      <p className="mt-2 text-xs text-purple-600 font-medium">Matches your skill level</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </div>
+        </div>
+      </Card>
 
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
