@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import toast from "react-hot-toast";
 import {
   GraduationCap,
   Mail,
@@ -17,6 +18,7 @@ import {
   Sparkles,
   Zap,
   Globe,
+  Upload,
 } from "lucide-react";
 
 type Role = "STUDENT" | "INSTRUCTOR";
@@ -52,6 +54,7 @@ interface FormState {
   experience: string;
   portfolioUrl: string;
   linkedinUrl: string;
+  resumeCv: File | null;
 }
 
 const features = [
@@ -76,6 +79,7 @@ export default function RegisterPage() {
     experience: "",
     portfolioUrl: "",
     linkedinUrl: "",
+    resumeCv: null,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -205,6 +209,8 @@ export default function RegisterPage() {
         );
         router.push("/login");
       } else {
+        localStorage.setItem("userRole", form.role);
+        toast.success("Welcome to SmartLMS!");
         router.push("/dashboard");
         router.refresh();
       }
@@ -384,6 +390,138 @@ export default function RegisterPage() {
                 ))}
               </div>
             </div>
+
+            {/* Instructor Profile Fields */}
+            {form.role === "INSTRUCTOR" && (
+              <div className="space-y-4 rounded-xl border-2 border-purple-200 bg-purple-50/50 p-4">
+                <h3 className="text-sm font-semibold text-purple-800">Instructor Profile</h3>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                    Professional Headline
+                  </label>
+                  <input
+                    name="professionalHeadline"
+                    placeholder="e.g. Senior Software Engineer | React Expert"
+                    value={form.professionalHeadline}
+                    onChange={(e) => updateField("professionalHeadline", e.target.value)}
+                    className={`w-full rounded-xl border-2 bg-gray-50 py-3 px-4 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
+                      errors.professionalHeadline ? "border-red-400" : "border-gray-200"
+                    }`}
+                  />
+                  {errors.professionalHeadline && (
+                    <p className="mt-1.5 text-sm text-red-500">{errors.professionalHeadline}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                    Bio
+                  </label>
+                  <textarea
+                    name="bio"
+                    placeholder="Tell students about your experience and teaching style..."
+                    rows={3}
+                    value={form.bio}
+                    onChange={(e) => updateField("bio", e.target.value)}
+                    className={`w-full rounded-xl border-2 bg-gray-50 py-3 px-4 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
+                      errors.bio ? "border-red-400" : "border-gray-200"
+                    }`}
+                  />
+                  {errors.bio && (
+                    <p className="mt-1.5 text-sm text-red-500">{errors.bio}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                    Areas of Expertise
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {EXPERTISE_OPTIONS.filter((o) => o !== "Other").map((area) => (
+                      <button
+                        key={area}
+                        type="button"
+                        onClick={() => toggleExpertise(area)}
+                        className={`rounded-full border-2 px-3 py-1.5 text-xs font-medium transition-all ${
+                          form.expertise.includes(area)
+                            ? "border-indigo-500 bg-indigo-500 text-white"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                        }`}
+                      >
+                        {form.expertise.includes(area) && (
+                          <CheckCircle2 className="mr-1 inline-block h-3 w-3" />
+                        )}
+                        {area}
+                      </button>
+                    ))}
+                  </div>
+                  {errors.expertise && (
+                    <p className="mt-1.5 text-sm text-red-500">{errors.expertise}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                    Years of Experience
+                  </label>
+                  <select
+                    name="experience"
+                    value={form.experience}
+                    onChange={(e) => updateField("experience", e.target.value)}
+                    className="w-full rounded-xl border-2 border-gray-200 bg-gray-50 py-3 px-4 text-sm text-gray-900 transition-all focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  >
+                    <option value="">Select...</option>
+                    <option value="1-3">1-3 years</option>
+                    <option value="3-5">3-5 years</option>
+                    <option value="5-10">5-10 years</option>
+                    <option value="10+">10+ years</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                    Portfolio URL (optional)
+                  </label>
+                  <input
+                    name="portfolioUrl"
+                    placeholder="https://yourportfolio.com"
+                    value={form.portfolioUrl}
+                    onChange={(e) => updateField("portfolioUrl", e.target.value)}
+                    className="w-full rounded-xl border-2 border-gray-200 bg-gray-50 py-3 px-4 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                    LinkedIn URL (optional)
+                  </label>
+                  <input
+                    name="linkedinUrl"
+                    placeholder="https://linkedin.com/in/yourprofile"
+                    value={form.linkedinUrl}
+                    onChange={(e) => updateField("linkedinUrl", e.target.value)}
+                    className="w-full rounded-xl border-2 border-gray-200 bg-gray-50 py-3 px-4 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                    Resume / CV (optional)
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 py-4 px-4 text-sm text-gray-600 transition-all hover:border-indigo-400 hover:bg-indigo-50/50">
+                    <Upload className="h-5 w-5 text-gray-400" />
+                    <span>{form.resumeCv ? form.resumeCv.name : "Choose a PDF or DOC file"}</span>
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      className="hidden"
+                      onChange={(e) => updateField("resumeCv", e.target.files?.[0] || null)}
+                    />
+                  </label>
+                </div>
+              </div>
+            )}
 
             {/* Name */}
             <div>

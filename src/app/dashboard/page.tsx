@@ -237,22 +237,60 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => (
-            <Card key={stat.label}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">{stat.label}</p>
-                    <p className="mt-1 text-3xl font-bold text-gray-900">{stat.value}</p>
-                    <p className="mt-1 text-xs text-gray-400">{stat.change}</p>
+          {stats.map((stat, index) => {
+            const gradients = [
+              "from-blue-500 to-blue-600",
+              "from-emerald-500 to-emerald-600",
+              "from-amber-500 to-orange-500",
+              "from-rose-500 to-pink-500",
+            ];
+            const bgGradients = [
+              "from-blue-50 to-blue-100/50",
+              "from-emerald-50 to-green-100/50",
+              "from-amber-50 to-orange-100/50",
+              "from-rose-50 to-pink-100/50",
+            ];
+            return (
+              <Card
+                key={stat.label}
+                className={`relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br ${bgGradients[index] || bgGradients[0]}`}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+                      <p className="text-4xl font-extrabold tracking-tight text-gray-900">{stat.value}</p>
+                      <div className="flex items-center gap-1.5 pt-1">
+                        {stat.trend === "up" ? (
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                            <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M3 5l3-3 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            {stat.change}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600">
+                            {stat.change}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className={`rounded-2xl bg-gradient-to-br ${gradients[index] || gradients[0]} p-3.5 shadow-lg`}>
+                      <stat.icon className="h-6 w-6 text-white" />
+                    </div>
                   </div>
-                  <div className={`rounded-xl p-3 ${stat.color}`}>
-                    <stat.icon className="h-6 w-6 text-white" />
+                  {/* Mini sparkline placeholder */}
+                  <div className="mt-4 flex items-end gap-0.5 h-8">
+                    {[40, 65, 45, 80, 55, 90, 70].map((h, i) => (
+                      <div
+                        key={i}
+                        className={`flex-1 rounded-sm bg-gradient-to-t ${gradients[index] || gradients[0]} opacity-30`}
+                        style={{ height: `${h}%` }}
+                      />
+                    ))}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* AI Insights Section */}
@@ -523,32 +561,63 @@ export default function DashboardPage() {
 
       {/* Quick Stats Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.label} className="relative overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-500">{stat.label}</p>
-                  <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
-                  <div className="flex items-center gap-1">
-                    {stat.trend === "up" && (
-                      <TrendingUp className="h-3 w-3 text-emerald-500" />
+        {stats.map((stat, index) => {
+          const gradients = [
+            "from-blue-500 to-blue-600",
+            "from-emerald-500 to-emerald-600",
+            "from-amber-500 to-orange-500",
+            "from-rose-500 to-pink-500",
+          ];
+          const bgGradients = [
+            "from-blue-50 to-blue-100/50",
+            "from-emerald-50 to-green-100/50",
+            "from-amber-50 to-orange-100/50",
+            "from-rose-50 to-pink-100/50",
+          ];
+          return (
+            <Card
+              key={stat.label}
+              className={`relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-br ${bgGradients[index] || bgGradients[0]}`}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+                    <p className="text-4xl font-extrabold tracking-tight text-gray-900">{stat.value}</p>
+                    <div className="flex items-center gap-1.5 pt-1">
+                      {stat.trend === "up" ? (
+                        <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                          <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M3 5l3-3 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          {stat.change}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600">
+                          {stat.change}
+                        </span>
+                      )}
+                    </div>
+                    {stat.subtitle && (
+                      <p className="text-xs text-gray-400">{stat.subtitle}</p>
                     )}
-                    <p className={`text-xs font-medium ${stat.trend === "up" ? "text-emerald-600" : "text-gray-500"}`}>
-                      {stat.change}
-                    </p>
                   </div>
-                  {stat.subtitle && (
-                    <p className="text-xs text-gray-400">{stat.subtitle}</p>
-                  )}
+                  <div className={`rounded-2xl bg-gradient-to-br ${gradients[index] || gradients[0]} p-3.5 shadow-lg`}>
+                    <stat.icon className="h-6 w-6 text-white" />
+                  </div>
                 </div>
-                <div className={`rounded-xl p-3 ${stat.color} shadow-lg`}>
-                  <stat.icon className="h-6 w-6 text-white" />
+                {/* Mini sparkline placeholder */}
+                <div className="mt-4 flex items-end gap-0.5 h-8">
+                  {[35, 60, 42, 75, 50, 85, 65].map((h, i) => (
+                    <div
+                      key={i}
+                      className={`flex-1 rounded-sm bg-gradient-to-t ${gradients[index] || gradients[0]} opacity-30`}
+                      style={{ height: `${h}%` }}
+                    />
+                  ))}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* AI Insights Section - Student */}

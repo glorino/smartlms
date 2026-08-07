@@ -7,7 +7,6 @@ import {
   Star,
   Award,
   BookOpen,
-  ChevronDown,
   ChevronRight,
   Check,
   Globe,
@@ -16,15 +15,49 @@ import {
 import Navbar from "@/components/layout/navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import EnrollButton from "./enroll-button";
 
-async function getCourse(id: string) {
+interface CourseDetail {
+  id: string;
+  title: string;
+  description?: string;
+  shortDescription?: string;
+  thumbnail?: string;
+  price: number;
+  salePrice?: number;
+  currency?: string;
+  category?: string;
+  level?: string;
+  language?: string;
+  rating?: number;
+  totalRatings?: number;
+  totalStudents?: number;
+  instructor?: {
+    id?: string;
+    name?: string;
+    avatar?: string;
+    bio?: string;
+  };
+  sections?: {
+    id: string;
+    title: string;
+    lessons?: {
+      id: string;
+      title: string;
+      type?: string;
+      duration?: number;
+      isPreview?: boolean;
+    }[];
+  }[];
+}
+
+async function getCourse(id: string): Promise<CourseDetail | null> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/courses/${id}`, {
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/courses/${id}`,
+      { cache: "no-store" }
+    );
     if (!res.ok) return null;
     const data = await res.json();
     return data.course || data;
@@ -35,9 +68,10 @@ async function getCourse(id: string) {
 
 async function getReviews(id: string) {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/courses/${id}/reviews`, {
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/courses/${id}/reviews`,
+      { cache: "no-store" }
+    );
     if (!res.ok) return [];
     return res.json();
   } catch {
@@ -76,15 +110,21 @@ export default async function CourseDetailPage({
   }
 
   const reviews = await getReviews(id);
-  const totalLessons = course.sections?.reduce(
-    (acc: number, s: any) => acc + (s.lessons?.length || 0),
-    0
-  ) || 0;
-  const totalDuration = course.sections?.reduce(
-    (acc: number, s: any) =>
-      acc + (s.lessons?.reduce((la: number, l: any) => la + (l.duration || 0), 0) || 0),
-    0
-  ) || 0;
+  const totalLessons =
+    course.sections?.reduce(
+      (acc: number, s: any) => acc + (s.lessons?.length || 0),
+      0
+    ) || 0;
+  const totalDuration =
+    course.sections?.reduce(
+      (acc: number, s: any) =>
+        acc + (s.lessons?.reduce((la: number, l: any) => la + (l.duration || 0), 0) || 0),
+      0
+    ) || 0;
+
+  const displayRating = course.rating ?? 0;
+  const displayTotalRatings = course.totalRatings ?? 0;
+  const displayTotalStudents = course.totalStudents ?? 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -104,8 +144,14 @@ export default async function CourseDetailPage({
               </nav>
 
               <div className="mb-4 flex flex-wrap gap-2">
-                {course.category && <Badge variant="secondary">{course.category}</Badge>}
-                {course.level && <Badge variant="outline" className="border-gray-600 text-gray-300">{course.level}</Badge>}
+                {course.category && (
+                  <Badge variant="secondary">{course.category}</Badge>
+                )}
+                {course.level && (
+                  <Badge variant="outline" className="border-gray-600 text-gray-300">
+                    {course.level}
+                  </Badge>
+                )}
               </div>
 
               <h1 className="text-3xl font-bold lg:text-4xl">{course.title}</h1>
@@ -116,17 +162,17 @@ export default async function CourseDetailPage({
 
               <div className="mt-6 flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-1">
-                  <StarRating rating={Math.round(course.rating)} size="lg" />
+                  <StarRating rating={Math.round(displayRating)} size="lg" />
                   <span className="ml-1 text-lg font-semibold">
-                    {course.rating.toFixed(1)}
+                    {displayRating.toFixed(1)}
                   </span>
                   <span className="text-gray-400">
-                    ({course.totalRatings.toLocaleString()} ratings)
+                    ({displayTotalRatings.toLocaleString()} ratings)
                   </span>
                 </div>
                 <div className="flex items-center gap-1 text-gray-300">
                   <Users className="h-4 w-4" />
-                  {course.totalStudents.toLocaleString()} students
+                  {displayTotalStudents.toLocaleString()} students
                 </div>
               </div>
 
@@ -189,19 +235,19 @@ export default async function CourseDetailPage({
                       <div className="flex items-baseline gap-2">
                         {course.salePrice && (
                           <span className="text-lg text-gray-400 line-through">
-                            {course.currency}{course.price}
+                            {course.currency}
+                            {course.price}
                           </span>
                         )}
                         <p className="text-3xl font-bold text-gray-900">
-                          {course.currency}{course.salePrice || course.price}
+                          {course.currency}
+                          {course.salePrice || course.price}
                         </p>
                       </div>
                     )}
                   </div>
 
-                  <Button className="w-full text-base" size="lg">
-                    {course.price === 0 ? "Enroll for Free" : "Enroll Now"}
-                  </Button>
+                  <EnrollButton courseId={course.id} />
 
                   <p className="mt-3 text-center text-sm text-gray-500">
                     30-day money-back guarantee
@@ -249,12 +295,15 @@ export default async function CourseDetailPage({
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    {course.description.split("\n").filter(Boolean).map((item: string, i: number) => (
-                      <div key={i} className="flex items-start gap-2">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
-                        <span className="text-sm text-gray-700">{item}</span>
-                      </div>
-                    ))}
+                    {course.description
+                      .split("\n")
+                      .filter(Boolean)
+                      .map((item: string, i: number) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
+                          <span className="text-sm text-gray-700">{item}</span>
+                        </div>
+                      ))}
                   </div>
                 </CardContent>
               </Card>
@@ -360,9 +409,9 @@ export default async function CourseDetailPage({
                 <div className="flex items-center justify-between">
                   <CardTitle>Student Reviews</CardTitle>
                   <div className="flex items-center gap-2">
-                    <StarRating rating={Math.round(course.rating)} />
+                    <StarRating rating={Math.round(displayRating)} />
                     <span className="text-sm font-medium">
-                      {course.rating.toFixed(1)} out of 5
+                      {displayRating.toFixed(1)} out of 5
                     </span>
                   </div>
                 </div>
@@ -375,7 +424,10 @@ export default async function CourseDetailPage({
                 ) : (
                   <div className="space-y-6">
                     {reviews.map((review: any) => (
-                      <div key={review.id} className="border-b border-gray-100 pb-6 last:border-0">
+                      <div
+                        key={review.id}
+                        className="border-b border-gray-100 pb-6 last:border-0"
+                      >
                         <div className="flex items-start gap-3">
                           <img
                             src={review.user?.avatar || "/avatars/default.png"}
