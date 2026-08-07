@@ -2,15 +2,37 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Check, X, HelpCircle, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Check,
+  X,
+  ChevronDown,
+  ChevronUp,
+  Shield,
+  CreditCard,
+  Sparkles,
+  Zap,
+  Crown,
+  Building2,
+  ArrowRight,
+  HelpCircle,
+  Star,
+  PhoneCall,
+} from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 
 const plans = [
   {
-    name: "Free",
+    name: "Starter",
     price: 0,
+    annualPrice: 0,
     period: "forever",
     description: "Perfect for getting started",
+    gradient: "from-blue-500 to-blue-600",
+    borderGradient: "from-blue-400 to-blue-600",
+    buttonGradient: "from-blue-500 to-blue-600",
+    buttonHover: "from-blue-600 to-blue-700",
+    icon: <Sparkles className="h-5 w-5" />,
+    badge: null,
     features: [
       { text: "Up to 5 courses", included: true },
       { text: "Unlimited students", included: true },
@@ -28,10 +50,17 @@ const plans = [
     popular: false,
   },
   {
-    name: "Pro",
+    name: "Professional",
     price: 29,
-    period: "month",
+    annualPrice: 23,
+    period: "/mo",
     description: "For serious course creators",
+    gradient: "from-purple-500 to-pink-500",
+    borderGradient: "from-purple-400 to-pink-500",
+    buttonGradient: "from-purple-500 to-pink-500",
+    buttonHover: "from-purple-600 to-pink-600",
+    icon: <Zap className="h-5 w-5" />,
+    badge: "Most Popular",
     features: [
       { text: "Unlimited courses", included: true },
       { text: "Unlimited students", included: true },
@@ -51,8 +80,15 @@ const plans = [
   {
     name: "Enterprise",
     price: 99,
-    period: "month",
+    annualPrice: 79,
+    period: "/mo",
     description: "For organizations and teams",
+    gradient: "from-amber-400 to-orange-500",
+    borderGradient: "from-amber-400 to-orange-500",
+    buttonGradient: "from-amber-400 to-orange-500",
+    buttonHover: "from-amber-500 to-orange-600",
+    icon: <Crown className="h-5 w-5" />,
+    badge: "Best Value",
     features: [
       { text: "Everything in Pro", included: true },
       { text: "Multi-instructor support", included: true },
@@ -71,6 +107,24 @@ const plans = [
   },
 ];
 
+const comparisonFeatures = [
+  { name: "Courses", starter: "5", pro: "Unlimited", enterprise: "Unlimited" },
+  { name: "Students", starter: "Unlimited", pro: "Unlimited", enterprise: "Unlimited" },
+  { name: "Quiz Types", starter: "Basic", pro: "14 Types", enterprise: "14 Types" },
+  { name: "Certificates", starter: "Basic", pro: "Custom Builder", enterprise: "Custom Builder" },
+  { name: "AI Course Builder", starter: false, pro: true, enterprise: true },
+  { name: "Live Classes", starter: false, pro: true, enterprise: true },
+  { name: "Analytics Dashboard", starter: false, pro: true, enterprise: true },
+  { name: "Custom Branding", starter: false, pro: true, enterprise: true },
+  { name: "SCORM Support", starter: false, pro: true, enterprise: true },
+  { name: "Multi-Instructor", starter: false, pro: false, enterprise: true },
+  { name: "API Access", starter: false, pro: false, enterprise: true },
+  { name: "SSO Integration", starter: false, pro: false, enterprise: true },
+  { name: "Dedicated Support", starter: false, pro: false, enterprise: true },
+  { name: "SLA Guarantee", starter: false, pro: false, enterprise: true },
+  { name: "On-Premise Option", starter: false, pro: false, enterprise: true },
+];
+
 const faqs = [
   {
     q: "Can I switch plans anytime?",
@@ -78,7 +132,7 @@ const faqs = [
   },
   {
     q: "Is there a free trial for Pro?",
-    a: "Yes, we offer a 14-day free trial for the Pro plan. No credit card required to start.",
+    a: "Yes, we offer a 14-day free trial for the Professional plan. No credit card required to start.",
   },
   {
     q: "Do you take a cut of my course revenue?",
@@ -92,6 +146,10 @@ const faqs = [
     q: "What payment methods do you accept?",
     a: "We accept all major credit cards, PayPal, and bank transfers for annual Enterprise plans.",
   },
+  {
+    q: "Is there a money-back guarantee?",
+    a: "Absolutely! We offer a 30-day money-back guarantee on all paid plans. If you're not satisfied, we'll refund your payment — no questions asked.",
+  },
 ];
 
 export default function PricingPage() {
@@ -99,131 +157,443 @@ export default function PricingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <Navbar />
 
-      {/* Hero */}
-      <div className="gradient-primary py-16">
-        <div className="mx-auto max-w-7xl px-4 text-center">
-          <h1 className="text-4xl font-bold text-white">
-            Simple, Transparent Pricing
+      {/* Hero Section */}
+      <section className="relative overflow-hidden pt-24 pb-20">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-gradient-to-br from-blue-400/20 to-purple-500/20 blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-gradient-to-br from-purple-400/20 to-pink-500/20 blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-300/10 to-orange-400/10 blur-3xl" />
+        </div>
+        <div className="relative mx-auto max-w-7xl px-4 text-center">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600">
+            <Sparkles className="h-4 w-4" />
+            No credit card required
+          </div>
+          <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 sm:text-6xl lg:text-7xl">
+            Simple,{" "}
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Transparent
+            </span>{" "}
+            Pricing
           </h1>
-          <p className="mt-4 text-lg text-white/80">
-            Start free, scale as you grow. No hidden fees.
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-500 sm:text-xl">
+            Start free, scale as you grow. No hidden fees, no surprises.
+            Choose the plan that fits your needs.
           </p>
-          <div className="mt-6 flex items-center justify-center gap-3">
+
+          {/* Billing Toggle */}
+          <div className="mt-10 flex items-center justify-center gap-4">
             <span
-              className={`text-sm ${!annual ? "text-white font-semibold" : "text-white/60"}`}
+              className={`text-sm font-medium transition-colors ${
+                !annual ? "text-gray-900" : "text-gray-400"
+              }`}
             >
               Monthly
             </span>
             <button
               onClick={() => setAnnual(!annual)}
-              className={`relative h-6 w-12 rounded-full transition-colors ${annual ? "bg-white" : "bg-white/30"}`}
+              className={`relative h-8 w-16 rounded-full transition-all duration-300 ${
+                annual
+                  ? "bg-gradient-to-r from-blue-500 to-purple-600"
+                  : "bg-gray-300"
+              }`}
             >
               <span
-                className={`absolute top-0.5 h-5 w-5 rounded-full bg-indigo-600 transition-transform ${annual ? "translate-x-6" : "translate-x-0.5"}`}
+                className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow-md transition-transform duration-300 ${
+                  annual ? "translate-x-8" : "translate-x-1"
+                }`}
               />
             </button>
             <span
-              className={`text-sm ${annual ? "text-white font-semibold" : "text-white/60"}`}
+              className={`text-sm font-medium transition-colors ${
+                annual ? "text-gray-900" : "text-gray-400"
+              }`}
             >
               Annual
-              <span className="ml-1 rounded-full bg-white/20 px-2 py-0.5 text-xs">
-                Save 20%
-              </span>
+            </span>
+            <span className="rounded-full bg-gradient-to-r from-green-400 to-emerald-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
+              Save 20%
             </span>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Pricing Cards */}
-      <div className="mx-auto max-w-7xl px-4 py-16">
-        <div className="grid gap-8 md:grid-cols-3">
+      <section className="mx-auto max-w-7xl px-4 pb-20">
+        <div className="grid gap-8 lg:grid-cols-3">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`relative rounded-2xl border-2 bg-white p-8 shadow-sm transition-shadow hover:shadow-lg ${
+              className={`group relative rounded-3xl transition-all duration-500 hover:scale-105 ${
                 plan.popular
-                  ? "border-indigo-500"
-                  : "border-gray-200"
+                  ? "z-10 shadow-2xl lg:-mt-4 lg:mb-4"
+                  : "shadow-lg hover:shadow-2xl"
               }`}
             >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-indigo-600 px-4 py-1 text-xs font-semibold text-white">
-                  Most Popular
+              {/* Popular Badge */}
+              {plan.badge && (
+                <div className="absolute -top-5 left-1/2 z-20 -translate-x-1/2">
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r px-5 py-2 text-sm font-bold text-white shadow-lg ${plan.gradient}`}
+                  >
+                    {plan.popular && <Star className="h-4 w-4 fill-current" />}
+                    {plan.badge}
+                  </span>
                 </div>
               )}
-              <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-              <p className="mt-2 text-sm text-gray-500">{plan.description}</p>
-              <div className="mt-6">
-                <span className="text-4xl font-bold text-gray-900">
-                  ${annual ? Math.round(plan.price * 0.8) : plan.price}
-                </span>
-                <span className="text-gray-500">/{plan.period}</span>
-              </div>
-              <Link
-                href={plan.href}
-                className={`mt-6 block w-full rounded-xl py-3 text-center text-sm font-semibold transition-colors ${
+
+              {/* Card Background */}
+              <div
+                className={`relative overflow-hidden rounded-3xl ${
                   plan.popular
-                    ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                    : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    ? "bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 p-1"
+                    : "border-2 border-transparent bg-white p-1"
                 }`}
+                style={{
+                  backgroundImage: !plan.popular
+                    ? `linear-gradient(white, white), linear-gradient(135deg, var(--tw-gradient-stops))`
+                    : undefined,
+                }}
               >
-                {plan.cta}
-              </Link>
-              <ul className="mt-8 space-y-3">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    {feature.included ? (
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
-                    ) : (
-                      <X className="mt-0.5 h-4 w-4 shrink-0 text-gray-300" />
-                    )}
-                    <span
-                      className={`text-sm ${feature.included ? "text-gray-700" : "text-gray-400"}`}
+                <div
+                  className={`overflow-hidden rounded-[22px] ${
+                    plan.popular ? "bg-white/95" : "bg-white"
+                  }`}
+                >
+                  <div className="p-8 lg:p-10">
+                    {/* Plan Header */}
+                    <div className="mb-6">
+                      <div
+                        className={`mb-4 inline-flex items-center justify-center rounded-2xl p-3 bg-gradient-to-br ${plan.gradient} text-white shadow-lg`}
+                      >
+                        {plan.icon}
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900">
+                        {plan.name}
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {plan.description}
+                      </p>
+                    </div>
+
+                    {/* Price */}
+                    <div className="mb-8">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-5xl font-extrabold text-gray-900">
+                          {annual
+                            ? `$${plan.annualPrice}`
+                            : `$${plan.price}`}
+                        </span>
+                        {plan.price > 0 && (
+                          <span className="text-gray-400">
+                            {plan.period}
+                          </span>
+                        )}
+                      </div>
+                      {annual && plan.price > 0 && (
+                        <p className="mt-1 text-sm text-green-600 font-medium">
+                          Save ${(plan.price - plan.annualPrice) * 12}/year
+                        </p>
+                      )}
+                      {plan.price === 0 && (
+                        <p className="mt-1 text-sm text-gray-400">
+                          Free forever
+                        </p>
+                      )}
+                    </div>
+
+                    {/* CTA Button */}
+                    <Link
+                      href={plan.href}
+                      className={`mb-8 block w-full rounded-xl bg-gradient-to-r py-4 text-center text-sm font-bold text-white shadow-lg transition-all duration-300 hover:shadow-xl ${plan.buttonGradient} hover:${plan.buttonHover}`}
                     >
-                      {feature.text}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+                      <span className="flex items-center justify-center gap-2">
+                        {plan.cta}
+                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      </span>
+                    </Link>
+
+                    {/* Features */}
+                    <div className="space-y-3">
+                      {plan.features.map((feature, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <div
+                            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                              feature.included
+                                ? "bg-gradient-to-br from-green-400 to-emerald-500 text-white"
+                                : "bg-gray-100"
+                            }`}
+                          >
+                            {feature.included ? (
+                              <Check className="h-3 w-3" />
+                            ) : (
+                              <X className="h-3 w-3 text-gray-400" />
+                            )}
+                          </div>
+                          <span
+                            className={`text-sm ${
+                              feature.included
+                                ? "text-gray-700 font-medium"
+                                : "text-gray-400"
+                            }`}
+                          >
+                            {feature.text}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* FAQ */}
-      <div className="mx-auto max-w-3xl px-4 py-16">
-        <h2 className="mb-8 text-center text-3xl font-bold text-gray-900">
-          Frequently Asked Questions
-        </h2>
-        <div className="space-y-4">
+      {/* Feature Comparison Table */}
+      <section className="mx-auto max-w-7xl px-4 py-20">
+        <div className="mb-12 text-center">
+          <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+            Feature Comparison
+          </h2>
+          <p className="mt-4 text-gray-500">
+            See exactly what each plan includes
+          </p>
+        </div>
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                    Features
+                  </th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-blue-600">Starter</span>
+                      <span className="text-xs font-normal text-gray-400">Free</span>
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-purple-600">Professional</span>
+                      <span className="text-xs font-normal text-gray-400">$29/mo</span>
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-amber-600">Enterprise</span>
+                      <span className="text-xs font-normal text-gray-400">$99/mo</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {comparisonFeatures.map((feature, i) => (
+                  <tr
+                    key={i}
+                    className="transition-colors hover:bg-gray-50/50"
+                  >
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {feature.name}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <FeatureCell value={feature.starter} color="blue" />
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <FeatureCell value={feature.pro} color="purple" />
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <FeatureCell value={feature.enterprise} color="amber" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="mx-auto max-w-3xl px-4 py-20">
+        <div className="mb-12 text-center">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-100 bg-purple-50 px-4 py-2 text-sm font-medium text-purple-600">
+            <HelpCircle className="h-4 w-4" />
+            FAQ
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+            Frequently Asked Questions
+          </h2>
+          <p className="mt-4 text-gray-500">
+            Everything you need to know about our plans
+          </p>
+        </div>
+        <div className="space-y-3">
           {faqs.map((faq, i) => (
             <div
               key={i}
-              className="rounded-xl border border-gray-200 bg-white"
+              className={`overflow-hidden rounded-2xl border transition-all duration-300 ${
+                openFaq === i
+                  ? "border-purple-200 bg-white shadow-lg"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              }`}
             >
               <button
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="flex w-full items-center justify-between p-5 text-left"
+                className="flex w-full items-center justify-between p-6 text-left"
               >
-                <span className="font-medium text-gray-900">{faq.q}</span>
-                {openFaq === i ? (
-                  <ChevronUp className="h-5 w-5 text-gray-500" />
-                ) : (
-                  <ChevronDown className="h-5 w-5 text-gray-500" />
-                )}
+                <span className="pr-4 font-semibold text-gray-900">
+                  {faq.q}
+                </span>
+                <span
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all duration-300 ${
+                    openFaq === i
+                      ? "bg-gradient-to-br from-purple-500 to-pink-500 text-white rotate-180"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </span>
               </button>
-              {openFaq === i && (
-                <div className="border-t border-gray-100 px-5 pb-5 pt-4">
-                  <p className="text-sm text-gray-600">{faq.a}</p>
+              <div
+                className={`transition-all duration-300 ${
+                  openFaq === i ? "max-h-48 opacity-100" : "max-h-0 opacity-0"
+                }`}
+              >
+                <div className="px-6 pb-6">
+                  <p className="text-gray-600 leading-relaxed">{faq.a}</p>
                 </div>
-              )}
+              </div>
             </div>
           ))}
         </div>
-      </div>
+      </section>
+
+      {/* Money-Back Guarantee */}
+      <section className="mx-auto max-w-5xl px-4 py-16">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 p-1">
+          <div className="relative overflow-hidden rounded-[22px] bg-white/95 px-8 py-16 text-center sm:px-16">
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-green-100/50 blur-3xl" />
+              <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-emerald-100/50 blur-3xl" />
+            </div>
+            <div className="relative">
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-emerald-500 shadow-xl">
+                <Shield className="h-10 w-10 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+                30-Day Money-Back Guarantee
+              </h2>
+              <p className="mx-auto mt-4 max-w-xl text-gray-600">
+                We&apos;re confident you&apos;ll love SmartLMS. If you&apos;re not
+                completely satisfied within 30 days, we&apos;ll refund your
+                payment — no questions asked.
+              </p>
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Check className="h-5 w-5 text-green-500" />
+                  <span className="text-sm font-medium">Full refund</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Check className="h-5 w-5 text-green-500" />
+                  <span className="text-sm font-medium">No questions asked</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Check className="h-5 w-5 text-green-500" />
+                  <span className="text-sm font-medium">Keep your data</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="mx-auto max-w-7xl px-4 py-20">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 p-1">
+          <div className="relative overflow-hidden rounded-[22px] px-8 py-16 text-center sm:px-16">
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute -top-20 -right-20 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
+              <div className="absolute -bottom-20 -left-20 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
+              <div className="absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/5 blur-2xl" />
+            </div>
+            <div className="relative">
+              <h2 className="text-3xl font-extrabold text-white sm:text-5xl">
+                Ready to Get Started?
+              </h2>
+              <p className="mx-auto mt-6 max-w-2xl text-lg text-white/80">
+                Join thousands of educators and organizations building the
+                future of learning. Start for free today.
+              </p>
+              <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <Link
+                  href="/register"
+                  className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-sm font-bold text-gray-900 shadow-xl transition-all duration-300 hover:scale-105 hover:bg-gray-50"
+                >
+                  <CreditCard className="h-5 w-5" />
+                  Start Free Trial
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center gap-2 rounded-xl border-2 border-white/30 px-8 py-4 text-sm font-bold text-white transition-all duration-300 hover:border-white/60 hover:bg-white/10"
+                >
+                  <PhoneCall className="h-5 w-5" />
+                  Talk to Sales
+                </Link>
+              </div>
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-white/70">
+                <span className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4" />
+                  No credit card required
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4" />
+                  14-day free trial
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Check className="h-4 w-4" />
+                  Cancel anytime
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
+  );
+}
+
+function FeatureCell({
+  value,
+  color,
+}: {
+  value: boolean | string;
+  color: "blue" | "purple" | "amber";
+}) {
+  const gradients = {
+    blue: "from-blue-400 to-blue-600",
+    purple: "from-purple-400 to-purple-600",
+    amber: "from-amber-400 to-amber-600",
+  };
+
+  if (typeof value === "boolean") {
+    return value ? (
+      <div
+        className={`mx-auto flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br text-white shadow-sm ${gradients[color]}`}
+      >
+        <Check className="h-3.5 w-3.5" />
+      </div>
+    ) : (
+      <div className="mx-auto flex h-6 w-6 items-center justify-center rounded-full bg-gray-100">
+        <X className="h-3.5 w-3.5 text-gray-400" />
+      </div>
+    );
+  }
+  return (
+    <span className="text-sm font-medium text-gray-700">{value}</span>
   );
 }
