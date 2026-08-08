@@ -97,7 +97,7 @@ export async function POST(request: Request) {
     const updated = await prisma.assignment.update({
       where: { id: assignmentId },
       data: {
-        ...(grade !== undefined && { grade: Number(grade) }),
+        ...(grade !== undefined && { score: Number(grade) }),
         ...(feedback !== undefined && { feedback }),
         ...(grade !== undefined && { status: "GRADED" }),
       },

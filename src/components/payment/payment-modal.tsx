@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { X, Loader2, CreditCard, Shield, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -21,8 +22,9 @@ export default function PaymentModal({
   amount,
   currency = "NGN",
 }: PaymentModalProps) {
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
+  const { data: session } = useSession();
+  const [email, setEmail] = useState(session?.user?.email || "");
+  const [name, setName] = useState(session?.user?.name || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 

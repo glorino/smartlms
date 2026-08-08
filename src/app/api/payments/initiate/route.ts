@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rate-limit";
+import prisma from "@/lib/prisma";
 
 const FLUTTERWAVE_SECRET = process.env.FLUTTERWAVE_SECRET_KEY;
 const FLUTTERWAVE_PUBLIC = process.env.FLUTTERWAVE_PUBLIC_KEY;
@@ -23,6 +24,14 @@ export async function POST(request: Request) {
         { error: "Missing required fields: courseId, amount, email, name" },
         { status: 400 }
       );
+    }
+
+    const course = await prisma.course.findUnique({ where: { id: courseId } });
+    if (!course) {
+      return NextResponse.json({ error: "Course not found" }, { status: 404 });
+    }
+    if (course.price > 0 && Number(amount) < course.price) {
+      return NextResponse.json({ error: "Invalid amount: amount is less than course price" }, { status: 400 });
     }
 
     const tx_ref = `smartlms-${courseId.slice(0, 8)}-${session.user.id.slice(0, 8)}-${Date.now()}`;

@@ -30,7 +30,7 @@ const plans = [
     gradient: "from-blue-500 to-blue-600",
     borderGradient: "from-blue-400 to-blue-600",
     buttonGradient: "from-blue-500 to-blue-600",
-    buttonHover: "from-blue-600 to-blue-700",
+    buttonHover: "hover:from-blue-600 hover:to-blue-700",
     icon: <Sparkles className="h-5 w-5" />,
     badge: null,
     features: [
@@ -58,7 +58,7 @@ const plans = [
     gradient: "from-purple-500 to-pink-500",
     borderGradient: "from-purple-400 to-pink-500",
     buttonGradient: "from-purple-500 to-pink-500",
-    buttonHover: "from-purple-600 to-pink-600",
+    buttonHover: "hover:from-purple-600 hover:to-pink-600",
     icon: <Zap className="h-5 w-5" />,
     badge: "Most Popular",
     features: [
@@ -86,7 +86,7 @@ const plans = [
     gradient: "from-amber-400 to-orange-500",
     borderGradient: "from-amber-400 to-orange-500",
     buttonGradient: "from-amber-400 to-orange-500",
-    buttonHover: "from-amber-500 to-orange-600",
+    buttonHover: "hover:from-amber-500 hover:to-orange-600",
     icon: <Crown className="h-5 w-5" />,
     badge: "Best Value",
     features: [
@@ -308,7 +308,7 @@ export default function PricingPage() {
                     {/* CTA Button */}
                     <Link
                       href={plan.href}
-                      className={`mb-8 block w-full rounded-xl bg-gradient-to-r py-4 text-center text-sm font-bold text-white shadow-lg transition-all duration-300 hover:shadow-xl ${plan.buttonGradient} hover:${plan.buttonHover}`}
+                      className={`mb-8 block w-full rounded-xl bg-gradient-to-r py-4 text-center text-sm font-bold text-white shadow-lg transition-all duration-300 hover:shadow-xl ${plan.buttonGradient} ${plan.buttonHover}`}
                     >
                       <span className="flex items-center justify-center gap-2">
                         {plan.cta}
