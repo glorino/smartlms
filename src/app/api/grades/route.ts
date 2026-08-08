@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
     const userId = session.user.id;
     const body = await request.json();
-    const { score, totalPoints, type } = body;
+    const { score, totalPoints, type, courseId, quizId, studentId } = body;
 
     if (score === undefined || totalPoints === undefined) {
       return NextResponse.json(
@@ -71,12 +71,14 @@ export async function POST(request: Request) {
 
     const grade = await prisma.grade.create({
       data: {
-        userId,
+        userId: studentId || userId,
         score,
         totalPoints,
         percentage,
         letterGrade,
         type: type || "QUIZ",
+        ...(courseId && { courseId }),
+        ...(quizId && { quizId }),
       },
     });
 

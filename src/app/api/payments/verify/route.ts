@@ -68,7 +68,7 @@ export async function GET(request: Request) {
 
       if (existingPurchase) {
         return NextResponse.redirect(
-          new URL(`/payment/success?tx_ref=${tx_ref}&course_id=${courseId}`, request.url)
+          new URL("/payment/success?already=1", request.url)
         );
       }
 

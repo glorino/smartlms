@@ -62,19 +62,31 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  if (pathname === "/api/courses" && method === "POST") {
-    if (!req.auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-  }
-  if (pathname === "/api/enrollments" && method === "POST") {
-    if (!req.auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-  }
-  if (pathname === "/api/notifications" && method === "POST") {
-    if (!req.auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const mutatingMethods = ["POST", "PUT", "DELETE"];
+  if (mutatingMethods.includes(method)) {
+    const protectedPaths = [
+      /^\/api\/reviews$/,
+      /^\/api\/notes$/,
+      /^\/api\/notes\/[^/]+$/,
+      /^\/api\/messages$/,
+      /^\/api\/quizzes$/,
+      /^\/api\/quizzes\/[^/]+$/,
+      /^\/api\/grades$/,
+      /^\/api\/assignments$/,
+      /^\/api\/progress$/,
+      /^\/api\/live-classes$/,
+      /^\/api\/live-classes\/[^/]+$/,
+      /^\/api\/courses$/,
+      /^\/api\/enrollments$/,
+      /^\/api\/notifications$/,
+    ];
+    for (const pattern of protectedPaths) {
+      if (pattern.test(pathname)) {
+        if (!req.auth) {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        break;
+      }
     }
   }
 
