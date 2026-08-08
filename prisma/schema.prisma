@@ -133,6 +133,9 @@ model Course {
   dripContent     DripContent[]
   liveClasses     LiveClass[]
   purchases       Purchase[]
+  assignments     Assignment[]
+  grades          Grade[]
+  notes           Note[]
 
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
@@ -224,6 +227,7 @@ model Quiz {
 
   questions       Question[]
   attempts        QuizAttempt[]
+  grades          Grade[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -462,6 +466,7 @@ model Assignment {
   user        User     @relation(fields: [userId], references: [id])
   lessonId    String?
   courseId    String?
+  course      Course?  @relation(fields: [courseId], references: [id])
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -482,7 +487,9 @@ model Grade {
   userId      String
   user        User     @relation(fields: [userId], references: [id])
   courseId    String?
+  course      Course?  @relation(fields: [courseId], references: [id])
   quizId      String?
+  quiz        Quiz?    @relation(fields: [quizId], references: [id])
 
   @@index([userId])
   @@index([courseId])
@@ -502,6 +509,7 @@ model Note {
   lessonId    String
   lesson      Lesson   @relation(fields: [lessonId], references: [id])
   courseId    String
+  course      Course?  @relation(fields: [courseId], references: [id])
 
   @@index([userId])
   @@index([lessonId])

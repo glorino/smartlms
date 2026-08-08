@@ -36,19 +36,8 @@ const roleColors: Record<string, string> = {
   ADMIN: "bg-red-100 text-red-700",
 };
 
-const fallbackUsers: UserItem[] = [
-  { id: "1", name: "Sarah Johnson", email: "sarah@example.com", role: "INSTRUCTOR", status: "active", createdAt: "2024-01-15", enrolledCourses: 0 },
-  { id: "2", name: "Mike Chen", email: "mike@example.com", role: "STUDENT", status: "active", createdAt: "2024-03-22", enrolledCourses: 5 },
-  { id: "3", name: "Emily Davis", email: "emily@example.com", role: "STUDENT", status: "active", createdAt: "2024-05-10", enrolledCourses: 3 },
-  { id: "4", name: "Alex Wilson", email: "alex@example.com", role: "ADMIN", status: "active", createdAt: "2023-11-01", enrolledCourses: 0 },
-  { id: "5", name: "Jordan Lee", email: "jordan@example.com", role: "STUDENT", status: "active", createdAt: "2024-02-28", enrolledCourses: 7 },
-  { id: "6", name: "Chris Brown", email: "chris@example.com", role: "INSTRUCTOR", status: "inactive", createdAt: "2024-04-05", enrolledCourses: 0 },
-  { id: "7", name: "Dr. Lisa Wang", email: "lisa@example.com", role: "INSTRUCTOR", status: "active", createdAt: "2023-09-18", enrolledCourses: 0 },
-  { id: "8", name: "Tom Anderson", email: "tom@example.com", role: "STUDENT", status: "active", createdAt: "2024-06-12", enrolledCourses: 2 },
-];
-
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<UserItem[]>(fallbackUsers);
+  const [users, setUsers] = useState<UserItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -63,7 +52,7 @@ export default function AdminUsersPage() {
           setUsers(data.users || data || []);
         }
       } catch {
-        // Use fallback
+        setUsers([]);
       }
     }
     fetchUsers();
@@ -174,6 +163,15 @@ export default function AdminUsersPage() {
       </Card>
 
       {/* Users Table */}
+      {users.length === 0 ? (
+        <Card>
+          <CardContent className="py-16 text-center">
+            <Users className="mx-auto h-12 w-12 text-gray-300" />
+            <p className="mt-4 text-lg font-medium text-gray-900">No users found</p>
+            <p className="mt-1 text-sm text-gray-500">No users have been registered yet.</p>
+          </CardContent>
+        </Card>
+      ) : (
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -271,6 +269,7 @@ export default function AdminUsersPage() {
           )}
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }

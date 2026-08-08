@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
+import prisma from "@/lib/prisma";
+import crypto from "crypto";
+
+const passwordResetTokens = new Map<string, { userId: string; expiresAt: number }>();
 
 export async function POST(request: Request) {
   try {
@@ -23,7 +27,27 @@ export async function POST(request: Request) {
       );
     }
 
-    // Mock: In production, send an actual reset email here
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      return NextResponse.json({
+        success: true,
+        message: "If an account exists with that email, a password reset link has been sent.",
+      });
+    }
+
+    const token = crypto.randomBytes(24).toString("hex");
+    const expiresAt = Date.now() + 60 * 60 * 1000;
+
+    passwordResetTokens.set(token, { userId: user.id, expiresAt });
+
+    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password?token=${token}`;
+    console.log(`\n========== PASSWORD RESET ==========`);
+    console.log(`User: ${user.email}`);
+    console.log(`Reset URL: ${resetUrl}`);
+    console.log(`Token expires in 1 hour`);
+    console.log(`=====================================\n`);
+
     return NextResponse.json({
       success: true,
       message: "If an account exists with that email, a password reset link has been sent.",
@@ -34,4 +58,18 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
+}
+
+export function getResetToken(token: string) {
+  const data = passwordResetTokens.get(token);
+  if (!data) return null;
+  if (Date.now() > data.expiresAt) {
+    passwordResetTokens.delete(token);
+    return null;
+  }
+  return data;
+}
+
+export function deleteResetToken(token: string) {
+  passwordResetTokens.delete(token);
 }

@@ -12,6 +12,8 @@ export async function GET(request: Request) {
     const userId = session.user.id;
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type") || "all";
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "20");
 
     const where: any = {};
 
@@ -23,20 +25,32 @@ export async function GET(request: Request) {
       where.OR = [{ senderId: userId }, { receiverId: userId }];
     }
 
-    const messages = await prisma.message.findMany({
-      where,
-      include: {
-        sender: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-        receiver: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const skip = (page - 1) * limit;
 
-    return NextResponse.json({ messages });
+    const [messages, total] = await Promise.all([
+      prisma.message.findMany({
+        where,
+        include: {
+          sender: {
+            select: { id: true, name: true, email: true, avatar: true },
+          },
+          receiver: {
+            select: { id: true, name: true, email: true, avatar: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.message.count({ where }),
+    ]);
+
+    return NextResponse.json({
+      messages,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (error) {
     return NextResponse.json(
       { error: "Internal server error" },
