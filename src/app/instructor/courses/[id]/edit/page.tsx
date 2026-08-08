@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import {
   ArrowLeft,
   Plus,
@@ -63,6 +64,7 @@ export default function EditCoursePage() {
   const [price, setPrice] = useState("");
   const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [sections, setSections] = useState<Section[]>([]);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function fetchCourse() {
@@ -181,11 +183,13 @@ export default function EditCoursePage() {
         }),
       });
       if (res.ok) {
-        alert(publish ? "Course updated and published!" : "Changes saved as draft!");
+        toast.success(publish ? "Course updated and published!" : "Changes saved as draft!");
         router.push("/instructor/courses");
+      } else {
+        toast.error("Failed to save changes");
       }
     } catch {
-      alert("Failed to save changes");
+      toast.error("Failed to save changes");
     } finally {
       setSaving(false);
     }
@@ -394,7 +398,7 @@ export default function EditCoursePage() {
                 </div>
               ) : (
                 <button
-                  onClick={() => setThumbnail("/placeholder-thumbnail.jpg")}
+                  onClick={() => thumbnailInputRef.current?.click()}
                   className="flex h-40 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 transition-colors hover:border-primary hover:bg-gray-50"
                 >
                   <ImageIcon className="h-10 w-10 text-gray-400" />
@@ -402,6 +406,29 @@ export default function EditCoursePage() {
                   <span className="text-xs text-gray-400">PNG, JPG up to 5MB</span>
                 </button>
               )}
+              <input
+                ref={thumbnailInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (!file.type.startsWith("image/")) {
+                    toast.error("Please upload an image file");
+                    return;
+                  }
+                  if (file.size > 5 * 1024 * 1024) {
+                    toast.error("File size must be under 5MB");
+                    return;
+                  }
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    setThumbnail(reader.result as string);
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
             </CardContent>
           </Card>
 

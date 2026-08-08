@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import toast from "react-hot-toast";
 import {
   Calendar,
   ChevronLeft,
@@ -27,9 +28,11 @@ import {
   ArrowUpRight,
   History,
   Shield,
+  X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
 const trainingCourses = [
@@ -117,33 +120,6 @@ const trainingHistory = [
   { id: 5, title: "Anti-Harassment Training", completedDate: "Jul 1, 2026", score: 90, certificate: true },
 ];
 
-const calendarDays = (() => {
-  const days = [];
-  const year = 2026;
-  const month = 7; // August (0-indexed)
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  for (let i = 0; i < firstDay; i++) {
-    days.push({ day: 0, events: [] });
-  }
-
-  const events: Record<number, string[]> = {
-    5: ["Cybersecurity Quiz"],
-    10: ["D&I Training Due"],
-    15: ["Cybersecurity Due"],
-    20: ["Safety Training Due"],
-    25: ["Leadership Workshop"],
-    30: ["Leadership Due"],
-  };
-
-  for (let d = 1; d <= daysInMonth; d++) {
-    days.push({ day: d, events: events[d] || [] });
-  }
-
-  return days;
-})();
-
 const upcomingMandatory = trainingCourses.filter(
   (t) => t.type === "mandatory" && t.status !== "completed"
 );
@@ -153,8 +129,34 @@ const certificates = trainingHistory.filter((t) => t.certificate);
 export default function TrainingPage() {
   const { data: session } = useSession();
   const user = session?.user;
-  const [currentMonth] = useState("August 2026");
+  const [currentMonth, setCurrentMonth] = useState(7); // 0-indexed, 7 = August
   const [selectedFilter, setSelectedFilter] = useState("all");
+  const [viewingTraining, setViewingTraining] = useState<typeof trainingCourses[number] | null>(null);
+
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+  const calendarDays = (() => {
+    const year = 2026;
+    const month = currentMonth;
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const days: { day: number; events: string[] }[] = [];
+    const events: Record<number, string[]> = {
+      5: ["Cybersecurity Quiz"],
+      10: ["D&I Training Due"],
+      15: ["Cybersecurity Due"],
+      20: ["Safety Training Due"],
+      25: ["Leadership Workshop"],
+      30: ["Leadership Due"],
+    };
+    for (let i = 0; i < firstDay; i++) {
+      days.push({ day: 0, events: [] });
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      days.push({ day: d, events: events[d] || [] });
+    }
+    return days;
+  })();
 
   const completedCount = trainingCourses.filter((t) => t.status === "completed").length;
   const inProgressCount = trainingCourses.filter((t) => t.status === "in-progress").length;
@@ -181,7 +183,24 @@ export default function TrainingPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50">
+          <button
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
+            onClick={() => {
+              const headers = ["Title", "Type", "Category", "Status", "Progress", "Duration", "Due Date"];
+              const rows = trainingCourses.map((c) => [c.title, c.type, c.category, c.status, `${c.progress}%`, c.duration, c.dueDate]);
+              const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+              const blob = new Blob([csv], { type: "text/csv" });
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "training_report.csv";
+              document.body.appendChild(a);
+              a.click();
+              window.URL.revokeObjectURL(url);
+              a.remove();
+              toast.success("Training report exported");
+            }}
+          >
             <Download className="h-4 w-4" />
             Export Report
           </button>
@@ -262,13 +281,19 @@ export default function TrainingPage() {
               Training Calendar
             </CardTitle>
             <div className="flex items-center gap-2">
-              <button className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600">
+              <button
+                onClick={() => setCurrentMonth((prev) => (prev > 0 ? prev - 1 : 11))}
+                className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+              >
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <span className="min-w-[120px] text-center text-sm font-medium text-gray-900">
-                {currentMonth}
+                {monthNames[currentMonth]} 2026
               </span>
-              <button className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600">
+              <button
+                onClick={() => setCurrentMonth((prev) => (prev < 11 ? prev + 1 : 0))}
+                className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+              >
                 <ChevronRight className="h-5 w-5" />
               </button>
             </div>
@@ -604,7 +629,22 @@ export default function TrainingPage() {
                         Score: {cert.score}% · {cert.completedDate}
                       </p>
                     </div>
-                    <button className="shrink-0 rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-indigo-600">
+                    <button
+                      className="shrink-0 rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-indigo-600"
+                      onClick={() => {
+                        const content = `Certificate of Completion\n\nThis certifies that ${user?.name || "User"} has successfully completed "${cert.title}" with a score of ${cert.score}%.\n\nCompleted: ${cert.completedDate}`;
+                        const blob = new Blob([content], { type: "text/plain" });
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `${cert.title.replace(/\s+/g, "_")}_certificate.txt`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        a.remove();
+                        toast.success("Certificate downloaded");
+                      }}
+                    >
                       <Download className="h-4 w-4" />
                     </button>
                   </div>
@@ -689,7 +729,16 @@ export default function TrainingPage() {
                       )}
                     </td>
                     <td className="py-4 text-right">
-                      <button className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-indigo-600">
+                      <button
+                        className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-indigo-600"
+                        onClick={() => {
+                          const course = trainingCourses.find((c) => c.title === item.title);
+                          if (course) setViewingTraining(course);
+                          else {
+                            toast(`Training: ${item.title}\nCompleted: ${item.completedDate}\nScore: ${item.score}%\nCertificate: ${item.certificate ? "Earned" : "Not available"}`, { icon: "ℹ️" });
+                          }
+                        }}
+                      >
                         <Eye className="h-4 w-4" />
                       </button>
                     </td>
@@ -700,6 +749,58 @@ export default function TrainingPage() {
           </div>
         </CardContent>
       </Card>
+
+      {viewingTraining && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">{viewingTraining.title}</h2>
+              <button onClick={() => setViewingTraining(null)} className="rounded-sm opacity-70 hover:opacity-100">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-lg bg-gray-50 p-3">
+                  <p className="text-gray-500">Category</p>
+                  <p className="font-medium">{viewingTraining.category}</p>
+                </div>
+                <div className="rounded-lg bg-gray-50 p-3">
+                  <p className="text-gray-500">Type</p>
+                  <p className="font-medium capitalize">{viewingTraining.type}</p>
+                </div>
+                <div className="rounded-lg bg-gray-50 p-3">
+                  <p className="text-gray-500">Duration</p>
+                  <p className="font-medium">{viewingTraining.duration}</p>
+                </div>
+                <div className="rounded-lg bg-gray-50 p-3">
+                  <p className="text-gray-500">Due Date</p>
+                  <p className="font-medium">{viewingTraining.dueDate}</p>
+                </div>
+              </div>
+              <div className="rounded-lg bg-gray-50 p-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-gray-500">Progress</p>
+                  <p className="font-medium">{viewingTraining.progress}%</p>
+                </div>
+                <div className="mt-2 h-2 w-full rounded-full bg-gray-200">
+                  <div
+                    className={`h-2 rounded-full ${viewingTraining.status === "completed" ? "bg-green-500" : "bg-indigo-500"}`}
+                    style={{ width: `${viewingTraining.progress}%` }}
+                  />
+                </div>
+              </div>
+              <div className="rounded-lg bg-gray-50 p-3">
+                <p className="text-gray-500">Last Accessed</p>
+                <p className="font-medium">{viewingTraining.lastAccessed}</p>
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button variant="outline" onClick={() => setViewingTraining(null)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

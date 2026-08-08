@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
+import toast from "react-hot-toast";
 import {
   User,
   Mail,
@@ -50,6 +51,7 @@ export default function SettingsPage() {
     new: "",
     confirm: "",
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (session?.user) {
@@ -78,14 +80,28 @@ export default function SettingsPage() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleSaveNotifications = () => {
+  const handleSaveNotifications = async () => {
+    try {
+      const res = await fetch("/api/auth/update", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notifications }),
+      });
+      if (res.ok) {
+        toast.success("Notification preferences saved");
+      } else {
+        toast.error("Failed to save preferences");
+      }
+    } catch {
+      toast.error("Failed to save preferences");
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
   const handleChangePassword = async () => {
     if (passwords.new !== passwords.confirm) {
-      alert("Passwords don't match");
+      toast.error("Passwords don't match");
       return;
     }
     try {
@@ -97,12 +113,13 @@ export default function SettingsPage() {
       if (res.ok) {
         setSaved(true);
         setPasswords({ current: "", new: "", confirm: "" });
+        toast.success("Password changed successfully");
         setTimeout(() => setSaved(false), 2000);
       } else {
-        alert("Failed to change password");
+        toast.error("Failed to change password");
       }
     } catch {
-      alert("Failed to change password");
+      toast.error("Failed to change password");
     }
   };
 
@@ -170,17 +187,46 @@ export default function SettingsPage() {
                   <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-2xl font-bold text-white">
                     {profile.name.split(" ").map((n) => n[0]).join("") || "U"}
                   </div>
-                  <button className="absolute -bottom-1 -right-1 rounded-full bg-white p-1.5 shadow-md ring-2 ring-gray-100 transition-colors hover:bg-gray-50">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute -bottom-1 -right-1 rounded-full bg-white p-1.5 shadow-md ring-2 ring-gray-100 transition-colors hover:bg-gray-50"
+                  >
                     <Camera className="h-4 w-4 text-gray-600" />
                   </button>
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">{profile.name || "User"}</p>
                   <p className="text-sm text-gray-500">{profile.email}</p>
-                  <button className="mt-1 text-sm font-medium text-indigo-600 hover:text-indigo-700">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="mt-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                  >
                     Change avatar
                   </button>
                 </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (!file.type.startsWith("image/")) {
+                      toast.error("Please select an image file");
+                      return;
+                    }
+                    if (file.size > 5 * 1024 * 1024) {
+                      toast.error("File size must be under 5MB");
+                      return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      toast.success("Avatar updated (preview only)");
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                />
               </div>
 
               {/* Form Fields */}
@@ -447,13 +493,25 @@ export default function SettingsPage() {
                   variant="destructive"
                   size="sm"
                   className="mt-4"
-                  onClick={() => {
+                  onClick={async () => {
                     if (
                       confirm(
                         "Are you sure you want to delete your account? This action cannot be undone."
                       )
                     ) {
-                      alert("Account deletion requested.");
+                      try {
+                        const res = await fetch("/api/auth/delete-account", {
+                          method: "DELETE",
+                        });
+                        if (res.ok) {
+                          toast.success("Account deleted successfully");
+                          window.location.href = "/";
+                        } else {
+                          toast.error("Failed to delete account");
+                        }
+                      } catch {
+                        toast.error("Failed to delete account");
+                      }
                     }
                   }}
                 >

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import {
   Video,
   Plus,
@@ -291,17 +292,69 @@ export default function LiveClassesPage() {
                         </div>
                         <div className="flex gap-2">
                           {cls.status === "live" ? (
-                            <Button variant="destructive" size="sm" className="gap-2">
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="gap-2"
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch(`/api/live-classes/${cls.id}`, {
+                                    method: "PATCH",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ status: "completed" }),
+                                  });
+                                  if (res.ok) {
+                                    setClasses((prev) =>
+                                      prev.map((c) =>
+                                        c.id === cls.id ? { ...c, status: "completed" as const } : c
+                                      )
+                                    );
+                                    toast.success("Class ended successfully");
+                                  } else {
+                                    toast.error("Failed to end class");
+                                  }
+                                } catch {
+                                  toast.error("Failed to end class");
+                                }
+                              }}
+                            >
                               <Square className="h-4 w-4" />
                               End Class
                             </Button>
                           ) : (
-                            <Button size="sm" className="gap-2">
+                            <Button
+                              size="sm"
+                              className="gap-2"
+                              onClick={() => {
+                                if (cls.meetingUrl) {
+                                  window.open(cls.meetingUrl, "_blank");
+                                  toast.success("Opening meeting link");
+                                } else {
+                                  toast.error("No meeting URL available");
+                                }
+                              }}
+                            >
                               <Play className="h-4 w-4" />
                               Start Class
                             </Button>
                           )}
-                          <Button variant="outline" size="sm" className="gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                            onClick={async () => {
+                              if (cls.meetingUrl) {
+                                try {
+                                  await navigator.clipboard.writeText(cls.meetingUrl);
+                                  toast.success("Link copied to clipboard");
+                                } catch {
+                                  toast.error("Failed to copy link");
+                                }
+                              } else {
+                                toast.error("No meeting URL available");
+                              }
+                            }}
+                          >
                             <ExternalLink className="h-4 w-4" />
                             Copy Link
                           </Button>
