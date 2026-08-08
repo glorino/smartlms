@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Video,
   Calendar,
@@ -13,90 +13,79 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 
-const upcomingClasses = [
-  {
-    id: "1",
-    title: "Advanced React Patterns",
-    instructor: "Dr. Sarah Johnson",
-    platform: "Zoom",
-    scheduledAt: "2026-08-10T14:00:00Z",
-    duration: 60,
-    enrolled: 45,
-    course: "Complete Web Development Bootcamp",
-    meetingUrl: "https://zoom.us/j/1234567890",
-    meetingId: "1234567890",
-  },
-  {
-    id: "2",
-    title: "Machine Learning Workshop",
-    instructor: "Prof. Michael Chen",
-    platform: "Google Meet",
-    scheduledAt: "2026-08-11T18:00:00Z",
-    duration: 90,
-    enrolled: 32,
-    course: "Machine Learning & AI Masterclass",
-    meetingUrl: "https://meet.google.com/abc-defg-hij",
-    meetingId: "abc-defg-hij",
-  },
-  {
-    id: "3",
-    title: "UI Design Principles",
-    instructor: "Emily Rodriguez",
-    platform: "Jitsi",
-    scheduledAt: "2026-08-12T10:00:00Z",
-    duration: 45,
-    enrolled: 28,
-    course: "UI/UX Design Fundamentals",
-    meetingUrl: "https://meet.jit.si/smartlms-design-123",
-    meetingId: "smartlms-design-123",
-  },
-  {
-    id: "4",
-    title: "Python for Data Science",
-    instructor: "Dr. Alex Kim",
-    platform: "Zoom",
-    scheduledAt: "2026-08-13T16:00:00Z",
-    duration: 75,
-    enrolled: 56,
-    course: "Advanced Python Programming",
-    meetingUrl: "https://zoom.us/j/9876543210",
-    meetingId: "9876543210",
-  },
-];
-
-const pastClasses = [
-  {
-    id: "5",
-    title: "Introduction to Web Development",
-    instructor: "Dr. Sarah Johnson",
-    platform: "Zoom",
-    recordedAt: "2026-08-01T14:00:00Z",
-    duration: 60,
-    viewers: 120,
-    recordingUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  },
-  {
-    id: "6",
-    title: "Data Structures Deep Dive",
-    instructor: "Prof. Michael Chen",
-    platform: "Google Meet",
-    recordedAt: "2026-07-28T18:00:00Z",
-    duration: 90,
-    viewers: 89,
-    recordingUrl: "",
-  },
-];
+interface LiveClass {
+  id: string;
+  title: string;
+  instructor: string;
+  platform: string;
+  scheduledAt: string;
+  duration: number;
+  enrolled: number;
+  course: string;
+  meetingUrl: string;
+  meetingId: string;
+}
 
 const platformColors: Record<string, string> = {
+  ZOOM: "bg-blue-100 text-blue-700",
+  GOOGLE_MEET: "bg-green-100 text-green-700",
+  JITSI: "bg-purple-100 text-purple-700",
   Zoom: "bg-blue-100 text-blue-700",
   "Google Meet": "bg-green-100 text-green-700",
   Jitsi: "bg-purple-100 text-purple-700",
 };
 
 export default function LiveClassesPage() {
+  const [upcomingClasses, setUpcomingClasses] = useState<LiveClass[]>([]);
+  const [pastClasses, setPastClasses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
+
+  useEffect(() => {
+    async function fetchClasses() {
+      try {
+        const res = await fetch("/api/live-classes");
+        if (res.ok) {
+          const data = await res.json();
+          const now = new Date();
+          const upcoming: LiveClass[] = [];
+          const past: any[] = [];
+
+          (data.classes || []).forEach((c: any) => {
+            const item = {
+              id: c.id,
+              title: c.title,
+              instructor: c.instructor?.name || "Instructor",
+              platform: c.platform || "Zoom",
+              scheduledAt: c.scheduledAt,
+              duration: c.duration,
+              enrolled: c._count?.attendees || 0,
+              course: c.course?.title || "",
+              meetingUrl: c.meetingUrl || "",
+              meetingId: c.meetingUrl || "",
+            };
+
+            if (new Date(c.scheduledAt) >= now) {
+              upcoming.push(item);
+            } else {
+              past.push(item);
+            }
+          });
+
+          setUpcomingClasses(upcoming);
+          setPastClasses(past);
+        }
+      } catch {
+        setUpcomingClasses([]);
+        setPastClasses([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchClasses();
+  }, []);
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-US", {
@@ -109,12 +98,14 @@ export default function LiveClassesPage() {
     });
   };
 
-  const handleJoinClass = (meetingUrl: string, platform: string) => {
-    window.open(meetingUrl, "_blank", "noopener,noreferrer");
+  const handleJoinClass = (meetingUrl: string) => {
+    if (meetingUrl) {
+      window.open(meetingUrl, "_blank", "noopener,noreferrer");
+    }
   };
 
   const handleWatchRecording = (recordingUrl: string, title: string) => {
-    if (recordingUrl && recordingUrl !== "#") {
+    if (recordingUrl) {
       window.open(recordingUrl, "_blank", "noopener,noreferrer");
     } else {
       setModalMessage(
@@ -136,6 +127,25 @@ export default function LiveClassesPage() {
       cls.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       cls.instructor.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="gradient-primary py-16">
+          <div className="mx-auto max-w-7xl px-4 text-center">
+            <h1 className="text-4xl font-bold text-white">Live Classes</h1>
+            <p className="mt-4 text-lg text-white/80">
+              Join live interactive sessions with expert instructors
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -169,109 +179,115 @@ export default function LiveClassesPage() {
           <h2 className="mb-6 text-2xl font-bold text-gray-900">
             Upcoming Live Classes
           </h2>
-          <div className="grid gap-6 md:grid-cols-2">
-            {filteredUpcoming.map((cls) => (
-              <div
-                key={cls.id}
-                className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
-              >
-                <div className="mb-4 flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {cls.title}
-                    </h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      {cls.course}
-                    </p>
-                  </div>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${platformColors[cls.platform]}`}
-                  >
-                    {cls.platform}
-                  </span>
-                </div>
-                <div className="mb-4 flex flex-wrap gap-4 text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    {formatDate(cls.scheduledAt)}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    {cls.duration} min
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    {cls.enrolled} enrolled
-                  </div>
-                </div>
-                <p className="mb-4 text-sm text-gray-600">
-                  Instructor: {cls.instructor}
-                </p>
-                <button
-                  onClick={() => handleJoinClass(cls.meetingUrl, cls.platform)}
-                  className="w-full rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+          {filteredUpcoming.length === 0 ? (
+            <div className="rounded-2xl border border-gray-200 bg-white p-12 text-center">
+              <Video className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-4 text-lg font-medium text-gray-900">No upcoming classes</h3>
+              <p className="mt-1 text-sm text-gray-500">Check back later for new live sessions</p>
+            </div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2">
+              {filteredUpcoming.map((cls) => (
+                <div
+                  key={cls.id}
+                  className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
                 >
-                  <Video className="mr-2 inline h-4 w-4" />
-                  Join Class
-                  <ExternalLink className="ml-2 inline h-3 w-3" />
-                </button>
-              </div>
-            ))}
-          </div>
+                  <div className="mb-4 flex items-start justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {cls.title}
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {cls.course}
+                      </p>
+                    </div>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-medium ${platformColors[cls.platform] || "bg-gray-100 text-gray-700"}`}
+                    >
+                      {cls.platform}
+                    </span>
+                  </div>
+                  <div className="mb-4 flex flex-wrap gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      {formatDate(cls.scheduledAt)}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      {cls.duration} min
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Users className="h-4 w-4" />
+                      {cls.enrolled} enrolled
+                    </div>
+                  </div>
+                  <p className="mb-4 text-sm text-gray-600">
+                    Instructor: {cls.instructor}
+                  </p>
+                  <button
+                    onClick={() => handleJoinClass(cls.meetingUrl)}
+                    className="w-full rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+                  >
+                    <Video className="mr-2 inline h-4 w-4" />
+                    Join Class
+                    <ExternalLink className="ml-2 inline h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Past Classes */}
-        <section>
-          <h2 className="mb-6 text-2xl font-bold text-gray-900">
-            Past Recordings
-          </h2>
-          <div className="grid gap-6 md:grid-cols-2">
-            {filteredPast.map((cls) => (
-              <div
-                key={cls.id}
-                className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
-              >
-                <div className="mb-4 flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {cls.title}
-                    </h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      {cls.instructor}
-                    </p>
-                  </div>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${platformColors[cls.platform]}`}
-                  >
-                    {cls.platform}
-                  </span>
-                </div>
-                <div className="mb-4 flex gap-4 text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    {cls.duration} min
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Play className="h-4 w-4" />
-                    {cls.viewers} views
-                  </div>
-                </div>
-                <button
-                  onClick={() =>
-                    handleWatchRecording(cls.recordingUrl, cls.title)
-                  }
-                  className="w-full rounded-xl border border-gray-300 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+        {filteredPast.length > 0 && (
+          <section>
+            <h2 className="mb-6 text-2xl font-bold text-gray-900">
+              Past Recordings
+            </h2>
+            <div className="grid gap-6 md:grid-cols-2">
+              {filteredPast.map((cls) => (
+                <div
+                  key={cls.id}
+                  className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
                 >
-                  <Play className="mr-2 inline h-4 w-4" />
-                  Watch Recording
-                  {cls.recordingUrl && cls.recordingUrl !== "#" && (
-                    <ExternalLink className="ml-2 inline h-3 w-3" />
-                  )}
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
+                  <div className="mb-4 flex items-start justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {cls.title}
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {cls.instructor}
+                      </p>
+                    </div>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-medium ${platformColors[cls.platform] || "bg-gray-100 text-gray-700"}`}
+                    >
+                      {cls.platform}
+                    </span>
+                  </div>
+                  <div className="mb-4 flex gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      {cls.duration} min
+                    </div>
+                  </div>
+                  <button
+                    onClick={() =>
+                      handleWatchRecording(cls.meetingUrl, cls.title)
+                    }
+                    className="w-full rounded-xl border border-gray-300 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                  >
+                    <Play className="mr-2 inline h-4 w-4" />
+                    Watch Recording
+                    {cls.meetingUrl && (
+                      <ExternalLink className="ml-2 inline h-3 w-3" />
+                    )}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       {/* Modal */}

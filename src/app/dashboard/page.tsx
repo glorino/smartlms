@@ -236,6 +236,7 @@ export default function DashboardPage() {
 
   const recentCourses = role === "INSTRUCTOR"
     ? enrollments.slice(0, 3).map((e) => ({
+        id: e.courseId,
         title: e.course.title,
         students: 0,
         status: "Published",
@@ -244,6 +245,7 @@ export default function DashboardPage() {
         lastLesson: "",
       }))
     : activeEnrollments.slice(0, 3).map((e) => ({
+        id: e.courseId,
         title: e.course.title,
         progress: Math.round(e.progress),
         lastAccessed: e.enrolledAt,
@@ -395,7 +397,7 @@ export default function DashboardPage() {
                           </div>
                         </div>
                         <Link
-                          href="/courses/1/learn"
+                          href={`/courses/${course.id}/learn`}
                           className="shrink-0 rounded-lg bg-indigo-600 p-2 text-white transition-colors hover:bg-indigo-700"
                         >
                           <Play className="h-4 w-4" />
@@ -625,7 +627,7 @@ export default function DashboardPage() {
                               {formatTimeAgo(course.lastAccessed)}
                             </p>
                             <Link
-                              href="/courses/1/learn"
+                              href={`/courses/${course.id}/learn`}
                               className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 shadow-sm"
                             >
                               <Play className="h-4 w-4" />

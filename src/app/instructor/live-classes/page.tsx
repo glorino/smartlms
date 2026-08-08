@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Video,
@@ -21,17 +21,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Spinner } from "@/components/ui/spinner";
 
 interface LiveClass {
   id: string;
   title: string;
   description: string;
   course: string;
+  courseId: string;
   scheduledAt: string;
   duration: string;
   attendees: number;
   status: "upcoming" | "live" | "completed" | "cancelled";
   meetingUrl?: string;
+  platform?: string;
 }
 
 interface Recording {
@@ -43,74 +46,90 @@ interface Recording {
   views: number;
 }
 
-const mockClasses: LiveClass[] = [
-  {
-    id: "1",
-    title: "React Hooks Deep Dive",
-    description: "Master useState, useEffect, useContext and custom hooks",
-    course: "Advanced React & Next.js Masterclass",
-    scheduledAt: "2026-08-10T18:00:00",
-    duration: "90 min",
-    attendees: 45,
-    status: "upcoming",
-    meetingUrl: "https://meet.example.com/react-hooks",
-  },
-  {
-    id: "2",
-    title: "CSS Grid Workshop",
-    description: "Hands-on practice with CSS Grid layout",
-    course: "Complete Web Development Bootcamp",
-    scheduledAt: "2026-08-08T14:00:00",
-    duration: "60 min",
-    attendees: 38,
-    status: "live",
-    meetingUrl: "https://meet.example.com/css-grid",
-  },
-  {
-    id: "3",
-    title: "Node.js API Building",
-    description: "Build RESTful APIs with Express.js",
-    course: "Complete Web Development Bootcamp",
-    scheduledAt: "2026-08-05T16:00:00",
-    duration: "120 min",
-    attendees: 52,
-    status: "completed",
-  },
-  {
-    id: "4",
-    title: "Git Version Control",
-    description: "Learn Git branching, merging, and collaboration",
-    course: "DevOps & Cloud Computing",
-    scheduledAt: "2026-08-01T10:00:00",
-    duration: "45 min",
-    attendees: 28,
-    status: "completed",
-  },
-];
-
-const mockRecordings: Recording[] = [
-  { id: "1", title: "Node.js API Building", course: "Complete Web Development Bootcamp", date: "2026-08-05", duration: "1:58:23", views: 156 },
-  { id: "2", title: "Git Version Control", course: "DevOps & Cloud Computing", date: "2026-08-01", duration: "43:12", views: 89 },
-  { id: "3", title: "React State Management", course: "Advanced React & Next.js Masterclass", date: "2026-07-28", duration: "1:15:45", views: 234 },
-];
-
 export default function LiveClassesPage() {
-  const [classes] = useState<LiveClass[]>(mockClasses);
+  const [classes, setClasses] = useState<LiveClass[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
-  const [newCourse, setNewCourse] = useState("");
+  const [newCourseId, setNewCourseId] = useState("");
+  newCourseId; // suppress unused warning
   const [newDate, setNewDate] = useState("");
   const [newTime, setNewTime] = useState("");
   const [newDuration, setNewDuration] = useState("60");
 
-  const handleSchedule = () => {
+  useEffect(() => {
+    async function fetchClasses() {
+      try {
+        const res = await fetch("/api/live-classes");
+        if (res.ok) {
+          const data = await res.json();
+          const now = new Date();
+          const mapped: LiveClass[] = (data.classes || []).map((c: any) => ({
+            id: c.id,
+            title: c.title,
+            description: c.description || "",
+            course: c.course?.title || "",
+            courseId: c.courseId,
+            scheduledAt: c.scheduledAt,
+            duration: `${c.duration} min`,
+            attendees: c._count?.attendees || 0,
+            status: new Date(c.scheduledAt) < now ? "completed" : "upcoming",
+            meetingUrl: c.meetingUrl,
+            platform: c.platform,
+          }));
+          setClasses(mapped);
+        }
+      } catch {
+        setClasses([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchClasses();
+  }, []);
+
+  const handleSchedule = async () => {
     if (newTitle && newDate && newTime) {
-      alert(`Class "${newTitle}" scheduled for ${newDate} at ${newTime}`);
+      try {
+        const scheduledAt = new Date(`${newDate}T${newTime}`).toISOString();
+        const res = await fetch("/api/live-classes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: newTitle,
+            description: newDescription,
+            courseId: newCourseId || undefined,
+            scheduledAt,
+            duration: Number(newDuration),
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setClasses((prev) => [
+            {
+              id: data.liveClass.id,
+              title: data.liveClass.title,
+              description: data.liveClass.description || "",
+              course: data.liveClass.course?.title || "",
+              courseId: data.liveClass.courseId,
+              scheduledAt: data.liveClass.scheduledAt,
+              duration: `${data.liveClass.duration} min`,
+              attendees: 0,
+              status: "upcoming",
+              meetingUrl: data.liveClass.meetingUrl,
+              platform: data.liveClass.platform,
+            },
+            ...prev,
+          ]);
+        }
+      } catch {
+        // handle error
+      }
       setShowForm(false);
       setNewTitle("");
       setNewDescription("");
-      setNewCourse("");
+      setNewCourseId("");
       setNewDate("");
       setNewTime("");
       setNewDuration("60");
@@ -118,6 +137,14 @@ export default function LiveClassesPage() {
   };
 
   const upcomingClasses = classes.filter((c) => c.status === "upcoming" || c.status === "live");
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -153,10 +180,10 @@ export default function LiveClassesPage() {
               className="min-h-[80px]"
             />
             <Input
-              label="Course"
-              placeholder="Which course is this class for?"
-              value={newCourse}
-              onChange={(e) => setNewCourse(e.target.value)}
+              label="Course ID"
+              placeholder="Enter course ID"
+              value={newCourseId}
+              onChange={(e) => setNewCourseId(e.target.value)}
             />
             <div className="grid grid-cols-3 gap-4">
               <Input
@@ -198,12 +225,6 @@ export default function LiveClassesPage() {
                 {upcomingClasses.length}
               </span>
             </TabsTrigger>
-            <TabsTrigger value="recordings">
-              Recordings
-              <span className="ml-1.5 rounded-full bg-gray-200 px-1.5 py-0.5 text-xs">
-                {mockRecordings.length}
-              </span>
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="upcoming">
@@ -212,7 +233,7 @@ export default function LiveClassesPage() {
                 <Card>
                   <CardContent className="flex flex-col items-center justify-center py-16">
                     <Video className="h-12 w-12 text-gray-400" />
-                    <h3 className="mt-4 text-lg font-medium text-gray-900">No upcoming classes</h3>
+                    <h3 className="mt-4 text-lg font-medium text-gray-900">No live classes scheduled</h3>
                     <p className="mt-1 text-sm text-gray-500">Schedule a new live class to get started</p>
                   </CardContent>
                 </Card>
@@ -290,33 +311,6 @@ export default function LiveClassesPage() {
                   </Card>
                 ))
               )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="recordings">
-            <div className="mt-4 space-y-3">
-              {mockRecordings.map((rec) => (
-                <Card key={rec.id}>
-                  <CardContent className="flex items-center gap-4 p-4">
-                    <div className="rounded-xl bg-purple-500 p-3">
-                      <Video className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-gray-900">{rec.title}</h3>
-                      <p className="text-sm text-gray-500">{rec.course}</p>
-                      <div className="mt-1 flex items-center gap-4 text-xs text-gray-400">
-                        <span>{new Date(rec.date).toLocaleDateString()}</span>
-                        <span>Duration: {rec.duration}</span>
-                        <span>{rec.views} views</span>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Play className="h-4 w-4" />
-                      Watch
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
             </div>
           </TabsContent>
         </Tabs>

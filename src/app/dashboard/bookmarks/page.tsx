@@ -29,47 +29,8 @@ interface BookmarkedCourse {
   bookmarkedAt: string;
 }
 
-const fallbackBookmarks: BookmarkedCourse[] = [
-  {
-    id: "1",
-    title: "TypeScript Mastery",
-    instructor: "Mike Chen",
-    category: "Web Development",
-    rating: 4.8,
-    students: 1234,
-    duration: "12h 30m",
-    price: "₦75,000",
-    thumbnail: "",
-    bookmarkedAt: "2026-08-05",
-  },
-  {
-    id: "2",
-    title: "Python for Data Science",
-    instructor: "Dr. Lisa Wang",
-    category: "Data Science",
-    rating: 4.9,
-    students: 2345,
-    duration: "18h 45m",
-    price: "₦89,000",
-    thumbnail: "",
-    bookmarkedAt: "2026-08-03",
-  },
-  {
-    id: "3",
-    title: "Docker & Kubernetes",
-    instructor: "Chris Brown",
-    category: "DevOps",
-    rating: 4.7,
-    students: 987,
-    duration: "15h 20m",
-    price: "₦85,000",
-    thumbnail: "",
-    bookmarkedAt: "2026-08-01",
-  },
-];
-
 export default function BookmarksPage() {
-  const [bookmarks, setBookmarks] = useState<BookmarkedCourse[]>(fallbackBookmarks);
+  const [bookmarks, setBookmarks] = useState<BookmarkedCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -82,7 +43,7 @@ export default function BookmarksPage() {
           setBookmarks(data.bookmarks || data || []);
         }
       } catch {
-        // Use fallback
+        setBookmarks([]);
       } finally {
         setLoading(false);
       }
