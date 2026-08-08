@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   MessageSquare,
   Bell,
@@ -18,6 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 interface Notification {
   id: string;
@@ -30,83 +31,56 @@ interface Notification {
   color: string;
 }
 
-const mockNotifications: Notification[] = [
-  {
-    id: "1",
-    title: "New Course Available",
-    message: "TypeScript Mastery has been added to the catalog. Check it out!",
-    type: "course",
-    read: false,
-    createdAt: "2 hours ago",
-    icon: BookOpen,
-    color: "bg-blue-100 text-blue-600",
-  },
-  {
-    id: "2",
-    title: "Quiz Score Available",
-    message: "Your score for React Hooks Quiz is ready: 92%",
-    type: "quiz",
-    read: false,
-    createdAt: "5 hours ago",
-    icon: Bell,
-    color: "bg-purple-100 text-purple-600",
-  },
-  {
-    id: "3",
-    title: "Certificate Earned",
-    message: "Congratulations! You earned a certificate for UI/UX Design Fundamentals.",
-    type: "certificate",
-    read: false,
-    createdAt: "2 days ago",
-    icon: Award,
-    color: "bg-amber-100 text-amber-600",
-  },
-  {
-    id: "4",
-    title: "Assignment Reminder",
-    message: "ML Model Assignment is due in 3 days. Don't forget to submit!",
-    type: "reminder",
-    read: true,
-    createdAt: "3 days ago",
-    icon: Clock,
-    color: "bg-rose-100 text-rose-600",
-  },
-  {
-    id: "5",
-    title: "System Maintenance",
-    message: "Scheduled maintenance on Aug 10 from 2:00 AM to 4:00 AM UTC.",
-    type: "system",
-    read: true,
-    createdAt: "5 days ago",
-    icon: AlertCircle,
-    color: "bg-gray-100 text-gray-600",
-  },
-  {
-    id: "6",
-    title: "Course Progress Update",
-    message: "You've completed 50% of Complete Web Development Bootcamp. Keep going!",
-    type: "course",
-    read: true,
-    createdAt: "1 week ago",
-    icon: BookOpen,
-    color: "bg-blue-100 text-blue-600",
-  },
-  {
-    id: "7",
-    title: "Welcome to SmartLMS",
-    message: "Welcome aboard! Complete your onboarding to get started.",
-    type: "system",
-    read: true,
-    createdAt: "2 weeks ago",
-    icon: Bell,
-    color: "bg-indigo-100 text-indigo-600",
-  },
-];
+function getNotificationIcon(type: string) {
+  switch (type) {
+    case "course":
+      return { icon: BookOpen, color: "bg-blue-100 text-blue-600" };
+    case "quiz":
+      return { icon: Bell, color: "bg-purple-100 text-purple-600" };
+    case "certificate":
+      return { icon: Award, color: "bg-amber-100 text-amber-600" };
+    case "reminder":
+      return { icon: Clock, color: "bg-rose-100 text-rose-600" };
+    default:
+      return { icon: AlertCircle, color: "bg-gray-100 text-gray-600" };
+  }
+}
 
 export default function MessagesPage() {
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    async function fetchNotifications() {
+      try {
+        const res = await fetch("/api/notifications");
+        if (res.ok) {
+          const data = await res.json();
+          const mapped: Notification[] = (data.notifications || []).map((n: any) => {
+            const { icon, color } = getNotificationIcon(n.type);
+            return {
+              id: n.id,
+              title: n.title,
+              message: n.message,
+              type: n.type,
+              read: n.read,
+              createdAt: n.createdAt,
+              icon,
+              color,
+            };
+          });
+          setNotifications(mapped);
+        }
+      } catch {
+        setNotifications([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchNotifications();
+  }, []);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -120,19 +94,45 @@ export default function MessagesPage() {
       n.message.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+  const markAsRead = async (id: string) => {
+    try {
+      await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "mark_read", notificationIds: [id] }),
+      });
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+      );
+    } catch {
+      // handle error
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  const markAllAsRead = async () => {
+    try {
+      await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "mark_read" }),
+      });
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    } catch {
+      // handle error
+    }
   };
 
   const deleteNotification = (id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -193,7 +193,7 @@ export default function MessagesPage() {
             <h3 className="mt-4 text-lg font-medium text-gray-900">
               {searchQuery || filter !== "all"
                 ? "No messages found"
-                : "No messages yet"}
+                : "No notifications yet"}
             </h3>
             <p className="mt-1 text-sm text-gray-500">
               {searchQuery
@@ -234,7 +234,7 @@ export default function MessagesPage() {
                         {notification.message}
                       </p>
                       <p className="mt-1 text-xs text-gray-400">
-                        {notification.createdAt}
+                        {new Date(notification.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-1">

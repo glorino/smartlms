@@ -31,6 +31,13 @@ const footerLinks = {
   ],
 };
 
+const socialLinks = [
+  { icon: Globe, label: "Twitter", href: "https://twitter.com/smartlms" },
+  { icon: MessageCircle, label: "Chat", href: "https://linkedin.com/company/smartlms" },
+  { icon: Code2, label: "GitHub", href: "https://github.com/smartlms" },
+  { icon: Play, label: "YouTube", href: "https://youtube.com/smartlms" },
+];
+
 export default function Footer() {
   return (
     <footer className="border-t border-gray-200 bg-gray-50">
@@ -60,15 +67,12 @@ export default function Footer() {
               </div>
             </div>
             <div className="mt-4 flex gap-3">
-              {[
-                { icon: Globe, label: "Website" },
-                { icon: MessageCircle, label: "Chat" },
-                { icon: Code2, label: "GitHub" },
-                { icon: Play, label: "Videos" },
-              ].map((social) => (
+              {socialLinks.map((social) => (
                 <a
                   key={social.label}
-                  href="#"
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={social.label}
                   className="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
                 >

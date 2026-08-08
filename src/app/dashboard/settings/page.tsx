@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import {
   User,
   Mail,
@@ -22,11 +23,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function SettingsPage() {
+  const { data: session, update: updateSession } = useSession();
   const [saved, setSaved] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark" | "system">("light");
+  const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState({
     email: true,
     push: true,
@@ -37,8 +41,8 @@ export default function SettingsPage() {
   });
 
   const [profile, setProfile] = useState({
-    name: "John Student",
-    email: "john@example.com",
+    name: "",
+    email: "",
   });
 
   const [passwords, setPasswords] = useState({
@@ -47,7 +51,29 @@ export default function SettingsPage() {
     confirm: "",
   });
 
-  const handleSaveProfile = () => {
+  useEffect(() => {
+    if (session?.user) {
+      setProfile({
+        name: (session.user as any).name || "",
+        email: (session.user as any).email || "",
+      });
+    }
+    setLoading(false);
+  }, [session]);
+
+  const handleSaveProfile = async () => {
+    try {
+      const res = await fetch("/api/auth/update", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: profile.name, email: profile.email }),
+      });
+      if (res.ok) {
+        await updateSession({ user: { name: profile.name, email: profile.email } });
+      }
+    } catch {
+      // handle error
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -57,15 +83,36 @@ export default function SettingsPage() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (passwords.new !== passwords.confirm) {
       alert("Passwords don't match");
       return;
     }
-    setSaved(true);
-    setPasswords({ current: "", new: "", confirm: "" });
-    setTimeout(() => setSaved(false), 2000);
+    try {
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: passwords.current, newPassword: passwords.new }),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setPasswords({ current: "", new: "", confirm: "" });
+        setTimeout(() => setSaved(false), 2000);
+      } else {
+        alert("Failed to change password");
+      }
+    } catch {
+      alert("Failed to change password");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -121,14 +168,14 @@ export default function SettingsPage() {
               <div className="flex items-center gap-6">
                 <div className="relative">
                   <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-2xl font-bold text-white">
-                    {profile.name.split(" ").map((n) => n[0]).join("")}
+                    {profile.name.split(" ").map((n) => n[0]).join("") || "U"}
                   </div>
                   <button className="absolute -bottom-1 -right-1 rounded-full bg-white p-1.5 shadow-md ring-2 ring-gray-100 transition-colors hover:bg-gray-50">
                     <Camera className="h-4 w-4 text-gray-600" />
                   </button>
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">{profile.name}</p>
+                  <p className="font-medium text-gray-900">{profile.name || "User"}</p>
                   <p className="text-sm text-gray-500">{profile.email}</p>
                   <button className="mt-1 text-sm font-medium text-indigo-600 hover:text-indigo-700">
                     Change avatar

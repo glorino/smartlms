@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Plus,
@@ -50,59 +50,12 @@ const levelOptions = [
   { value: "ADVANCED", label: "Advanced" },
 ];
 
-const mockCourseData: Record<string, { title: string; description: string; category: string; level: string; price: string; thumbnail: string | null; sections: Section[] }> = {
-  "1": {
-    title: "Complete Web Development Bootcamp",
-    description: "Learn HTML, CSS, JavaScript, React, Node.js, and more. Build real-world projects and become a full-stack developer.",
-    category: "web-development",
-    level: "BEGINNER",
-    price: "49.99",
-    thumbnail: null,
-    sections: [
-      {
-        id: "1",
-        title: "Getting Started",
-        lessons: [
-          { id: "1", title: "Course Overview", duration: "5:00", type: "VIDEO" },
-          { id: "2", title: "Setting Up Your Environment", duration: "15:00", type: "VIDEO" },
-          { id: "3", title: "How the Web Works", duration: "12:00", type: "TEXT" },
-        ],
-      },
-      {
-        id: "2",
-        title: "HTML Fundamentals",
-        lessons: [
-          { id: "4", title: "HTML Document Structure", duration: "18:00", type: "VIDEO" },
-          { id: "5", title: "Common HTML Elements", duration: "22:00", type: "VIDEO" },
-          { id: "6", title: "HTML Quiz", duration: "10:00", type: "QUIZ" },
-        ],
-      },
-    ],
-  },
-  "2": {
-    title: "Advanced React & Next.js Masterclass",
-    description: "Master React hooks, context, Redux, Next.js App Router, server components, and advanced patterns.",
-    category: "frontend",
-    level: "ADVANCED",
-    price: "79.99",
-    thumbnail: null,
-    sections: [
-      {
-        id: "1",
-        title: "React Advanced Hooks",
-        lessons: [
-          { id: "1", title: "useReducer Deep Dive", duration: "20:00", type: "VIDEO" },
-          { id: "2", title: "Custom Hooks Patterns", duration: "25:00", type: "VIDEO" },
-        ],
-      },
-    ],
-  },
-};
-
 export default function EditCoursePage() {
   const params = useParams();
+  const router = useRouter();
   const courseId = params.id as string;
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
@@ -112,25 +65,45 @@ export default function EditCoursePage() {
   const [sections, setSections] = useState<Section[]>([]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const data = mockCourseData[courseId] || mockCourseData["1"];
-      setTitle(data.title);
-      setDescription(data.description);
-      setCategory(data.category);
-      setLevel(data.level);
-      setPrice(data.price);
-      setThumbnail(data.thumbnail);
-      setSections(data.sections);
-      setLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
+    async function fetchCourse() {
+      try {
+        const res = await fetch(`/api/courses/${courseId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const course = data.course;
+          setTitle(course.title || "");
+          setDescription(course.description || "");
+          setCategory(course.category || "other");
+          setLevel(course.level || "BEGINNER");
+          setPrice(String(course.price || 0));
+          setThumbnail(course.thumbnail || null);
+          setSections(
+            (course.sections || []).map((s: any) => ({
+              id: s.id,
+              title: s.title,
+              lessons: (s.lessons || []).map((l: any) => ({
+                id: l.id,
+                title: l.title,
+                duration: l.duration || "00:00",
+                type: l.type || "VIDEO",
+              })),
+            }))
+          );
+        }
+      } catch {
+        // handle error
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCourse();
   }, [courseId]);
 
   const addSection = () => {
     setSections([
       ...sections,
       {
-        id: String(sections.length + 1),
+        id: `new-${Date.now()}`,
         title: `Section ${sections.length + 1}`,
         lessons: [],
       },
@@ -150,10 +123,10 @@ export default function EditCoursePage() {
               lessons: [
                 ...s.lessons,
                 {
-                  id: String(s.lessons.length + 1),
+                  id: `new-${Date.now()}`,
                   title: "New Lesson",
                   duration: "00:00",
-                  type: "VIDEO",
+                  type: "VIDEO" as const,
                 },
               ],
             }
@@ -189,6 +162,33 @@ export default function EditCoursePage() {
           : s
       )
     );
+  };
+
+  const handleSave = async (publish: boolean) => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/courses/${courseId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          price: Number(price),
+          category,
+          level,
+          thumbnail,
+          status: publish ? "PUBLISHED" : "DRAFT",
+        }),
+      });
+      if (res.ok) {
+        alert(publish ? "Course updated and published!" : "Changes saved as draft!");
+        router.push("/instructor/courses");
+      }
+    } catch {
+      alert("Failed to save changes");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const totalLessons = sections.reduce((acc, s) => acc + s.lessons.length, 0);
@@ -253,7 +253,7 @@ export default function EditCoursePage() {
                 />
               </div>
               <Input
-                label="Price ($)"
+                label="Price (NGN)"
                 type="number"
                 placeholder="0.00"
                 value={price}
@@ -410,13 +410,22 @@ export default function EditCoursePage() {
               <CardTitle>Publish</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full gap-2" onClick={() => alert("Course updated and published!")}>
+              <Button
+                className="w-full gap-2"
+                onClick={() => handleSave(true)}
+                disabled={saving}
+              >
                 <Send className="h-4 w-4" />
-                Update & Publish
+                {saving ? "Saving..." : "Update & Publish"}
               </Button>
-              <Button variant="outline" className="w-full gap-2" onClick={() => alert("Changes saved as draft!")}>
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => handleSave(false)}
+                disabled={saving}
+              >
                 <Save className="h-4 w-4" />
-                Save Changes
+                {saving ? "Saving..." : "Save as Draft"}
               </Button>
             </CardContent>
           </Card>
@@ -436,7 +445,7 @@ export default function EditCoursePage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Price</span>
-                <span className="font-medium">${price || "0.00"}</span>
+                <span className="font-medium">₦{Number(price || 0).toLocaleString()}</span>
               </div>
             </CardContent>
           </Card>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FileText,
   CheckCircle2,
@@ -21,6 +21,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 
 interface Assignment {
   id: string;
@@ -40,75 +41,42 @@ interface Submission {
   studentEmail: string;
   assignmentTitle: string;
   course: string;
+  courseId: string;
   submittedAt: string;
   score: number | null;
+  feedback: string | null;
+  content: string | null;
   status: "pending" | "graded" | "late";
 }
 
-const mockAssignments: Assignment[] = [
-  {
-    id: "1",
-    title: "Build a Todo App with React",
-    course: "Advanced React & Next.js Masterclass",
-    totalSubmissions: 45,
-    graded: 38,
-    pending: 7,
-    avgScore: 82,
-    dueDate: "2026-08-10",
-    status: "active",
-  },
-  {
-    id: "2",
-    title: "Responsive Landing Page",
-    course: "Complete Web Development Bootcamp",
-    totalSubmissions: 62,
-    graded: 62,
-    pending: 0,
-    avgScore: 88,
-    dueDate: "2026-08-05",
-    status: "closed",
-  },
-  {
-    id: "3",
-    title: "REST API Design",
-    course: "Complete Web Development Bootcamp",
-    totalSubmissions: 40,
-    graded: 25,
-    pending: 15,
-    avgScore: 76,
-    dueDate: "2026-08-15",
-    status: "active",
-  },
-  {
-    id: "4",
-    title: "Figma Wireframe Project",
-    course: "UI/UX Design Fundamentals",
-    totalSubmissions: 38,
-    graded: 38,
-    pending: 0,
-    avgScore: 91,
-    dueDate: "2026-07-28",
-    status: "closed",
-  },
-];
-
-const mockSubmissions: Submission[] = [
-  { id: "1", studentName: "Alice Johnson", studentEmail: "alice@example.com", assignmentTitle: "Build a Todo App with React", course: "Advanced React & Next.js Masterclass", submittedAt: "2026-08-06", score: null, status: "pending" },
-  { id: "2", studentName: "Bob Smith", studentEmail: "bob@example.com", assignmentTitle: "Build a Todo App with React", course: "Advanced React & Next.js Masterclass", submittedAt: "2026-08-05", score: 85, status: "graded" },
-  { id: "3", studentName: "Carol Williams", studentEmail: "carol@example.com", assignmentTitle: "REST API Design", course: "Complete Web Development Bootcamp", submittedAt: "2026-08-04", score: null, status: "pending" },
-  { id: "4", studentName: "David Brown", studentEmail: "david@example.com", assignmentTitle: "Build a Todo App with React", course: "Advanced React & Next.js Masterclass", submittedAt: "2026-08-03", score: 72, status: "graded" },
-  { id: "5", studentName: "Emma Davis", studentEmail: "emma@example.com", assignmentTitle: "REST API Design", course: "Complete Web Development Bootcamp", submittedAt: "2026-08-02", score: 90, status: "graded" },
-  { id: "6", studentName: "Frank Miller", studentEmail: "frank@example.com", assignmentTitle: "Build a Todo App with React", course: "Advanced React & Next.js Masterclass", submittedAt: "2026-08-01", score: null, status: "late" },
-  { id: "7", studentName: "Grace Wilson", studentEmail: "grace@example.com", assignmentTitle: "REST API Design", course: "Complete Web Development Bootcamp", submittedAt: "2026-07-30", score: null, status: "pending" },
-];
-
 export default function AssignmentsPage() {
-  const [submissions, setSubmissions] = useState<Submission[]>(mockSubmissions);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [grade, setGrade] = useState("");
   const [feedback, setFeedback] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "graded" | "late">("all");
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch("/api/instructor/assignments");
+        if (res.ok) {
+          const data = await res.json();
+          setSubmissions(data.submissions || []);
+          setAssignments(data.assignments || []);
+        }
+      } catch {
+        setSubmissions([]);
+        setAssignments([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
 
   const filtered = submissions.filter((s) => {
     const matchesSearch =
@@ -122,28 +90,54 @@ export default function AssignmentsPage() {
     totalSubmissions: submissions.length,
     pending: submissions.filter((s) => s.status === "pending" || s.status === "late").length,
     graded: submissions.filter((s) => s.status === "graded").length,
-    avgScore: Math.round(
-      submissions
-        .filter((s) => s.score !== null)
-        .reduce((acc, s) => acc + (s.score || 0), 0) /
-        submissions.filter((s) => s.score !== null).length
-    ),
+    avgScore:
+      submissions.filter((s) => s.score !== null).length > 0
+        ? Math.round(
+            submissions
+              .filter((s) => s.score !== null)
+              .reduce((acc, s) => acc + (s.score || 0), 0) /
+              submissions.filter((s) => s.score !== null).length
+          )
+        : 0,
   };
 
-  const handleGrade = () => {
+  const handleGrade = async () => {
     if (selectedSubmission && grade) {
-      setSubmissions(
-        submissions.map((s) =>
-          s.id === selectedSubmission.id
-            ? { ...s, score: Number(grade), status: "graded" as const }
-            : s
-        )
-      );
+      try {
+        const res = await fetch("/api/instructor/assignments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            assignmentId: selectedSubmission.id,
+            grade: Number(grade),
+            feedback,
+          }),
+        });
+        if (res.ok) {
+          setSubmissions(
+            submissions.map((s) =>
+              s.id === selectedSubmission.id
+                ? { ...s, score: Number(grade), status: "graded" as const, feedback }
+                : s
+            )
+          );
+        }
+      } catch {
+        // handle error
+      }
       setSelectedSubmission(null);
       setGrade("");
       setFeedback("");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -322,69 +316,79 @@ export default function AssignmentsPage() {
 
         <TabsContent value="assignments">
           <div className="mt-4 space-y-4">
-            {mockAssignments.map((assignment) => (
-              <Card key={assignment.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-gray-900">{assignment.title}</h3>
-                        <Badge
-                          variant={
-                            assignment.status === "active"
-                              ? "default"
-                              : assignment.status === "closed"
-                              ? "secondary"
-                              : "outline"
-                          }
-                        >
-                          {assignment.status}
-                        </Badge>
-                      </div>
-                      <p className="mt-1 text-sm text-gray-500">{assignment.course}</p>
-                      <p className="mt-1 text-xs text-gray-400">
-                        Due: {new Date(assignment.dueDate).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Eye className="mr-1 h-4 w-4" />
-                        View
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Download className="mr-1 h-4 w-4" />
-                        Export
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="mt-4 grid grid-cols-4 gap-4 text-center">
-                    <div>
-                      <p className="text-lg font-bold text-gray-900">{assignment.totalSubmissions}</p>
-                      <p className="text-xs text-gray-500">Submissions</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-emerald-600">{assignment.graded}</p>
-                      <p className="text-xs text-gray-500">Graded</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-amber-600">{assignment.pending}</p>
-                      <p className="text-xs text-gray-500">Pending</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-blue-600">{assignment.avgScore}%</p>
-                      <p className="text-xs text-gray-500">Avg. Score</p>
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    <Progress
-                      value={(assignment.graded / assignment.totalSubmissions) * 100}
-                      className="h-2"
-                      color="green"
-                    />
-                  </div>
+            {assignments.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-16">
+                  <FileText className="h-12 w-12 text-gray-400" />
+                  <h3 className="mt-4 text-lg font-medium text-gray-900">No assignments yet</h3>
+                  <p className="mt-1 text-sm text-gray-500">Create assignments for your courses</p>
                 </CardContent>
               </Card>
-            ))}
+            ) : (
+              assignments.map((assignment) => (
+                <Card key={assignment.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-gray-900">{assignment.title}</h3>
+                          <Badge
+                            variant={
+                              assignment.status === "active"
+                                ? "default"
+                                : assignment.status === "closed"
+                                ? "secondary"
+                                : "outline"
+                            }
+                          >
+                            {assignment.status}
+                          </Badge>
+                        </div>
+                        <p className="mt-1 text-sm text-gray-500">{assignment.course}</p>
+                        <p className="mt-1 text-xs text-gray-400">
+                          Due: {new Date(assignment.dueDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm">
+                          <Eye className="mr-1 h-4 w-4" />
+                          View
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Download className="mr-1 h-4 w-4" />
+                          Export
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="mt-4 grid grid-cols-4 gap-4 text-center">
+                      <div>
+                        <p className="text-lg font-bold text-gray-900">{assignment.totalSubmissions}</p>
+                        <p className="text-xs text-gray-500">Submissions</p>
+                      </div>
+                      <div>
+                        <p className="text-lg font-bold text-emerald-600">{assignment.graded}</p>
+                        <p className="text-xs text-gray-500">Graded</p>
+                      </div>
+                      <div>
+                        <p className="text-lg font-bold text-amber-600">{assignment.pending}</p>
+                        <p className="text-xs text-gray-500">Pending</p>
+                      </div>
+                      <div>
+                        <p className="text-lg font-bold text-blue-600">{assignment.avgScore}%</p>
+                        <p className="text-xs text-gray-500">Avg. Score</p>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <Progress
+                        value={(assignment.graded / assignment.totalSubmissions) * 100}
+                        className="h-2"
+                        color="green"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
       </Tabs>
@@ -413,6 +417,11 @@ export default function AssignmentsPage() {
                 <p className="text-sm text-gray-500">
                   Status: {selectedSubmission.status}
                 </p>
+                {selectedSubmission.content && (
+                  <p className="mt-2 text-sm text-gray-600 border-t pt-2">
+                    {selectedSubmission.content}
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-4">
                 <Input
