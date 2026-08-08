@@ -170,6 +170,25 @@ export async function POST(
       },
     });
 
+    if (quiz.courseId) {
+      const percentage = scorePercentage;
+      const letterGrade =
+        percentage >= 90 ? "A" : percentage >= 80 ? "B" : percentage >= 70 ? "C" : percentage >= 60 ? "D" : "F";
+
+      await prisma.grade.create({
+        data: {
+          userId,
+          courseId: quiz.courseId,
+          quizId: quiz.id,
+          score: totalScore,
+          totalPoints,
+          percentage,
+          letterGrade,
+          type: "QUIZ",
+        },
+      });
+    }
+
     return NextResponse.json({
       attempt,
       results,

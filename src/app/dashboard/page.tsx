@@ -109,17 +109,25 @@ export default function DashboardPage() {
   const [quizAttempts, setQuizAttempts] = useState<QuizAttempt[]>([]);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [recommendedCourses, setRecommendedCourses] = useState<Course[]>([]);
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [learningStreak, setLearningStreak] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchAll() {
       try {
-        const [enrollRes, quizRes, certRes, courseRes] = await Promise.allSettled([
+        const fetches: Promise<any>[] = [
           fetch("/api/enrollments"),
           fetch("/api/quizzes/attempts"),
           fetch("/api/certificates"),
           fetch("/api/courses?limit=6"),
-        ]);
+          fetch("/api/lesson-progress"),
+        ];
+        if (role === "ADMIN" || role === "INSTRUCTOR") {
+          fetches.push(fetch("/api/analytics"));
+        }
+        const results = await Promise.allSettled(fetches);
+        const [enrollRes, quizRes, certRes, courseRes, progressRes] = results;
 
         if (enrollRes.status === "fulfilled" && enrollRes.value.ok) {
           const data = await enrollRes.value.json();
@@ -137,14 +145,44 @@ export default function DashboardPage() {
           const data = await courseRes.value.json();
           setRecommendedCourses(data.courses || []);
         }
+        if (progressRes.status === "fulfilled" && progressRes.value.ok) {
+          const data = await progressRes.value.json();
+          const records = data.progress || data || [];
+          const activeDates = new Set<string>();
+          for (const r of records) {
+            const d = r.completedAt;
+            if (d) {
+              const dateStr = new Date(d).toISOString().slice(0, 10);
+              activeDates.add(dateStr);
+            }
+          }
+          let streak = 0;
+          const now = new Date();
+          for (let i = 0; i < 365; i++) {
+            const checkDate = new Date(now);
+            checkDate.setDate(checkDate.getDate() - i);
+            const dateStr = checkDate.toISOString().slice(0, 10);
+            if (activeDates.has(dateStr)) {
+              streak++;
+            } else if (i > 0) {
+              break;
+            }
+          }
+          setLearningStreak(streak);
+        }
+        const analyticsIdx = role === "ADMIN" || role === "INSTRUCTOR" ? 5 : -1;
+        if (analyticsIdx >= 0 && results[analyticsIdx]?.status === "fulfilled" && results[analyticsIdx].value.ok) {
+          const data = await results[analyticsIdx].value.json();
+          setAnalyticsData(data);
+        }
       } catch {
-        // Use empty state
+        setLearningStreak(0);
       } finally {
         setLoading(false);
       }
     }
     fetchAll();
-  }, []);
+  }, [role]);
 
   const completedEnrollments = enrollments.filter((e) => e.status === "COMPLETED");
   const activeEnrollments = enrollments.filter((e) => e.status === "ACTIVE");
@@ -155,17 +193,17 @@ export default function DashboardPage() {
   const stats =
     role === "ADMIN"
       ? [
-          { label: "Total Users", value: "—", icon: Users, color: "bg-blue-500", change: "", trend: "up" as const, subtitle: "users" },
-          { label: "Total Courses", value: "—", icon: BookOpen, color: "bg-emerald-500", change: "", trend: "up" as const, subtitle: "courses" },
-          { label: "Revenue", value: "—", icon: DollarSign, color: "bg-amber-500", change: "", trend: "up" as const, subtitle: "revenue" },
-          { label: "Enrollments", value: "—", icon: TrendingUp, color: "bg-rose-500", change: "", trend: "up" as const, subtitle: "enrollments" },
+          { label: "Total Users", value: analyticsData?.totalStudents ?? "—", icon: Users, color: "bg-blue-500", change: analyticsData?.userGrowth ? `${analyticsData.userGrowth}%` : "", trend: "up" as const, subtitle: "users" },
+          { label: "Total Courses", value: analyticsData?.totalCourses ?? "—", icon: BookOpen, color: "bg-emerald-500", change: "", trend: "up" as const, subtitle: "courses" },
+          { label: "Revenue", value: analyticsData?.totalRevenue != null ? `₦${Number(analyticsData.totalRevenue).toLocaleString()}` : "—", icon: DollarSign, color: "bg-amber-500", change: analyticsData?.revenueGrowth ? `${analyticsData.revenueGrowth}%` : "", trend: "up" as const, subtitle: "revenue" },
+          { label: "Enrollments", value: analyticsData?.totalEnrollments ?? "—", icon: TrendingUp, color: "bg-rose-500", change: analyticsData?.enrollmentGrowth ? `${analyticsData.enrollmentGrowth}%` : "", trend: "up" as const, subtitle: "enrollments" },
         ]
       : role === "INSTRUCTOR"
         ? [
-            { label: "My Courses", value: "—", icon: Package, color: "bg-blue-500", change: "", trend: "up" as const, subtitle: "courses" },
-            { label: "Total Students", value: "—", icon: Users, color: "bg-emerald-500", change: "", trend: "up" as const, subtitle: "students" },
-            { label: "Earnings", value: "—", icon: DollarSign, color: "bg-amber-500", change: "", trend: "up" as const, subtitle: "earnings" },
-            { label: "Active Courses", value: "—", icon: BookOpen, color: "bg-rose-500", change: "", trend: "up" as const, subtitle: "active" },
+            { label: "My Courses", value: analyticsData?.totalCourses ?? "—", icon: Package, color: "bg-blue-500", change: "", trend: "up" as const, subtitle: "courses" },
+            { label: "Total Students", value: analyticsData?.totalStudents ?? "—", icon: Users, color: "bg-emerald-500", change: analyticsData?.userGrowth ? `${analyticsData.userGrowth}%` : "", trend: "up" as const, subtitle: "students" },
+            { label: "Earnings", value: analyticsData?.totalRevenue != null ? `₦${Number(analyticsData.totalRevenue).toLocaleString()}` : "—", icon: DollarSign, color: "bg-amber-500", change: analyticsData?.revenueGrowth ? `${analyticsData.revenueGrowth}%` : "", trend: "up" as const, subtitle: "earnings" },
+            { label: "Active Courses", value: analyticsData?.totalEnrollments ?? "—", icon: BookOpen, color: "bg-rose-500", change: analyticsData?.enrollmentGrowth ? `${analyticsData.enrollmentGrowth}%` : "", trend: "up" as const, subtitle: "active" },
           ]
         : [
             { label: "Enrolled Courses", value: enrollments.length || 0, icon: BookOpen, color: "bg-blue-500", change: `${activeEnrollments.length} active`, trend: "up" as const, subtitle: "courses" },
@@ -233,8 +271,6 @@ export default function DashboardPage() {
             { label: "View Certificates", href: "/dashboard/certificates", icon: Award, color: "bg-amber-500" },
             { label: "Join Live Class", href: "/live-classes", icon: GraduationCap, color: "bg-rose-500" },
           ];
-
-  const learningStreak = 7;
 
   function formatTimeAgo(dateStr: string) {
     const diff = Date.now() - new Date(dateStr).getTime();

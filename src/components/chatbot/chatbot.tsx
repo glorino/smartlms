@@ -351,7 +351,7 @@ function getSmartResponse(
       },
       payments: {
         response:
-          "Our pricing is simple: Free tier (limited courses), Pro (₦18,000/month for everything), and Enterprise (custom). Want details on any of these?",
+          "Our pricing is simple: Free tier (limited courses), Pro (₦28,000/month for everything), and Enterprise (custom). Want details on any of these?",
         topic: "payment-followup",
       },
       refunds: {

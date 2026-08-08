@@ -36,19 +36,8 @@ const statusColors: Record<string, string> = {
   ARCHIVED: "bg-gray-100 text-gray-700",
 };
 
-const fallbackCourses: CourseItem[] = [
-  { id: "1", title: "Advanced React Patterns", instructor: "Sarah Johnson", status: "PUBLISHED", students: 2341, rating: 4.8, price: 99 },
-  { id: "2", title: "TypeScript Mastery", instructor: "Mike Chen", status: "PUBLISHED", students: 1876, rating: 4.7, price: 79 },
-  { id: "3", title: "Node.js Backend Development", instructor: "Emily Davis", status: "PUBLISHED", students: 1654, rating: 4.6, price: 89 },
-  { id: "4", title: "Python for Data Science", instructor: "Alex Wilson", status: "DRAFT", students: 0, rating: 0, price: 94 },
-  { id: "5", title: "UI/UX Design Fundamentals", instructor: "Jordan Lee", status: "PUBLISHED", students: 1210, rating: 4.9, price: 69 },
-  { id: "6", title: "DevOps Essentials", instructor: "Chris Brown", status: "ARCHIVED", students: 890, rating: 4.3, price: 89 },
-  { id: "7", title: "Machine Learning Basics", instructor: "Dr. Lisa Wang", status: "DRAFT", students: 0, rating: 0, price: 109 },
-  { id: "8", title: "Mobile App Development", instructor: "Tom Anderson", status: "PUBLISHED", students: 1543, rating: 4.5, price: 79 },
-];
-
 export default function AdminCoursesPage() {
-  const [courses, setCourses] = useState<CourseItem[]>(fallbackCourses);
+  const [courses, setCourses] = useState<CourseItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -62,7 +51,7 @@ export default function AdminCoursesPage() {
           setCourses(data.courses || data || []);
         }
       } catch {
-        // Use fallback
+        setCourses([]);
       }
     }
     fetchCourses();
@@ -167,6 +156,15 @@ export default function AdminCoursesPage() {
       </Card>
 
       {/* Courses Table */}
+      {courses.length === 0 ? (
+        <Card>
+          <CardContent className="py-16 text-center">
+            <BookOpen className="mx-auto h-12 w-12 text-gray-300" />
+            <p className="mt-4 text-lg font-medium text-gray-900">No courses found</p>
+            <p className="mt-1 text-sm text-gray-500">No courses have been created yet.</p>
+          </CardContent>
+        </Card>
+      ) : (
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -282,6 +280,7 @@ export default function AdminCoursesPage() {
           )}
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }

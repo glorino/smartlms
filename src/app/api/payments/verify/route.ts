@@ -62,6 +62,16 @@ export async function GET(request: Request) {
         },
       });
 
+      const existingPurchase = await prisma.purchase.findFirst({
+        where: { stripePaymentId: tx_ref },
+      });
+
+      if (existingPurchase) {
+        return NextResponse.redirect(
+          new URL(`/payment/success?tx_ref=${tx_ref}&course_id=${courseId}`, request.url)
+        );
+      }
+
       if (!existingEnrollment) {
         await prisma.$transaction(async (tx) => {
           await tx.purchase.create({
@@ -72,7 +82,7 @@ export async function GET(request: Request) {
               currency: transaction.currency,
               status: "COMPLETED",
               paymentMethod: "flutterwave",
-              stripePaymentId: transaction.id?.toString(),
+              stripePaymentId: tx_ref,
             },
           });
 
@@ -86,7 +96,10 @@ export async function GET(request: Request) {
 
           await tx.course.update({
             where: { id: courseId },
-            data: { totalStudents: { increment: 1 } },
+            data: {
+              totalStudents: { increment: 1 },
+              revenue: { increment: transaction.amount },
+            },
           });
         });
       }

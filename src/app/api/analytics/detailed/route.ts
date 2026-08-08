@@ -251,6 +251,7 @@ async function handleEngagement(courseFilter: any, courseId: string | null) {
       completed: true,
       userId: true,
       lessonId: true,
+      completedAt: true,
       lesson: { select: { courseId: true } },
     },
   });
@@ -312,27 +313,38 @@ async function handleEngagement(courseFilter: any, courseId: string | null) {
     const activeOnDay = new Set(
       lessonProgressData
         .filter((lp) => {
-          const date = new Date(lp.userId);
-          return true;
+          if (!lp.completedAt) return false;
+          return lp.completedAt >= dayStart && lp.completedAt <= dayEnd;
         })
         .map((lp) => lp.userId)
     ).size;
 
     dailyActiveUsers.push({
       date: dayStart.toISOString().slice(0, 10),
-      count: Math.max(1, Math.round(Math.random() * 50 + 10)),
+      count: activeOnDay,
     });
   }
 
   for (let i = 3; i >= 0; i--) {
     const weekStart = new Date(now);
     weekStart.setDate(weekStart.getDate() - (i * 7 + 6));
+    weekStart.setHours(0, 0, 0, 0);
     const weekEnd = new Date(now);
     weekEnd.setDate(weekEnd.getDate() - i * 7);
+    weekEnd.setHours(23, 59, 59, 999);
+
+    const activeInWeek = new Set(
+      lessonProgressData
+        .filter((lp) => {
+          if (!lp.completedAt) return false;
+          return lp.completedAt >= weekStart && lp.completedAt <= weekEnd;
+        })
+        .map((lp) => lp.userId)
+    ).size;
 
     weeklyActiveUsers.push({
       week: `Week of ${weekStart.toISOString().slice(0, 10)}`,
-      count: Math.max(5, Math.round(Math.random() * 200 + 50)),
+      count: activeInWeek,
     });
   }
 
