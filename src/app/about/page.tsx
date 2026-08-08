@@ -90,10 +90,10 @@ const features = [
 ];
 
 const team = [
-  { name: "Sarah Johnson", role: "CEO & Founder", avatar: "SJ", color: "from-indigo-500 to-purple-600" },
-  { name: "Michael Chen", role: "CTO", avatar: "MC", color: "from-blue-500 to-cyan-500" },
-  { name: "Emily Rodriguez", role: "Head of Design", avatar: "ER", color: "from-pink-500 to-rose-500" },
-  { name: "Alex Kim", role: "Lead Engineer", avatar: "AK", color: "from-green-400 to-emerald-500" },
+  { name: "Sarah Johnson", role: "CEO & Founder", avatar: "https://i.pravatar.cc/150?img=47", color: "from-indigo-500 to-purple-600" },
+  { name: "Michael Chen", role: "CTO", avatar: "https://i.pravatar.cc/150?img=11", color: "from-blue-500 to-cyan-500" },
+  { name: "Emily Rodriguez", role: "Head of Design", avatar: "https://i.pravatar.cc/150?img=23", color: "from-pink-500 to-rose-500" },
+  { name: "Alex Kim", role: "Lead Engineer", avatar: "https://i.pravatar.cc/150?img=33", color: "from-green-400 to-emerald-500" },
 ];
 
 const testimonials = [
@@ -307,10 +307,12 @@ export default function AboutPage() {
                 key={member.name}
                 className="group rounded-2xl bg-white p-6 text-center shadow-md transition-all hover:-translate-y-2 hover:shadow-2xl"
               >
-                <div
-                  className={`mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br ${member.color} text-3xl font-bold text-white shadow-lg transition-transform group-hover:scale-110`}
-                >
-                  {member.avatar}
+                <div className="mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full shadow-lg transition-transform group-hover:scale-110">
+                  <img
+                    src={member.avatar}
+                    alt={member.name}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900">
                   {member.name}
