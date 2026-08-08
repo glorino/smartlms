@@ -438,6 +438,47 @@ export default async function CourseDetailPage({
               </CardContent>
             </Card>
           </div>
+
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <Card>
+              <CardHeader>
+                <CardTitle>Course Info</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Lessons</span>
+                  <span className="font-medium">{totalLessons}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Duration</span>
+                  <span className="font-medium">
+                    {Math.floor(totalDuration / 60)}h {totalDuration % 60}m
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Students</span>
+                  <span className="font-medium">{displayTotalStudents.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Rating</span>
+                  <span className="font-medium">{displayRating.toFixed(1)} / 5</span>
+                </div>
+                {course.level && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Level</span>
+                    <span className="font-medium">{course.level}</span>
+                  </div>
+                )}
+                {course.language && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Language</span>
+                    <span className="font-medium">{course.language}</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
