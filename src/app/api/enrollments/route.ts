@@ -119,28 +119,32 @@ export async function POST(request: Request) {
       );
     }
 
-    const enrollment = await prisma.enrollment.create({
-      data: {
-        userId,
-        courseId,
-        status: "ACTIVE",
-      },
-      include: {
-        course: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            thumbnail: true,
-            price: true,
+    const enrollment = await prisma.$transaction(async (tx) => {
+      const newEnrollment = await tx.enrollment.create({
+        data: {
+          userId,
+          courseId,
+          status: "ACTIVE",
+        },
+        include: {
+          course: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              thumbnail: true,
+              price: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    await prisma.course.update({
-      where: { id: courseId },
-      data: { totalStudents: { increment: 1 } },
+      await tx.course.update({
+        where: { id: courseId },
+        data: { totalStudents: { increment: 1 } },
+      });
+
+      return newEnrollment;
     });
 
     return NextResponse.json({ enrollment }, { status: 201 });

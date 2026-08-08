@@ -37,6 +37,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userRole = (session.user as any).role;
+    if (userRole !== "INSTRUCTOR" && userRole !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const userId = session.user.id;
     const body = await request.json();
     const { score, totalPoints, type } = body;

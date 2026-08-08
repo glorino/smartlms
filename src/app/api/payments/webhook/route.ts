@@ -40,6 +40,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ received: true });
       }
 
+      const course = await prisma.course.findUnique({ where: { id: courseId } });
+      if (!course) {
+        console.error(`Webhook: Course not found for courseId ${courseId}`);
+        return NextResponse.json({ received: true });
+      }
+
+      const chargedAmount = Number(transaction.amount);
+      if (course.price > 0 && chargedAmount < course.price) {
+        console.error(`Webhook: Charged amount ${chargedAmount} is less than course price ${course.price}`);
+        return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
+      }
+
       const existingPurchase = await prisma.purchase.findFirst({
         where: { stripePaymentId: tx_ref },
       });
