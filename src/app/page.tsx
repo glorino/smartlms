@@ -28,6 +28,11 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
+import {
+  HOME_TESTIMONIALS,
+  HOME_STATS,
+  TRUSTED_LOGOS,
+} from "@/lib/constants";
 
 const typingWords = [
   "Web Development",
@@ -82,52 +87,8 @@ const features = [
   },
 ];
 
-const testimonials = [
-  {
-    name: "Sarah Johnson",
-    role: "Senior Instructor, Tech Academy",
-    rating: 5,
-    content:
-      "SmartLMS transformed how I create courses. The AI builder cut my preparation time from weeks to hours. The analytics help me understand exactly what my students need.",
-  },
-  {
-    name: "Michael Chen",
-    role: "CEO, LearnPro",
-    rating: 5,
-    content:
-      "We migrated 500+ courses to SmartLMS. The SCORM support made it seamless, and our students love the live class feature. Best LMS we have ever used.",
-  },
-  {
-    name: "Elena Rodriguez",
-    role: "University Professor",
-    rating: 5,
-    content:
-      "The 14 question types and certificate builder are game-changers. My students are more engaged, and completion rates jumped 40% since switching to SmartLMS.",
-  },
-  {
-    name: "David Kim",
-    role: "Corporate Training Lead",
-    rating: 5,
-    content:
-      "We onboard 200 employees monthly. SmartLMS automated our entire training pipeline. The analytics dashboard gives us insights we never had before.",
-  },
-  {
-    name: "Aisha Patel",
-    role: "Founder, SkillUp Academy",
-    rating: 5,
-    content:
-      "From zero to 10,000 students in 6 months. SmartLMS scaled with us beautifully. The certificate builder adds such a professional touch to our courses.",
-  },
-];
-
-const trustedLogos = [
-  { name: "Google", letter: "G" },
-  { name: "Microsoft", letter: "M" },
-  { name: "Stanford", letter: "S" },
-  { name: "MIT", letter: "M" },
-  { name: "Meta", letter: "F" },
-  { name: "Apple", letter: "A" },
-];
+const testimonials = HOME_TESTIMONIALS;
+const trustedLogos = TRUSTED_LOGOS;
 
 const courseOutline = [
   { title: "Introduction to React", duration: "12 min", done: true },
@@ -159,12 +120,7 @@ export default function HomePage() {
   });
   const statsRef = useRef<HTMLDivElement>(null);
 
-  const stats = [
-    { label: "Students", target: 100, suffix: "K+", key: "students" as const },
-    { label: "Courses", target: 500, suffix: "+", key: "courses" as const },
-    { label: "Countries", target: 50, suffix: "+", key: "countries" as const },
-    { label: "Rating", target: 4.9, suffix: "", key: "rating" as const, isDecimal: true },
-  ];
+  const stats = HOME_STATS;
 
   useEffect(() => {
     const currentWord = typingWords[wordIndex];

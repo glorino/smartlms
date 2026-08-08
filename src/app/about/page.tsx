@@ -17,6 +17,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
+import { ABOUT_TEAM, ABOUT_STATS } from "@/lib/constants";
 
 function useCounter(end: number, duration: number = 2000) {
   const [count, setCount] = useState(0);
@@ -51,12 +52,11 @@ function useCounter(end: number, duration: number = 2000) {
   return { count, ref };
 }
 
-const stats = [
-  { label: "Students Worldwide", value: 100000, suffix: "+", icon: Users, color: "from-blue-500 to-indigo-600" },
-  { label: "Courses Available", value: 500, suffix: "+", icon: BookOpen, color: "from-green-400 to-blue-500" },
-  { label: "Expert Instructors", value: 200, suffix: "+", icon: GraduationCap, color: "from-orange-400 to-pink-500" },
-  { label: "Countries Reached", value: 50, suffix: "+", icon: Globe, color: "from-purple-500 to-indigo-600" },
-];
+const ABOUT_STATS_WITH_ICONS = ABOUT_STATS.map((stat, i) => ({
+  ...stat,
+  icon: [Users, BookOpen, GraduationCap, Globe][i],
+}));
+const stats = ABOUT_STATS_WITH_ICONS;
 
 const features = [
   {
@@ -89,12 +89,7 @@ const features = [
   },
 ];
 
-const team = [
-  { name: "Sarah Johnson", role: "CEO & Founder", avatar: "https://i.pravatar.cc/150?img=47", color: "from-indigo-500 to-purple-600" },
-  { name: "Michael Chen", role: "CTO", avatar: "https://i.pravatar.cc/150?img=11", color: "from-blue-500 to-cyan-500" },
-  { name: "Emily Rodriguez", role: "Head of Design", avatar: "https://i.pravatar.cc/150?img=23", color: "from-pink-500 to-rose-500" },
-  { name: "Alex Kim", role: "Lead Engineer", avatar: "https://i.pravatar.cc/150?img=33", color: "from-green-400 to-emerald-500" },
-];
+const team = ABOUT_TEAM;
 
 const testimonials = [
   {

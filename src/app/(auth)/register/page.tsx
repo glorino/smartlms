@@ -20,6 +20,7 @@ import {
   Globe,
   Upload,
 } from "lucide-react";
+import { SITE_CONFIG } from "@/lib/constants";
 
 type Role = "STUDENT" | "INSTRUCTOR";
 
@@ -59,7 +60,7 @@ interface FormState {
 
 const features = [
   { icon: Sparkles, text: "AI-powered personalized learning paths" },
-  { icon: Zap, text: "500+ courses from expert instructors" },
+  { icon: Zap, text: `${SITE_CONFIG.stats.courses} courses from expert instructors` },
   { icon: Globe, text: "Learn from anywhere, anytime" },
   { icon: GraduationCap, text: "Earn recognized certificates" },
 ];

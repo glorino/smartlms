@@ -9,6 +9,7 @@ import {
   Code2,
   Play,
 } from "lucide-react";
+import { SITE_CONFIG } from "@/lib/constants";
 
 const footerLinks = {
   platform: [
@@ -32,10 +33,10 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { icon: Globe, label: "Twitter", href: "https://twitter.com/smartlms" },
-  { icon: MessageCircle, label: "Chat", href: "https://linkedin.com/company/smartlms" },
-  { icon: Code2, label: "GitHub", href: "https://github.com/smartlms" },
-  { icon: Play, label: "YouTube", href: "https://youtube.com/smartlms" },
+  { icon: Globe, label: "Twitter", href: SITE_CONFIG.social.twitter },
+  { icon: MessageCircle, label: "Chat", href: SITE_CONFIG.social.linkedin },
+  { icon: Code2, label: "GitHub", href: SITE_CONFIG.social.github },
+  { icon: Play, label: "YouTube", href: SITE_CONFIG.social.youtube },
 ];
 
 export default function Footer() {
@@ -46,7 +47,7 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2">
               <GraduationCap className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-gray-900">SmartLMS</span>
+              <span className="text-xl font-bold text-gray-900">{SITE_CONFIG.name}</span>
             </Link>
             <p className="mt-4 max-w-sm text-sm text-gray-600">
               The most advanced LMS combining AI-powered course creation, live
@@ -55,15 +56,15 @@ export default function Footer() {
             <div className="mt-6 space-y-2 text-sm text-gray-600">
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
-                <span>support@smartlms.com</span>
+                <span>{SITE_CONFIG.contact.email}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                <span>+234 800 SMART LMS</span>
+                <span>{SITE_CONFIG.contact.phone}</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
-                <span>Lagos, Nigeria</span>
+                <span>{SITE_CONFIG.contact.address}</span>
               </div>
             </div>
             <div className="mt-4 flex gap-3">
