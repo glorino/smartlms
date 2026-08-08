@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import {
   FileText,
   CheckCircle2,
@@ -13,6 +14,7 @@ import {
   Star,
   Users,
   BarChart3,
+  X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +60,7 @@ export default function AssignmentsPage() {
   const [feedback, setFeedback] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "graded" | "late">("all");
+  const [viewingAssignment, setViewingAssignment] = useState<Assignment | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -128,7 +131,69 @@ export default function AssignmentsPage() {
       setSelectedSubmission(null);
       setGrade("");
       setFeedback("");
+      toast.success("Grade submitted successfully");
     }
+  };
+
+  const handleExportSubmissions = async () => {
+    try {
+      const res = await fetch("/api/instructor/assignments?format=csv");
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "submissions.csv";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+        toast.success("Submissions exported successfully");
+      } else {
+        toast.error("Failed to export submissions");
+      }
+    } catch {
+      toast.error("Failed to export submissions");
+    }
+  };
+
+  const handleExportAssignment = async (assignment: Assignment) => {
+    try {
+      const res = await fetch(`/api/instructor/assignments?assignmentId=${assignment.id}&format=csv`);
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${assignment.title.replace(/\s+/g, "_")}_submissions.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+        toast.success("Assignment submissions exported");
+      } else {
+        toast.error("Failed to export");
+      }
+    } catch {
+      toast.error("Failed to export");
+    }
+  };
+
+  const handleDownloadSubmission = () => {
+    if (!selectedSubmission?.content) {
+      toast.error("No submission content to download");
+      return;
+    }
+    const blob = new Blob([selectedSubmission.content], { type: "text/plain" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${selectedSubmission.studentName.replace(/\s+/g, "_")}_submission.txt`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+    toast.success("Submission downloaded");
   };
 
   if (loading) {
@@ -350,11 +415,11 @@ export default function AssignmentsPage() {
                         </p>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => setViewingAssignment(assignment)}>
                           <Eye className="mr-1 h-4 w-4" />
                           View
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => handleExportAssignment(assignment)}>
                           <Download className="mr-1 h-4 w-4" />
                           Export
                         </Button>
@@ -434,7 +499,7 @@ export default function AssignmentsPage() {
                   placeholder="Enter score"
                 />
                 <div className="mt-7">
-                  <Button variant="outline">
+                  <Button variant="outline" onClick={handleDownloadSubmission}>
                     <Download className="mr-1 h-4 w-4" />
                     Download
                   </Button>
@@ -460,6 +525,64 @@ export default function AssignmentsPage() {
                 </Button>
                 <Button onClick={handleGrade} disabled={!grade}>
                   Submit Grade
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {viewingAssignment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <Card className="w-full max-w-lg mx-4">
+            <CardHeader className="flex flex-row items-start justify-between">
+              <div>
+                <CardTitle>{viewingAssignment.title}</CardTitle>
+                <CardDescription>{viewingAssignment.course}</CardDescription>
+              </div>
+              <button
+                onClick={() => setViewingAssignment(null)}
+                className="rounded-sm opacity-70 hover:opacity-100"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-500">Status</p>
+                  <Badge variant={viewingAssignment.status === "active" ? "default" : viewingAssignment.status === "closed" ? "secondary" : "outline"}>
+                    {viewingAssignment.status}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-gray-500">Due Date</p>
+                  <p className="font-medium">{new Date(viewingAssignment.dueDate).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Total Submissions</p>
+                  <p className="font-medium">{viewingAssignment.totalSubmissions}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Avg Score</p>
+                  <p className="font-medium">{viewingAssignment.avgScore}%</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Graded</p>
+                  <p className="font-medium text-emerald-600">{viewingAssignment.graded}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Pending</p>
+                  <p className="font-medium text-amber-600">{viewingAssignment.pending}</p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setViewingAssignment(null)}>
+                  Close
+                </Button>
+                <Button onClick={() => handleExportAssignment(viewingAssignment)}>
+                  <Download className="mr-1 h-4 w-4" />
+                  Export CSV
                 </Button>
               </div>
             </CardContent>

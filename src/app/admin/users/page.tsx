@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import {
   Users,
   Search,
@@ -15,6 +16,7 @@ import {
   Trash2,
   Eye,
   GraduationCap,
+  X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +44,11 @@ export default function AdminUsersPage() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [viewingUser, setViewingUser] = useState<UserItem | null>(null);
+  const [editingUser, setEditingUser] = useState<UserItem | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editRole, setEditRole] = useState("");
 
   useEffect(() => {
     async function fetchUsers() {
@@ -231,11 +238,23 @@ export default function AdminUsersPage() {
                         </button>
                         {openMenuId === user.id && (
                           <div className="absolute right-0 top-full z-10 mt-1 w-44 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
-                            <button className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <button
+                              onClick={() => { setViewingUser(user); setOpenMenuId(null); }}
+                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            >
                               <Eye className="h-4 w-4" />
                               View Profile
                             </button>
-                            <button className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <button
+                              onClick={() => {
+                                setEditingUser(user);
+                                setEditName(user.name);
+                                setEditEmail(user.email);
+                                setEditRole(user.role);
+                                setOpenMenuId(null);
+                              }}
+                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            >
                               <Edit className="h-4 w-4" />
                               Edit
                             </button>
@@ -269,6 +288,121 @@ export default function AdminUsersPage() {
           )}
         </CardContent>
       </Card>
+      )}
+
+      {viewingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">User Profile</h2>
+              <button onClick={() => setViewingUser(null)} className="rounded-sm opacity-70 hover:opacity-100">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-xl font-bold text-white">
+                  {viewingUser.name.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">{viewingUser.name}</p>
+                  <p className="text-sm text-gray-500">{viewingUser.email}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="rounded-lg bg-gray-50 p-3">
+                  <p className="text-gray-500">Role</p>
+                  <p className="font-medium">{viewingUser.role}</p>
+                </div>
+                <div className="rounded-lg bg-gray-50 p-3">
+                  <p className="text-gray-500">Status</p>
+                  <p className="font-medium">{viewingUser.status}</p>
+                </div>
+                <div className="rounded-lg bg-gray-50 p-3">
+                  <p className="text-gray-500">Courses</p>
+                  <p className="font-medium">{viewingUser.enrolledCourses}</p>
+                </div>
+                <div className="rounded-lg bg-gray-50 p-3">
+                  <p className="text-gray-500">Joined</p>
+                  <p className="font-medium">{viewingUser.createdAt}</p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button variant="outline" onClick={() => setViewingUser(null)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Edit User</h2>
+              <button onClick={() => setEditingUser(null)} className="rounded-sm opacity-70 hover:opacity-100">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Name</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Email</label>
+                <input
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Role</label>
+                <select
+                  value={editRole}
+                  onChange={(e) => setEditRole(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                >
+                  <option value="STUDENT">Student</option>
+                  <option value="INSTRUCTOR">Instructor</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
+              <Button
+                onClick={async () => {
+                  try {
+                    const res = await fetch(`/api/users/${editingUser.id}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ name: editName, email: editEmail, role: editRole }),
+                    });
+                    if (res.ok) {
+                      setUsers(users.map((u) => u.id === editingUser.id ? { ...u, name: editName, email: editEmail, role: editRole } : u));
+                      toast.success("User updated successfully");
+                      setEditingUser(null);
+                    } else {
+                      toast.error("Failed to update user");
+                    }
+                  } catch {
+                    toast.error("Failed to update user");
+                  }
+                }}
+              >
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
