@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       tx_ref,
       amount: String(amount),
       currency: currency || "NGN",
-      redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/payments/verify`,
+      redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || "http://localhost:3000"}/api/payments/verify`,
       customer: {
         email,
         name,
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       customizations: {
         title: "SmartLMS Course Enrollment",
         description: `Payment for course`,
-        logo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/logo.png`,
+        logo: `${process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || "http://localhost:3000"}/logo.png`,
       },
       meta: {
         courseId,

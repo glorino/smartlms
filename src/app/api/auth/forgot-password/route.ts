@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
     passwordResetTokens.set(token, { userId: user.id, expiresAt });
 
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password?token=${token}`;
+    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || "http://localhost:3000"}/reset-password?token=${token}`;
     console.log(`\n========== PASSWORD RESET ==========`);
     console.log(`User: ${user.email}`);
     console.log(`Reset URL: ${resetUrl}`);

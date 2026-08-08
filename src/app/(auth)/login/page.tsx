@@ -16,6 +16,7 @@ import {
   Globe,
   Star,
 } from "lucide-react";
+import { LOGIN_TESTIMONIALS } from "@/lib/constants";
 
 const features = [
   { icon: Sparkles, text: "AI-powered personalized learning paths" },
@@ -24,20 +25,7 @@ const features = [
   { icon: GraduationCap, text: "Earn recognized certificates" },
 ];
 
-const testimonials = [
-  {
-    name: "David Okafor",
-    text: "SmartLMS changed my life. I went from zero coding knowledge to building full-stack apps in 4 months.",
-    avatar: "DO",
-    color: "from-green-400 to-emerald-500",
-  },
-  {
-    name: "Maria Santos",
-    text: "The AI learning paths are incredible. It adapts perfectly to my pace and keeps me motivated every day.",
-    avatar: "MS",
-    color: "from-orange-400 to-pink-500",
-  },
-];
+const testimonials = LOGIN_TESTIMONIALS;
 
 export default function LoginPage() {
   const router = useRouter();

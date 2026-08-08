@@ -5,6 +5,11 @@ export interface User {
   avatar: string | null;
   role: "STUDENT" | "INSTRUCTOR" | "ADMIN";
   bio: string | null;
+  phone: string | null;
+  expertise: string[];
+  experience: string | null;
+  portfolioUrl: string | null;
+  linkedinUrl: string | null;
 }
 
 export interface Course {
@@ -27,6 +32,9 @@ export interface Course {
   tags: string[];
   category: string | null;
   isFeatured: boolean;
+  revenue: number;
+  requirements: string[];
+  prerequisites: string[];
   instructor: User;
   sections?: CourseSection[];
   _count?: {
@@ -61,7 +69,7 @@ export interface Quiz {
   id: string;
   title: string;
   description: string | null;
-  type: string;
+  type: "QUIZ" | "ASSESSMENT" | "PRACTICE";
   timeLimit: number | null;
   passingScore: number;
   maxAttempts: number | null;
