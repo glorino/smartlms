@@ -45,46 +45,49 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="w-full max-w-md">
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-xl">
-          <div className="mb-8 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4 py-12">
+        <div className="w-full max-w-md">
+          <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-xl">
+            <div className="mb-8 text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                <CheckCircle2 className="h-8 w-8 text-green-600" />
+              </div>
+              <h1 className="mt-4 text-2xl font-bold text-gray-900">
+                Check your email
+              </h1>
+              <p className="mt-2 text-sm text-gray-500">
+                We&apos;ve sent a password reset link to{" "}
+                <span className="font-medium text-gray-700">{email}</span>
+              </p>
+              <p className="mt-1 text-sm text-gray-500">
+                Didn&apos;t receive the email? Check your spam folder or{" "}
+                <button
+                  onClick={() => {
+                    setSent(false);
+                    setEmail("");
+                  }}
+                  className="font-medium text-primary hover:text-primary/80"
+                >
+                  try again
+                </button>
+              </p>
             </div>
-            <h1 className="mt-4 text-2xl font-bold text-gray-900">
-              Check your email
-            </h1>
-            <p className="mt-2 text-sm text-gray-500">
-              We&apos;ve sent a password reset link to{" "}
-              <span className="font-medium text-gray-700">{email}</span>
-            </p>
-            <p className="mt-1 text-sm text-gray-500">
-              Didn&apos;t receive the email? Check your spam folder or{" "}
-              <button
-                onClick={() => {
-                  setSent(false);
-                  setEmail("");
-                }}
-                className="font-medium text-primary hover:text-primary/80"
-              >
-                try again
-              </button>
-            </p>
+            <Link
+              href="/login"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Sign in
+            </Link>
           </div>
-          <Link
-            href="/login"
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Sign in
-          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4 py-12">
+      <div className="w-full max-w-md">
       <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-xl">
         <div className="mb-4">
           <Link
@@ -180,6 +183,7 @@ export default function ForgotPasswordPage() {
           </Link>
         </p>
       </div>
+    </div>
     </div>
   );
 }
