@@ -44,6 +44,7 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState({
     name: "",
     email: "",
+    avatar: "",
   });
 
   const [passwords, setPasswords] = useState({
@@ -58,6 +59,7 @@ export default function SettingsPage() {
       setProfile({
         name: (session.user as any).name || "",
         email: (session.user as any).email || "",
+        avatar: (session.user as any).image || "",
       });
     }
     setLoading(false);
@@ -68,13 +70,16 @@ export default function SettingsPage() {
       const res = await fetch("/api/auth/update", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: profile.name, email: profile.email }),
+        body: JSON.stringify({ name: profile.name, email: profile.email, avatar: profile.avatar }),
       });
       if (res.ok) {
-        await updateSession({ user: { name: profile.name, email: profile.email } });
+        await updateSession({ user: { name: profile.name, email: profile.email, image: profile.avatar } });
+        toast.success("Profile updated successfully");
+      } else {
+        toast.error("Failed to update profile");
       }
     } catch {
-      // handle error
+      toast.error("Failed to update profile");
     }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -184,9 +189,17 @@ export default function SettingsPage() {
               {/* Avatar */}
               <div className="flex items-center gap-6">
                 <div className="relative">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-2xl font-bold text-white">
-                    {profile.name.split(" ").map((n) => n[0]).join("") || "U"}
-                  </div>
+                  {profile.avatar ? (
+                    <img
+                      src={profile.avatar}
+                      alt={profile.name}
+                      className="h-20 w-20 rounded-full object-cover ring-2 ring-indigo-500/20"
+                    />
+                  ) : (
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-2xl font-bold text-white">
+                      {profile.name.split(" ").map((n) => n[0]).join("") || "U"}
+                    </div>
+                  )}
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     className="absolute -bottom-1 -right-1 rounded-full bg-white p-1.5 shadow-md ring-2 ring-gray-100 transition-colors hover:bg-gray-50"
@@ -197,12 +210,22 @@ export default function SettingsPage() {
                 <div>
                   <p className="font-medium text-gray-900">{profile.name || "User"}</p>
                   <p className="text-sm text-gray-500">{profile.email}</p>
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="mt-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
-                  >
-                    Change avatar
-                  </button>
+                  <div className="mt-1 flex items-center gap-2">
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                    >
+                      Change avatar
+                    </button>
+                    {profile.avatar && (
+                      <button
+                        onClick={() => setProfile((prev) => ({ ...prev, avatar: "" }))}
+                        className="text-sm font-medium text-red-500 hover:text-red-600"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <input
                   ref={fileInputRef}
@@ -222,7 +245,9 @@ export default function SettingsPage() {
                     }
                     const reader = new FileReader();
                     reader.onload = () => {
-                      toast.success("Avatar updated (preview only)");
+                      const dataUrl = reader.result as string;
+                      setProfile((prev) => ({ ...prev, avatar: dataUrl }));
+                      toast.success("Avatar selected. Click Save to update.");
                     };
                     reader.readAsDataURL(file);
                   }}
