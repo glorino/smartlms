@@ -104,7 +104,7 @@ export default function AdminUsersPage() {
           <h1 className="text-3xl font-bold text-gray-900">Manage Users</h1>
           <p className="mt-1 text-gray-500">View and manage platform users</p>
         </div>
-        <Button>
+        <Button onClick={() => alert("User creation form coming soon!")}>
           <Plus className="mr-2 h-4 w-4" />
           Add User
         </Button>

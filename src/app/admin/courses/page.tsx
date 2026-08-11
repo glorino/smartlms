@@ -97,7 +97,7 @@ export default function AdminCoursesPage() {
           <h1 className="text-3xl font-bold text-gray-900">Manage Courses</h1>
           <p className="mt-1 text-gray-500">View and manage all platform courses</p>
         </div>
-        <Link href="/admin/courses/new">
+        <Link href="/instructor/courses/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
             Create Course
@@ -189,7 +189,7 @@ export default function AdminCoursesPage() {
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">{course.title}</p>
-                          <p className="text-xs text-gray-500">${course.price}</p>
+                          <p className="text-xs text-gray-500">₦{course.price}</p>
                         </div>
                       </div>
                     </td>
@@ -233,7 +233,7 @@ export default function AdminCoursesPage() {
                               View
                             </Link>
                             <Link
-                              href={`/admin/courses/${course.id}/edit`}
+                              href={`/instructor/courses/${course.id}/edit`}
                               className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                             >
                               <Edit className="h-4 w-4" />

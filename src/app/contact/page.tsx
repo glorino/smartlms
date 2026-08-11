@@ -30,14 +30,14 @@ export default function ContactPage() {
               <div className="rounded-xl border border-gray-200 bg-white p-6">
                 <Phone className="h-6 w-6 text-indigo-600" />
                 <h3 className="mt-3 font-semibold text-gray-900">Phone</h3>
-                <p className="text-sm text-gray-500">+1 (555) 123-4567</p>
+                <p className="text-sm text-gray-500">+234 800 SMART LMS</p>
               </div>
               <div className="rounded-xl border border-gray-200 bg-white p-6">
                 <MapPin className="h-6 w-6 text-indigo-600" />
                 <h3 className="mt-3 font-semibold text-gray-900">Office</h3>
                 <p className="text-sm text-gray-500">
                   123 Learning Street<br />
-                  San Francisco, CA 94105
+                  Lagos, Nigeria
                 </p>
               </div>
             </div>

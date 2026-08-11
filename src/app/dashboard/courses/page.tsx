@@ -13,7 +13,6 @@ import {
   X,
   BookOpen,
 } from "lucide-react";
-import Sidebar from "@/components/layout/sidebar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -81,20 +80,14 @@ export default function MyCoursesPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
-        <Sidebar />
-        <main className="flex flex-1 items-center justify-center">
-          <Spinner size="lg" />
-        </main>
+      <div className="flex items-center justify-center py-24">
+        <Spinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
-
-      <main className="flex-1 overflow-y-auto p-6 pb-20 md:p-8 md:pb-8">
+    <div>
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">My Courses</h1>
           <p className="mt-1 text-gray-600">
@@ -312,7 +305,6 @@ export default function MyCoursesPage() {
             )}
           </TabsContent>
         </Tabs>
-      </main>
     </div>
   );
 }

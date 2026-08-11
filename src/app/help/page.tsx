@@ -17,6 +17,7 @@ import {
   Settings,
   GraduationCap,
 } from "lucide-react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,7 +65,7 @@ const faqCategories = [
     faqs: [
       {
         q: "What payment methods are accepted?",
-        a: "We accept all major credit/debit cards, PayPal, and bank transfers through our secure Stripe integration.",
+        a: "We accept all major credit/debit cards, bank transfers, and mobile payments through our secure Flutterwave integration.",
       },
       {
         q: "Can I get a refund?",
@@ -115,8 +116,8 @@ const supportChannels = [
     icon: Phone,
     title: "Phone Support",
     description: "Call us for urgent issues",
-    contact: "+1 (555) 123-4567",
-    action: "tel:+15551234567",
+    contact: "+234 800 SMART LMS",
+    action: "tel:+2348007627856",
   },
 ];
 
@@ -320,8 +321,8 @@ export default function HelpPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <a
-              href="#"
+            <Link
+              href="/courses"
               className="flex items-center gap-3 rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50"
             >
               <FileText className="h-5 w-5 text-indigo-600" />
@@ -329,9 +330,9 @@ export default function HelpPage() {
                 <p className="font-medium text-gray-900">Documentation</p>
                 <p className="text-sm text-gray-500">Platform guides and tutorials</p>
               </div>
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              href="/courses"
               className="flex items-center gap-3 rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50"
             >
               <Video className="h-5 w-5 text-indigo-600" />
@@ -339,9 +340,9 @@ export default function HelpPage() {
                 <p className="font-medium text-gray-900">Video Tutorials</p>
                 <p className="text-sm text-gray-500">Step-by-step video guides</p>
               </div>
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              href="/contact"
               className="flex items-center gap-3 rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50"
             >
               <Shield className="h-5 w-5 text-indigo-600" />
@@ -349,7 +350,7 @@ export default function HelpPage() {
                 <p className="font-medium text-gray-900">Community Forum</p>
                 <p className="text-sm text-gray-500">Ask questions and share tips</p>
               </div>
-            </a>
+            </Link>
           </div>
         </CardContent>
       </Card>

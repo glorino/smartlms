@@ -66,6 +66,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = (user as any).role;
         token.id = user.id;
       }
+      // Refresh user data from DB on each token refresh
+      if (token.id) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { avatar: true, name: true, email: true },
+          });
+          if (dbUser) {
+            token.name = dbUser.name || token.name;
+            token.email = dbUser.email || token.email;
+            token.picture = dbUser.avatar || token.picture;
+          }
+        } catch {}
+      }
       return token;
     },
     async session({ session, token }) {
