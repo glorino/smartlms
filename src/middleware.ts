@@ -11,6 +11,7 @@ const publicRoutes = [
   "/about",
   "/live-classes",
   "/forgot-password",
+  "/reset-password",
   "/become-instructor",
   "/blog",
   "/careers",
@@ -22,6 +23,9 @@ const publicRoutes = [
   "/support",
   "/terms",
   "/demo",
+  "/payment/success",
+  "/payment/failed",
+  "/contact",
 ];
 const publicPageRoutes = [
   /^\/certificate\/[^/]+$/,
@@ -37,6 +41,8 @@ const publicApiRoutes = [
   { path: /^\/api\/chat$/, method: "ALL" },
   { path: /^\/api\/reviews$/, method: "GET" },
   { path: /^\/api\/quizzes$/, method: "GET" },
+  { path: /^\/api\/quizzes\/[^/]+$/, method: "GET" },
+  { path: /^\/api\/live-classes$/, method: "GET" },
 ];
 
 export default auth((req) => {

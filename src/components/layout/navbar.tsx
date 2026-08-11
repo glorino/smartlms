@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import {
   Menu,
   X,
@@ -27,13 +27,15 @@ interface Session {
   };
 }
 
-export default function Navbar({ session }: { session?: Session }) {
+export default function Navbar({ session: propSession }: { session?: Session }) {
+  const { data: sessionData } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const pathname = usePathname();
   const router = useRouter();
+  const session = (propSession || sessionData) as Session | undefined;
   const user = session?.user;
 
   const navLinks = [
