@@ -7,11 +7,6 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { id } = await context.params;
 
     const quiz = await prisma.quiz.findUnique({
@@ -25,6 +20,7 @@ export async function GET(
                 content: true,
                 imageUrl: true,
                 order: true,
+                isCorrect: true,
               },
             },
           },
@@ -37,25 +33,31 @@ export async function GET(
       return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }
 
-    const attemptCount = await prisma.quizAttempt.count({
-      where: {
-        userId: session.user.id,
-        quizId: id,
-      },
-    });
+    const session = await auth();
 
-    const previousAttempts = await prisma.quizAttempt.findMany({
-      where: {
-        userId: session.user.id,
-        quizId: id,
-      },
-      select: {
-        score: true,
-        passed: true,
-        completedAt: true,
-      },
-      orderBy: { completedAt: "asc" },
-    });
+    const attemptCount = session?.user?.id
+      ? await prisma.quizAttempt.count({
+          where: {
+            userId: session.user.id,
+            quizId: id,
+          },
+        })
+      : 0;
+
+    const previousAttempts = session?.user?.id
+      ? await prisma.quizAttempt.findMany({
+          where: {
+            userId: session.user.id,
+            quizId: id,
+          },
+          select: {
+            score: true,
+            passed: true,
+            completedAt: true,
+          },
+          orderBy: { completedAt: "asc" },
+        })
+      : [];
 
     return NextResponse.json({
       quiz,
