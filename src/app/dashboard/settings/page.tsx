@@ -18,6 +18,7 @@ import {
   Moon,
   Monitor,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -65,25 +66,30 @@ export default function SettingsPage() {
     setLoading(false);
   }, [session]);
 
+  const [saving, setSaving] = useState(false);
+
   const handleSaveProfile = async () => {
+    setSaving(true);
     try {
       const res = await fetch("/api/auth/update", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: profile.name, email: profile.email, avatar: profile.avatar }),
       });
+      const data = await res.json();
       if (res.ok) {
-        // Force session refresh to pick up new avatar from database
-        await updateSession();
         toast.success("Profile updated successfully");
+        // Force full reload to pick up new session from server
+        window.location.reload();
       } else {
-        toast.error("Failed to update profile");
+        toast.error(data.error || "Failed to update profile");
       }
-    } catch {
+    } catch (err) {
+      console.error("Save profile error:", err);
       toast.error("Failed to update profile");
+    } finally {
+      setSaving(false);
     }
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   };
 
   const handleSaveNotifications = async () => {
@@ -292,9 +298,18 @@ export default function SettingsPage() {
               </div>
 
               <div className="flex justify-end">
-                <Button onClick={handleSaveProfile}>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
+                <Button onClick={handleSaveProfile} disabled={saving}>
+                  {saving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>
