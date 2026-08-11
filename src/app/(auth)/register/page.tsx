@@ -14,6 +14,7 @@ import {
   EyeOff,
   BookOpen,
   CheckCircle2,
+  ArrowLeft,
   ArrowRight,
   Sparkles,
   Zap,
@@ -225,7 +226,7 @@ export default function RegisterPage() {
   return (
     <div className="flex h-screen">
       {/* Left Panel */}
-      <div className="hidden w-1/2 items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-700 p-12 lg:flex">
+      <div className="hidden w-1/2 flex-col justify-between bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-700 p-12 lg:flex">
         <div className="max-w-md">
           <Link
             href="/"
@@ -251,16 +252,16 @@ export default function RegisterPage() {
               </div>
             ))}
           </div>
-          <div className="mt-12 rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
-            <p className="text-sm italic text-white/80">
-              &ldquo;SmartLMS helped me transition from a complete beginner to
-              a full-stack developer in 6 months. The AI learning paths are
-              incredible!&rdquo;
-            </p>
-            <p className="mt-3 text-sm font-semibold text-white">
-              — Jessica Park, Software Engineer
-            </p>
-          </div>
+        </div>
+        <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
+          <p className="text-sm italic text-white/80">
+            &ldquo;SmartLMS helped me transition from a complete beginner to
+            a full-stack developer in 6 months. The AI learning paths are
+            incredible!&rdquo;
+          </p>
+          <p className="mt-3 text-sm font-semibold text-white">
+            — Jessica Park, Software Engineer
+          </p>
         </div>
       </div>
 
@@ -277,6 +278,13 @@ export default function RegisterPage() {
             </Link>
           </div>
           <div className="mb-8">
+            <Link
+              href="/"
+              className="mb-4 inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-700"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Homepage
+            </Link>
             <h2 className="text-3xl font-extrabold text-gray-900">
               Create your account
             </h2>
