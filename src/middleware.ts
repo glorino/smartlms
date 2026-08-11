@@ -68,7 +68,7 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  const mutatingMethods = ["POST", "PUT", "DELETE"];
+  const mutatingMethods = ["POST", "PUT", "DELETE", "PATCH"];
   if (mutatingMethods.includes(method)) {
     const protectedPaths = [
       /^\/api\/reviews$/,
