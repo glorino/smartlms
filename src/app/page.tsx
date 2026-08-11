@@ -15,7 +15,6 @@ import {
   Globe,
   Zap,
   GraduationCap,
-  Play,
   Clock,
   Trophy,
   Target,
@@ -28,6 +27,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
+import HeroSlider from "@/components/home/hero-slider";
 import {
   HOME_TESTIMONIALS,
   HOME_STATS,
@@ -277,96 +277,16 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right: Course Player Mockup */}
+            {/* Right: Hero Slider */}
             <div className="relative hidden lg:block">
               {/* Glow behind the card */}
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 blur-3xl" />
 
               <div className="relative">
-                {/* Main player card */}
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-1.5 shadow-2xl backdrop-blur-xl">
-                  <div className="rounded-xl bg-gradient-to-br from-gray-900/90 to-gray-800/90 overflow-hidden">
-                    {/* Browser dots */}
-                    <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5">
-                      <div className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
-                      <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
-                      <div className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
-                      <div className="ml-3 flex-1 rounded-md bg-white/5 px-3 py-1 text-[10px] text-white/30">
-                        smartlms.com/learn/react-masterclass
-                      </div>
-                    </div>
-
-                    {/* Video area */}
-                    <div className="relative mx-3 mt-3 aspect-video rounded-lg bg-gradient-to-br from-indigo-900/50 to-purple-900/50 flex items-center justify-center overflow-hidden">
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.15),transparent_70%)]" />
-                      <div className="relative flex h-16 w-16 cursor-pointer items-center justify-center rounded-full bg-white/15 backdrop-blur-md border border-white/20 transition-all hover:scale-110 hover:bg-white/25">
-                        <Play className="h-7 w-7 text-white fill-white ml-1" />
-                      </div>
-                      {/* Video overlay text */}
-                      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-                        <div className="flex items-center justify-between text-[10px] text-white/70">
-                          <span>Lesson 3: State Management</span>
-                          <span>12:45 / 24:10</span>
-                        </div>
-                        <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-white/10">
-                          <div className="h-full w-[52%] rounded-full bg-gradient-to-r from-indigo-500 to-purple-500" />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Course info */}
-                    <div className="p-4">
-                      <h3 className="text-sm font-semibold text-white">
-                        React Masterclass 2024
-                      </h3>
-                      <p className="mt-0.5 text-[10px] text-white/40">
-                        24 Lessons · 8h 30m · By Sarah Johnson
-                      </p>
-
-                      {/* Progress bar */}
-                      <div className="mt-3">
-                        <div className="flex items-center justify-between text-[10px] text-white/40">
-                          <span>Progress</span>
-                          <span>42%</span>
-                        </div>
-                        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                          <div className="h-full w-[42%] rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500" />
-                        </div>
-                      </div>
-
-                      {/* Lesson list */}
-                      <div className="mt-4 space-y-1">
-                        {courseOutline.map((lesson, i) => (
-                          <div
-                            key={i}
-                            className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[11px] transition-colors ${
-                              i === 2
-                                ? "bg-indigo-500/15 text-indigo-300 border border-indigo-500/20"
-                                : lesson.done
-                                ? "text-white/50"
-                                : "text-white/30"
-                            }`}
-                          >
-                            {lesson.done ? (
-                              <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-emerald-400" />
-                            ) : i === 2 ? (
-                              <div className="h-3.5 w-3.5 flex-shrink-0 rounded-full border-2 border-indigo-400 flex items-center justify-center">
-                                <div className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
-                              </div>
-                            ) : (
-                              <div className="h-3.5 w-3.5 flex-shrink-0 rounded-full border border-white/20" />
-                            )}
-                            <span className="flex-1 truncate">{lesson.title}</span>
-                            <span className="flex-shrink-0 text-[10px] text-white/30">{lesson.duration}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <HeroSlider />
 
                 {/* Floating badge: Certificate */}
-                <div className="absolute -left-6 top-12 animate-bounce rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2.5 backdrop-blur-xl shadow-lg" style={{ animationDuration: "3s" }}>
+                <div className="absolute -left-6 top-12 animate-bounce rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2.5 backdrop-blur-xl shadow-lg z-20" style={{ animationDuration: "3s" }}>
                   <div className="flex items-center gap-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 to-orange-500">
                       <Award className="h-4 w-4 text-white" />
@@ -379,7 +299,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Floating badge: Quiz Score */}
-                <div className="absolute -right-4 top-1/2 -translate-y-1/2 rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2.5 backdrop-blur-xl shadow-lg">
+                <div className="absolute -right-4 top-1/2 -translate-y-1/2 rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2.5 backdrop-blur-xl shadow-lg z-20">
                   <div className="flex items-center gap-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500">
                       <Target className="h-4 w-4 text-white" />
@@ -392,7 +312,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Floating badge: Rating */}
-                <div className="absolute -right-6 bottom-16 animate-bounce rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2.5 backdrop-blur-xl shadow-lg" style={{ animationDuration: "4s", animationDelay: "1s" }}>
+                <div className="absolute -right-6 bottom-16 animate-bounce rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2.5 backdrop-blur-xl shadow-lg z-20" style={{ animationDuration: "4s", animationDelay: "1s" }}>
                   <div className="flex items-center gap-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-yellow-400 to-amber-500">
                       <Star className="h-4 w-4 text-white fill-white" />
