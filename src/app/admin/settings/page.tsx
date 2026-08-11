@@ -36,8 +36,9 @@ interface EmailSettings {
 }
 
 interface PaymentSettings {
-  stripePublicKey: string;
-  stripeSecretKey: string;
+  flutterwavePublicKey: string;
+  flutterwaveSecretKey: string;
+  flutterwaveEncryptionKey: string;
   currency: string;
   commissionRate: number;
 }
@@ -69,8 +70,9 @@ export default function AdminSettingsPage() {
     fromEmail: "noreply@smartlms.com",
   });
   const [payment, setPayment] = useState<PaymentSettings>({
-    stripePublicKey: "",
-    stripeSecretKey: "",
+    flutterwavePublicKey: "",
+    flutterwaveSecretKey: "",
+    flutterwaveEncryptionKey: "",
     currency: "NGN",
     commissionRate: 10,
   });
@@ -278,27 +280,42 @@ export default function AdminSettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5" />
-              Payment Settings
+              Payment Settings (Flutterwave)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
+              <p className="text-sm text-amber-800">
+                <strong>Flutterwave</strong> is the payment gateway for SmartLMS. All payments are processed in Nigerian Naira (₦).
+              </p>
+            </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Stripe Public Key</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Flutterwave Public Key</label>
               <input
                 type="text"
-                value={payment.stripePublicKey}
-                onChange={(e) => setPayment({ ...payment, stripePublicKey: e.target.value })}
-                placeholder="pk_test_..."
+                value={payment.flutterwavePublicKey}
+                onChange={(e) => setPayment({ ...payment, flutterwavePublicKey: e.target.value })}
+                placeholder="FLWPUBK_TEST-..."
                 className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Stripe Secret Key</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Flutterwave Secret Key</label>
               <input
                 type="password"
-                value={payment.stripeSecretKey}
-                onChange={(e) => setPayment({ ...payment, stripeSecretKey: e.target.value })}
-                placeholder="sk_test_..."
+                value={payment.flutterwaveSecretKey}
+                onChange={(e) => setPayment({ ...payment, flutterwaveSecretKey: e.target.value })}
+                placeholder="FLWSECK_TEST-..."
+                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Flutterwave Encryption Key</label>
+              <input
+                type="password"
+                value={payment.flutterwaveEncryptionKey}
+                onChange={(e) => setPayment({ ...payment, flutterwaveEncryptionKey: e.target.value })}
+                placeholder="FLWSECK_TEST..."
                 className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
             </div>

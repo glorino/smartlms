@@ -90,9 +90,9 @@ export default function CourseLearnPage() {
         const res = await fetch(`/api/courses/${courseId}`);
         if (res.ok) {
           const data = await res.json();
-          setCourse(data);
-          if (data.sections?.[0]?.lessons?.[0]) {
-            setCurrentLesson(data.sections[0].lessons[0]);
+          setCourse(data.course);
+          if (data.course?.sections?.[0]?.lessons?.[0]) {
+            setCurrentLesson(data.course.sections[0].lessons[0]);
           }
         }
       } catch (err) {

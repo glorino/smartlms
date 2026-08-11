@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, ShoppingCart } from "lucide-react";
+import { Check, Loader2, ShoppingCart, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PaymentModal from "@/components/payment/payment-modal";
 
@@ -57,10 +57,21 @@ export default function EnrollButton({
 
   if (enrolled) {
     return (
-      <Button className="w-full text-base" size="lg" disabled>
-        <Check className="mr-2 h-4 w-4" />
-        Enrolled
-      </Button>
+      <div className="space-y-2">
+        <Button className="w-full text-base" size="lg" disabled>
+          <Check className="mr-2 h-4 w-4" />
+          Enrolled Successfully
+        </Button>
+        <Button
+          className="w-full text-base"
+          size="lg"
+          variant="outline"
+          onClick={() => router.push(`/courses/${courseId}/learn`)}
+        >
+          <Play className="mr-2 h-4 w-4" />
+          Start Learning
+        </Button>
+      </div>
     );
   }
 
