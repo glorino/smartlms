@@ -265,7 +265,7 @@ export default function RegisterPage() {
       </div>
 
       {/* Right Panel - Form */}
-      <div className="flex w-full items-center justify-center p-6 lg:w-1/2 lg:p-12">
+      <div className="flex w-full justify-center overflow-y-auto p-6 lg:w-1/2 lg:p-12">
         <div className="w-full max-w-lg">
           <div className="mb-8 text-center lg:hidden">
             <Link
