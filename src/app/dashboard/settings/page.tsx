@@ -73,7 +73,8 @@ export default function SettingsPage() {
         body: JSON.stringify({ name: profile.name, email: profile.email, avatar: profile.avatar }),
       });
       if (res.ok) {
-        await updateSession({ user: { name: profile.name, email: profile.email, image: profile.avatar } });
+        // Force session refresh to pick up new avatar from database
+        await updateSession();
         toast.success("Profile updated successfully");
       } else {
         toast.error("Failed to update profile");
