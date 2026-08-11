@@ -244,11 +244,26 @@ export default function SettingsPage() {
                       toast.error("File size must be under 5MB");
                       return;
                     }
+                    // Compress image to fit JWT cookie limits
+                    const img = new Image();
                     const reader = new FileReader();
                     reader.onload = () => {
-                      const dataUrl = reader.result as string;
-                      setProfile((prev) => ({ ...prev, avatar: dataUrl }));
-                      toast.success("Avatar selected. Click Save to update.");
+                      img.onload = () => {
+                        const canvas = document.createElement("canvas");
+                        const SIZE = 128;
+                        canvas.width = SIZE;
+                        canvas.height = SIZE;
+                        const ctx = canvas.getContext("2d")!;
+                        // Center crop to square
+                        const minDim = Math.min(img.width, img.height);
+                        const sx = (img.width - minDim) / 2;
+                        const sy = (img.height - minDim) / 2;
+                        ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, SIZE, SIZE);
+                        const compressed = canvas.toDataURL("image/jpeg", 0.7);
+                        setProfile((prev) => ({ ...prev, avatar: compressed }));
+                        toast.success("Avatar selected. Click Save to update.");
+                      };
+                      img.src = reader.result as string;
                     };
                     reader.readAsDataURL(file);
                   }}
