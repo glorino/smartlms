@@ -101,7 +101,13 @@ export default function InstructorEarningsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Earnings</h1>
           <p className="mt-1 text-gray-600">Track your revenue and payouts</p>
         </div>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" className="gap-2" onClick={() => {
+          const csv = ["Month,Amount", ...monthlyData.map(m => `${m.month},${m.amount}`)].join("\n");
+          const blob = new Blob([csv], { type: "text/csv" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a"); a.href = url; a.download = "earnings-report.csv";
+          document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        }}>
           <Download className="h-4 w-4" />
           Export Report
         </Button>
@@ -304,7 +310,7 @@ export default function InstructorEarningsPage() {
                     <Badge variant="success">Default</Badge>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full gap-2">
+                <Button variant="outline" className="w-full gap-2" onClick={() => alert("Payout method setup coming soon!")}>
                   <Plus className="h-4 w-4" />
                   Add Payout Method
                 </Button>
@@ -329,7 +335,7 @@ export default function InstructorEarningsPage() {
                   <label className="text-sm font-medium text-gray-700">Minimum Payout</label>
                   <Input type="number" placeholder="50.00" defaultValue="50.00" />
                 </div>
-                <Button className="w-full">Save Settings</Button>
+                <Button className="w-full" onClick={() => alert("Payout settings saved!")}>Save Settings</Button>
               </CardContent>
             </Card>
           </div>

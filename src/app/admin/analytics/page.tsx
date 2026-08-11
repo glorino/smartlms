@@ -1005,7 +1005,16 @@ export default function AdminAnalyticsPage() {
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-semibold text-gray-900">{item.title}</h4>
                     <p className="mt-1 text-xs text-gray-500 leading-relaxed">{item.insight}</p>
-                    <button className="mt-2 text-xs font-medium text-indigo-600 hover:text-indigo-700">
+                    <button
+                      className="mt-2 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+                      onClick={() => {
+                        if (item.title === "Revenue Forecast") {
+                          handleExportAll();
+                        } else {
+                          window.location.href = "/admin/courses";
+                        }
+                      }}
+                    >
                       {item.action} →
                     </button>
                   </div>
@@ -1173,14 +1182,21 @@ export default function AdminAnalyticsPage() {
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { label: "Send bulk notification", desc: "Engage inactive students", icon: Users, color: "bg-indigo-50 text-indigo-600 hover:bg-indigo-100" },
-              { label: "Review low-rated courses", desc: "3 courses need attention", icon: AlertTriangle, color: "bg-amber-50 text-amber-600 hover:bg-amber-100" },
-              { label: "Schedule live class", desc: "Boost engagement by 34%", icon: Calendar, color: "bg-emerald-50 text-emerald-600 hover:bg-emerald-100" },
-              { label: "Export monthly report", desc: "Share with stakeholders", icon: Download, color: "bg-purple-50 text-purple-600 hover:bg-purple-100" },
+              { label: "Send bulk notification", desc: "Engage inactive students", icon: Users, color: "bg-indigo-50 text-indigo-600 hover:bg-indigo-100", href: "/admin/users" },
+              { label: "Review low-rated courses", desc: "3 courses need attention", icon: AlertTriangle, color: "bg-amber-50 text-amber-600 hover:bg-amber-100", href: "/admin/courses" },
+              { label: "Schedule live class", desc: "Boost engagement by 34%", icon: Calendar, color: "bg-emerald-50 text-emerald-600 hover:bg-emerald-100", href: "/instructor/live-classes" },
+              { label: "Export monthly report", desc: "Share with stakeholders", icon: Download, color: "bg-purple-50 text-purple-600 hover:bg-purple-100", href: "#" },
             ].map((action) => (
               <button
                 key={action.label}
                 className={`flex items-start gap-3 rounded-xl p-4 text-left transition-all ${action.color}`}
+                onClick={() => {
+                  if (action.href === "#") {
+                    handleExportAll();
+                  } else {
+                    window.location.href = action.href;
+                  }
+                }}
               >
                 <action.icon className="h-5 w-5 shrink-0 mt-0.5" />
                 <div>

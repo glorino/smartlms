@@ -169,15 +169,33 @@ export default function MyCertificatesPage() {
                   </div>
 
                   <div className="mt-4 flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => window.open(`/api/certificates/${cert.id}/pdf`, "_blank")}
+                    >
                       <Download className="mr-1.5 h-3.5 w-3.5" />
                       PDF
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => {
+                        const url = `${window.location.origin}/certificate/${cert.certificateId}`;
+                        navigator.share?.({ title: `Certificate: ${cert.course.title}`, url }) || copyToClipboard(url, `share-${cert.id}`);
+                      }}
+                    >
                       <Share2 className="mr-1.5 h-3.5 w-3.5" />
                       Share
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => window.open(`/certificate/${cert.certificateId}`, "_blank")}
+                    >
                       <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
                       Verify
                     </Button>

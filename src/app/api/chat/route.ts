@@ -23,7 +23,7 @@ const smartResponses: { keywords: string[]; response: string }[] = [
   {
     keywords: ["price", "pricing", "cost", "plan", "subscription"],
     response:
-      "We offer flexible pricing plans: Free (limited courses), Pro (₦19,000/month for all courses), and Enterprise (custom pricing for teams). Check our Pricing page for full details.",
+      "We offer flexible pricing plans: Free (limited courses), Pro (₦28,000/month for all courses), and Enterprise (custom pricing for teams). Check our Pricing page for full details.",
   },
   {
     keywords: ["contact", "support", "help", "assist"],
