@@ -77,7 +77,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen">
       {/* Left Panel */}
       <div className="hidden w-1/2 items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-700 p-12 lg:flex">
         <div className="max-w-md">
