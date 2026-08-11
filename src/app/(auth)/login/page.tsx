@@ -10,6 +10,7 @@ import {
   Lock,
   Eye,
   EyeOff,
+  ArrowLeft,
   ArrowRight,
   Sparkles,
   Zap,
@@ -79,7 +80,7 @@ export default function LoginPage() {
   return (
     <div className="flex h-screen">
       {/* Left Panel */}
-      <div className="hidden w-1/2 items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-700 p-12 lg:flex">
+      <div className="hidden w-1/2 flex-col justify-between bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-700 p-12 lg:flex">
         <div className="max-w-md">
           <Link
             href="/"
@@ -105,34 +106,34 @@ export default function LoginPage() {
               </div>
             ))}
           </div>
-          <div className="mt-12 space-y-4">
-            {testimonials.map((t) => (
-              <div
-                key={t.name}
-                className="rounded-2xl bg-white/10 p-5 backdrop-blur-sm"
-              >
-                <div className="mb-2 flex gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400"
-                    />
-                  ))}
-                </div>
-                <p className="text-sm italic text-white/80">
-                  &ldquo;{t.text}&rdquo;
-                </p>
-                <div className="mt-3 flex items-center gap-3">
-                  <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br ${t.color} text-xs font-bold text-white`}
-                  >
-                    {t.avatar}
-                  </div>
-                  <p className="text-sm font-semibold text-white">{t.name}</p>
-                </div>
+        </div>
+        <div className="space-y-4">
+          {testimonials.map((t) => (
+            <div
+              key={t.name}
+              className="rounded-2xl bg-white/10 p-5 backdrop-blur-sm"
+            >
+              <div className="mb-2 flex gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400"
+                  />
+                ))}
               </div>
-            ))}
-          </div>
+              <p className="text-sm italic text-white/80">
+                &ldquo;{t.text}&rdquo;
+              </p>
+              <div className="mt-3 flex items-center gap-3">
+                <div
+                  className={`flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br ${t.color} text-xs font-bold text-white`}
+                >
+                  {t.avatar}
+                </div>
+                <p className="text-sm font-semibold text-white">{t.name}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -146,6 +147,13 @@ export default function LoginPage() {
             </Link>
           </div>
           <div className="mb-8">
+            <Link
+              href="/"
+              className="mb-4 inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-700"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Homepage
+            </Link>
             <h2 className="text-3xl font-extrabold text-gray-900">
               Sign in to SmartLMS
             </h2>
