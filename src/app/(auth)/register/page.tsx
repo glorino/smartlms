@@ -226,42 +226,44 @@ export default function RegisterPage() {
   return (
     <div className="flex h-screen">
       {/* Left Panel */}
-      <div className="hidden w-1/2 flex-col justify-between bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-700 p-12 lg:flex">
-        <div className="max-w-md">
-          <Link
-            href="/"
-            className="mb-10 inline-flex items-center gap-2 text-white/80 transition-colors hover:text-white"
-          >
-            <GraduationCap className="h-8 w-8" />
-            <span className="text-2xl font-bold">SmartLMS</span>
-          </Link>
-          <h1 className="mb-4 text-4xl font-extrabold leading-tight text-white">
-            Start your learning journey today
-          </h1>
-          <p className="mb-10 text-lg text-white/70">
-            Join a global community of learners and unlock your full potential
-            with AI-powered education.
-          </p>
-          <div className="space-y-5">
-            {features.map((f) => (
-              <div key={f.text} className="flex items-center gap-4">
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
-                  <f.icon className="h-6 w-6 text-white" />
+      <div className="hidden w-1/2 overflow-y-auto bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-700 p-12 lg:block">
+        <div className="flex min-h-full flex-col justify-between">
+          <div className="max-w-md">
+            <Link
+              href="/"
+              className="mb-10 inline-flex items-center gap-2 text-white/80 transition-colors hover:text-white"
+            >
+              <GraduationCap className="h-8 w-8" />
+              <span className="text-2xl font-bold">SmartLMS</span>
+            </Link>
+            <h1 className="mb-4 text-4xl font-extrabold leading-tight text-white">
+              Start your learning journey today
+            </h1>
+            <p className="mb-10 text-lg text-white/70">
+              Join a global community of learners and unlock your full potential
+              with AI-powered education.
+            </p>
+            <div className="space-y-5">
+              {features.map((f) => (
+                <div key={f.text} className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
+                    <f.icon className="h-6 w-6 text-white" />
+                  </div>
+                  <p className="text-base font-medium text-white/90">{f.text}</p>
                 </div>
-                <p className="text-base font-medium text-white/90">{f.text}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
-          <p className="text-sm italic text-white/80">
-            &ldquo;SmartLMS helped me transition from a complete beginner to
-            a full-stack developer in 6 months. The AI learning paths are
-            incredible!&rdquo;
-          </p>
-          <p className="mt-3 text-sm font-semibold text-white">
-            — Jessica Park, Software Engineer
-          </p>
+          <div className="mt-12 rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
+            <p className="text-sm italic text-white/80">
+              &ldquo;SmartLMS helped me transition from a complete beginner to
+              a full-stack developer in 6 months. The AI learning paths are
+              incredible!&rdquo;
+            </p>
+            <p className="mt-3 text-sm font-semibold text-white">
+              — Jessica Park, Software Engineer
+            </p>
+          </div>
         </div>
       </div>
 
