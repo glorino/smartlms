@@ -17,6 +17,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 import { ABOUT_TEAM, ABOUT_STATS } from "@/lib/constants";
 
 function useCounter(end: number, duration: number = 2000) {
@@ -410,6 +411,7 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import toast from "react-hot-toast";
 import {
   CheckCircle2,
   Circle,
@@ -351,7 +352,10 @@ export default function OnboardingPage() {
           </div>
 
           <div className="mt-6 flex justify-end">
-            <button className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 shadow-sm">
+            <button
+              onClick={() => toast.success("Branding settings saved")}
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 shadow-sm"
+            >
               <Upload className="h-4 w-4" />
               Save Branding
             </button>

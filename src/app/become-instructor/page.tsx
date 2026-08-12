@@ -12,6 +12,7 @@ import {
   Check,
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 
 const benefits = [
   {
@@ -66,6 +67,7 @@ const steps = [
 
 export default function BecomeInstructorPage() {
   return (
+    <>
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
@@ -158,5 +160,7 @@ export default function BecomeInstructorPage() {
         </div>
       </div>
     </div>
+    <Footer />
+  </>
   );
 }

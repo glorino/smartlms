@@ -119,7 +119,7 @@ const smartResponses: SmartResponse[] = [
   {
     patterns: [/price|cost|how\s+much|fee|plan|subscription|pricing|afford|expensive|cheap|free|pay/i],
     responses: [
-      "Our pricing is simple and flexible:\n\n• **Free Plan** - ₦0/month (50+ courses, basic features)\n• **Pro Plan** - ₦28,000/month or ₦280,000/year (all courses, certificates, priority support)\n• **Enterprise** - Custom pricing (team management, SSO, dedicated support)\n\nAll paid plans come with a 30-day money-back guarantee. Would you like to compare plans in detail?",
+      "Our pricing is simple and flexible:\n\n• **Free Plan** - ₦0/month (50+ courses, basic features)\n• **Pro Plan** - ₦28,000/month or ₦264,000/year (all courses, certificates, priority support)\n• **Enterprise** - Custom pricing (team management, SSO, dedicated support)\n\nAll paid plans come with a 30-day money-back guarantee. Would you like to compare plans in detail?",
       "Here's what you get at each level:\n\n**Free (₦0):**\n• 50+ courses\n• Basic quizzes\n• Community access\n\n**Pro (₦28,000/month):**\n• All 500+ courses\n• AI-powered tools\n• Certificates\n• Priority support\n• Offline downloads\n\n**Enterprise:** Everything in Pro + team features, SSO, custom branding\n\nWould you like to start with the free plan or try Pro?",
     ],
     quickReplies: ["View Pricing Page", "Free Plan", "Pro Plan Details"],
@@ -254,7 +254,7 @@ const smartResponses: SmartResponse[] = [
   {
     patterns: [/discount|coupon|promo|offer|deal|sale|reduce|save/i],
     responses: [
-      "Great question! Here are ways to save:\n\n• **Annual Plan** - Save 17% compared to monthly (₦280,000/year vs ₦28,000/month)\n• **Student Discount** - 50% off Pro plan with valid student ID\n• **Group Discounts** - 20%+ off for teams of 5+\n• **Referral Program** - Earn credits for each friend you refer\n• **Seasonal Sales** - Watch for Black Friday and New Year deals\n\nFollow us on social media to stay updated on special promotions!",
+      "Great question! Here are ways to save:\n\n• **Annual Plan** - Save 21% compared to monthly (₦264,000/year vs ₦336,000/year)\n• **Student Discount** - 50% off Pro plan with valid student ID\n• **Group Discounts** - 20%+ off for teams of 5+\n• **Referral Program** - Earn credits for each friend you refer\n• **Seasonal Sales** - Watch for Black Friday and New Year deals\n\nFollow us on social media to stay updated on special promotions!",
     ],
     topic: "discounts",
   },
@@ -657,6 +657,7 @@ export default function Chatbot() {
           "flex items-center justify-center text-white",
           "hover:shadow-xl hover:scale-110 transition-all duration-300",
           "focus:outline-none focus:ring-4 focus:ring-indigo-300",
+          "max-md:bottom-24",
           isOpen && "rotate-90"
         )}
         aria-label={isOpen ? "Close chat" : "Open chat"}
@@ -680,6 +681,7 @@ export default function Chatbot() {
           "bg-white rounded-2xl shadow-2xl border border-gray-100",
           "flex flex-col overflow-hidden",
           "transition-all duration-300 origin-bottom-right",
+          "max-md:bottom-[180px] max-md:right-4 max-md:w-[calc(100vw-2rem)]",
           isOpen
             ? "opacity-100 scale-100 translate-y-0"
             : "opacity-0 scale-95 translate-y-4 pointer-events-none"

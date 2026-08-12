@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import {
   Plus,
   Edit,
@@ -76,17 +77,55 @@ export default function AdminCoursesPage() {
     { label: "Archived", value: totalArchived, icon: XCircle, color: "bg-gray-500" },
   ];
 
-  const handleApprove = (id: string) => {
-    setCourses(courses.map((c) => c.id === id ? { ...c, status: "PUBLISHED" } : c));
+  const handleApprove = async (id: string) => {
+    try {
+      const res = await fetch(`/api/courses/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "PUBLISHED" }),
+      });
+      if (res.ok) {
+        setCourses(courses.map((c) => c.id === id ? { ...c, status: "PUBLISHED" } : c));
+        toast.success("Course approved");
+      } else {
+        toast.error("Failed to approve course");
+      }
+    } catch {
+      toast.error("Failed to approve course");
+    }
   };
 
-  const handleReject = (id: string) => {
-    setCourses(courses.map((c) => c.id === id ? { ...c, status: "DRAFT" } : c));
+  const handleReject = async (id: string) => {
+    try {
+      const res = await fetch(`/api/courses/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "DRAFT" }),
+      });
+      if (res.ok) {
+        setCourses(courses.map((c) => c.id === id ? { ...c, status: "DRAFT" } : c));
+        toast.success("Course moved to draft");
+      } else {
+        toast.error("Failed to update course");
+      }
+    } catch {
+      toast.error("Failed to update course");
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this course?")) {
-      setCourses(courses.filter((c) => c.id !== id));
+      try {
+        const res = await fetch(`/api/courses/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          setCourses(courses.filter((c) => c.id !== id));
+          toast.success("Course deleted");
+        } else {
+          toast.error("Failed to delete course");
+        }
+      } catch {
+        toast.error("Failed to delete course");
+      }
     }
   };
 

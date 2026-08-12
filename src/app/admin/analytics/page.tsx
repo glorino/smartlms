@@ -337,13 +337,14 @@ export default function AdminAnalyticsPage() {
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
   ];
 
+  const currentYear = new Date().getFullYear();
   const revenueData = months.map((m, i) => {
-    const key = `2026-${String(i + 1).padStart(2, "0")}`;
+    const key = `${currentYear}-${String(i + 1).padStart(2, "0")}`;
     return data?.monthlyRevenue?.[key] || 0;
   });
 
   const enrollmentData = months.map((m, i) => {
-    const key = `2026-${String(i + 1).padStart(2, "0")}`;
+    const key = `${currentYear}-${String(i + 1).padStart(2, "0")}`;
     return data?.monthlyEnrollments?.[key] || 0;
   });
 

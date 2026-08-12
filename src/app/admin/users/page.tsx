@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import toast from "react-hot-toast";
 import {
   Users,
@@ -85,15 +86,39 @@ export default function AdminUsersPage() {
     { label: "Admins", value: totalAdmins, icon: Shield, color: "bg-red-500" },
   ];
 
-  const handleBlock = (id: string) => {
+  const handleBlock = async (id: string) => {
     if (confirm("Are you sure you want to block this user?")) {
-      setUsers(users.map((u) => u.id === id ? { ...u, status: "inactive" } : u));
+      try {
+        const res = await fetch(`/api/users/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "inactive" }),
+        });
+        if (res.ok) {
+          setUsers(users.map((u) => u.id === id ? { ...u, status: "inactive" } : u));
+          toast.success("User blocked successfully");
+        } else {
+          toast.error("Failed to block user");
+        }
+      } catch {
+        toast.error("Failed to block user");
+      }
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this user?")) {
-      setUsers(users.filter((u) => u.id !== id));
+      try {
+        const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          setUsers(users.filter((u) => u.id !== id));
+          toast.success("User deleted successfully");
+        } else {
+          toast.error("Failed to delete user");
+        }
+      } catch {
+        toast.error("Failed to delete user");
+      }
     }
   };
 
@@ -104,10 +129,12 @@ export default function AdminUsersPage() {
           <h1 className="text-3xl font-bold text-gray-900">Manage Users</h1>
           <p className="mt-1 text-gray-500">View and manage platform users</p>
         </div>
-        <Button onClick={() => alert("User creation form coming soon!")}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add User
-        </Button>
+        <Link href="/admin/users/new">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add User
+          </Button>
+        </Link>
       </div>
 
       {/* User Stats */}

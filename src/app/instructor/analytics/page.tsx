@@ -313,8 +313,9 @@ export default function InstructorAnalyticsPage() {
     { day: "Sun", hours: 35 },
   ];
 
+  const currentYear = new Date().getFullYear();
   const enrollmentData = months.map((m, i) => {
-    const key = `2026-${String(i + 1).padStart(2, "0")}`;
+    const key = `${currentYear}-${String(i + 1).padStart(2, "0")}`;
     return { month: m, enrollments: data?.monthlyEnrollments?.[key] || 0 };
   });
 
