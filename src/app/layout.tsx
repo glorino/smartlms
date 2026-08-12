@@ -35,18 +35,24 @@ export const metadata: Metadata = {
     title: "SmartLMS - AI-Powered Learning Management System",
     description:
       "Create, manage, and sell online courses with the most powerful LMS platform.",
-    url: "https://smartlms.vercel.app",
+    url: "https://smartlms-bay.vercel.app",
     siteName: "SmartLMS",
     locale: "en_US",
     type: "website",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "SmartLMS - AI-Powered Learning Management System",
-    description:
-      "Create, manage, and sell online courses with the most powerful LMS platform.",
-  },
-};
+   twitter: {
+     card: "summary_large_image",
+     title: "SmartLMS - AI-Powered Learning Management System",
+     description:
+       "Create, manage, and sell online courses with the most powerful LMS platform.",
+   },
+   icons: {
+     icon: [
+       { url: "/favicon.ico" },
+       { url: "/favicon.svg", type: "image/svg+xml" },
+     ],
+   },
+ };
 
 export default function RootLayout({
   children,

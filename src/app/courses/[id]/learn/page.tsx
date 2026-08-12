@@ -35,6 +35,8 @@ interface LessonData {
   content: string | null;
   type: string;
   videoUrl: string | null;
+  videoType: string | null;
+  pdfUrl: string | null;
   duration: number | null;
   order: number;
   sectionId: string;
@@ -268,26 +270,58 @@ export default function CourseLearnPage() {
         {/* Main Content Area */}
         <main className="flex flex-1 flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto">
-            {/* Video Player Placeholder */}
+            {/* Video / Content Player */}
             <div className="relative aspect-video bg-black">
-              {currentLesson.type === "VIDEO" ? (
+              {currentLesson.type === "VIDEO" && currentLesson.videoUrl ? (
+                isPlaying ? (
+                  currentLesson.videoType === "youtube" ? (
+                    <iframe
+                      src={currentLesson.videoUrl}
+                      title={currentLesson.title}
+                      className="h-full w-full"
+                      allowFullScreen
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    />
+                  ) : (
+                    <video
+                      src={currentLesson.videoUrl}
+                      title={currentLesson.title}
+                      className="h-full w-full object-cover"
+                      controls
+                      autoPlay
+                    />
+                  )
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <button
+                      onClick={() => setIsPlaying(true)}
+                      className="group rounded-full bg-white/10 p-6 transition-all hover:bg-white/20"
+                    >
+                      <Play className="h-12 w-12 text-white group-hover:scale-110 transition-transform" />
+                    </button>
+                  </div>
+                )
+              ) : currentLesson.type === "VIDEO" ? (
                 <div className="flex h-full items-center justify-center">
-                  <button
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    className="group rounded-full bg-white/10 p-6 transition-all hover:bg-white/20"
-                  >
-                    {isPlaying ? (
-                      <Pause className="h-12 w-12 text-white" />
-                    ) : (
-                      <Play className="h-12 w-12 text-white" />
-                    )}
-                  </button>
+                  <div className="text-center">
+                    <Video className="mx-auto h-16 w-16 text-gray-600" />
+                    <p className="mt-4 text-gray-400">No video available for this lesson</p>
+                  </div>
+                </div>
+              ) : currentLesson.content ? (
+                <div className="aspect-video h-auto min-h-[300px] bg-gray-900 p-6 overflow-y-auto">
+                  <div
+                    className="prose prose-invert max-w-none text-sm text-gray-300"
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentLesson.content) }}
+                  />
                 </div>
               ) : (
                 <div className="flex h-full items-center justify-center bg-gray-900">
                   <div className="text-center">
                     <FileText className="mx-auto h-16 w-16 text-gray-600" />
-                    <p className="mt-4 text-gray-400">Text content</p>
+                    <p className="mt-4 text-gray-400">
+                      {currentLesson.type === "TEXT" ? "No content available" : "Text content"}
+                    </p>
                   </div>
                 </div>
               )}
@@ -320,16 +354,6 @@ export default function CourseLearnPage() {
                 </Button>
               </div>
             </div>
-
-            {/* Text Content */}
-            {currentLesson.content && (
-              <div className="border-b border-gray-800 bg-gray-900 px-6 py-6">
-                <div
-                  className="prose prose-invert max-w-none text-sm text-gray-300"
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentLesson.content) }}
-                />
-              </div>
-            )}
 
             {/* Resources */}
             {(currentLesson.videoUrl || (currentLesson as any).pdfUrl) && (

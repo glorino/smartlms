@@ -1,6 +1,7 @@
 export const SITE_CONFIG = {
   name: "SmartLMS",
   tagline: "AI-Powered Learning Management System",
+  url: "https://smartlms-bay.vercel.app",
   stats: {
     students: "100K+",
     courses: "500+",
