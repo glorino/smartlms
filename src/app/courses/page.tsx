@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -259,6 +260,7 @@ function CoursesContent() {
   );
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
@@ -562,6 +564,8 @@ function CoursesContent() {
         </div>
       )}
     </div>
+    <Footer />
+  </>
   );
 }
 

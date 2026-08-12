@@ -511,7 +511,7 @@ export default function HomePage() {
                     <p className="mt-0.5 text-sm font-bold text-gray-900">Sarah Johnson</p>
                     <p className="mt-1 text-[10px] text-gray-500">has successfully completed</p>
                     <p className="mt-0.5 text-xs font-semibold text-amber-700">
-                      React Masterclass 2024
+                      React Masterclass
                     </p>
                     <div className="mt-3 flex items-center justify-center gap-3">
                       <div className="h-px flex-1 bg-amber-200" />

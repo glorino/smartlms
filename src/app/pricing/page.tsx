@@ -19,6 +19,7 @@ import {
   PhoneCall,
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 
 const plans = [
   {
@@ -215,7 +216,7 @@ export default function PricingPage() {
               Annual
             </span>
             <span className="rounded-full bg-gradient-to-r from-green-400 to-emerald-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
-              Save 20%
+              Save 21%
             </span>
           </div>
         </div>
@@ -563,6 +564,7 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 }

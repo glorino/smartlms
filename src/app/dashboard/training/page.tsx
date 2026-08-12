@@ -136,7 +136,7 @@ export default function TrainingPage() {
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   const calendarDays = (() => {
-    const year = 2026;
+    const year = new Date().getFullYear();
     const month = currentMonth;
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();

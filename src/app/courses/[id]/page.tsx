@@ -13,6 +13,7 @@ import {
   FileText,
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -104,6 +105,7 @@ export default async function CourseDetailPage({
   const displayTotalStudents = course.totalStudents ?? 0;
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
@@ -482,5 +484,7 @@ export default async function CourseDetailPage({
         </div>
       </div>
     </div>
+    <Footer />
+  </>
   );
 }

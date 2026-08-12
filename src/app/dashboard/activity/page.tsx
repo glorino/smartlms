@@ -72,8 +72,29 @@ const fallbackActivity: ActivityItem[] = [
 ];
 
 export default function DashboardActivityPage() {
-  const [activities, setActivities] = useState<ActivityItem[]>(fallbackActivity);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [filter, setFilter] = useState("all");
+
+  useEffect(() => {
+    async function fetchActivity() {
+      try {
+        const res = await fetch("/api/activity");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.activities?.length > 0) {
+            setActivities(data.activities);
+          } else {
+            setActivities(fallbackActivity);
+          }
+        } else {
+          setActivities(fallbackActivity);
+        }
+      } catch {
+        setActivities(fallbackActivity);
+      }
+    }
+    fetchActivity();
+  }, []);
 
   const getIcon = (icon: string) => {
     switch (icon) {

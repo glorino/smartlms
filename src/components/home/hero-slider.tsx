@@ -215,7 +215,7 @@ const slides = [
             <Trophy className="h-6 w-6 text-white" />
           </div>
           <p className="text-[11px] font-bold text-white">Certificate of Completion</p>
-          <p className="text-[9px] text-white/40 mt-0.5">React Masterclass 2024</p>
+          <p className="text-[9px] text-white/40 mt-0.5">React Masterclass</p>
           <div className="mt-2 flex items-center justify-center gap-1">
             {[1, 2, 3, 4, 5].map((s) => (
               <Star key={s} className="h-3 w-3 text-amber-400 fill-amber-400" />

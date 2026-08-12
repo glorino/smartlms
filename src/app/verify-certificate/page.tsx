@@ -15,6 +15,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 
 type CertificateResult = {
   certificateId: string;
@@ -116,6 +117,7 @@ export default function VerifyCertificatePage() {
   };
 
   return (
+    <>
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <Navbar />
 
@@ -335,5 +337,7 @@ export default function VerifyCertificatePage() {
         </p>
       </div>
     </div>
+    <Footer />
+  </>
   );
 }
