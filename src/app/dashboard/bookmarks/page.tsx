@@ -16,21 +16,25 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 
-interface BookmarkedCourse {
+interface CourseData {
   id: string;
   title: string;
-  instructor: string;
   category: string;
   rating: number;
-  students: number;
-  duration: string;
-  price: string;
-  thumbnail: string;
-  bookmarkedAt: string;
+  price: number;
+  thumbnail: string | null;
+  duration: number | null;
+  description: string | null;
+}
+
+interface BookmarkRecord {
+  id: string;
+  course: CourseData;
+  createdAt: string;
 }
 
 export default function BookmarksPage() {
-  const [bookmarks, setBookmarks] = useState<BookmarkedCourse[]>([]);
+  const [bookmarks, setBookmarks] = useState<BookmarkRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -40,7 +44,7 @@ export default function BookmarksPage() {
         const res = await fetch("/api/bookmarks");
         if (res.ok) {
           const data = await res.json();
-          setBookmarks(data.bookmarks || data || []);
+          setBookmarks(data.bookmarks || []);
         }
       } catch {
         setBookmarks([]);
@@ -52,13 +56,17 @@ export default function BookmarksPage() {
   }, []);
 
   const filteredBookmarks = bookmarks.filter((b) =>
-    b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.instructor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.category.toLowerCase().includes(searchQuery.toLowerCase())
+    b.course?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    b.course?.category?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleRemoveBookmark = (id: string) => {
-    setBookmarks(bookmarks.filter((b) => b.id !== id));
+  const handleRemoveBookmark = async (id: string) => {
+    try {
+      await fetch(`/api/bookmarks?id=${id}`, { method: "DELETE" });
+      setBookmarks(bookmarks.filter((b) => b.id !== id));
+    } catch {
+      // silent fail
+    }
   };
 
   if (loading) {
@@ -113,7 +121,7 @@ export default function BookmarksPage() {
               <CardContent className="p-5">
                 <div className="mb-3 flex items-start justify-between">
                   <Badge variant="secondary" className="text-xs">
-                    {bookmark.category}
+                    {bookmark.course?.category || "Uncategorized"}
                   </Badge>
                   <button
                     onClick={() => handleRemoveBookmark(bookmark.id)}
@@ -123,29 +131,33 @@ export default function BookmarksPage() {
                   </button>
                 </div>
                 <div className="flex h-24 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100">
-                  <BookMarked className="h-10 w-10 text-indigo-400" />
+                  {bookmark.course?.thumbnail ? (
+                    <img src={bookmark.course.thumbnail} alt={bookmark.course.title} className="h-full w-full object-cover rounded-lg" />
+                  ) : (
+                    <BookMarked className="h-10 w-10 text-indigo-400" />
+                  )}
                 </div>
                 <h3 className="mt-3 font-semibold text-gray-900 group-hover:text-indigo-600">
-                  {bookmark.title}
+                  {bookmark.course?.title || "Untitled Course"}
                 </h3>
-                <p className="mt-1 text-sm text-gray-500">{bookmark.instructor}</p>
+                <p className="mt-1 text-sm text-gray-500">
+                  {bookmark.course?.duration ? `${Math.floor(bookmark.course.duration / 60)}h ${bookmark.course.duration % 60}m` : "N/A"}
+                </p>
                 <div className="mt-2 flex items-center gap-3 text-sm text-gray-500">
                   <span className="flex items-center gap-1">
                     <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                    {bookmark.rating}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="h-3.5 w-3.5" />
-                    {bookmark.students.toLocaleString()}
+                    {bookmark.course?.rating || 0}
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="h-3.5 w-3.5" />
-                    {bookmark.duration}
+                    Bookmarked
                   </span>
                 </div>
                 <div className="mt-4 flex items-center justify-between">
-                  <span className="font-bold text-indigo-600">{bookmark.price}</span>
-                  <Link href={`/courses/${bookmark.id}`}>
+                  <span className="font-bold text-indigo-600">
+                    {bookmark.course?.price === 0 ? "Free" : `₦${bookmark.course?.price?.toLocaleString()}`}
+                  </span>
+                  <Link href={`/courses/${bookmark.course?.id || bookmark.id}`}>
                     <Button size="sm">
                       View Course
                       <ExternalLink className="ml-1.5 h-3.5 w-3.5" />

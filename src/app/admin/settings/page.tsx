@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import {
   Settings,
   Mail,
@@ -18,6 +19,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { SITE_CONFIG } from "@/lib/constants";
 
 interface PlatformSettings {
   siteName: string;
@@ -56,9 +58,9 @@ interface FeatureToggles {
 export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState("platform");
   const [platform, setPlatform] = useState<PlatformSettings>({
-    siteName: "SmartLMS",
-    siteDescription: "AI-Powered Learning Management System",
-    siteUrl: "https://smartlms.vercel.app",
+    siteName: SITE_CONFIG.name,
+    siteDescription: SITE_CONFIG.tagline,
+    siteUrl: SITE_CONFIG.url,
     logo: "",
   });
   const [email, setEmail] = useState<EmailSettings>({
@@ -66,8 +68,8 @@ export default function AdminSettingsPage() {
     smtpPort: "587",
     smtpUser: "",
     smtpPass: "",
-    fromName: "SmartLMS",
-    fromEmail: "noreply@smartlms.com",
+    fromName: SITE_CONFIG.name,
+    fromEmail: SITE_CONFIG.contact.email,
   });
   const [payment, setPayment] = useState<PaymentSettings>({
     flutterwavePublicKey: "",
@@ -93,16 +95,38 @@ export default function AdminSettingsPage() {
 
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const res = await fetch("/api/admin/settings");
+        if (res.ok) {
+          const { settings } = await res.json();
+          if (settings.platform) setPlatform(settings.platform);
+          if (settings.email) setEmail(settings.email);
+          if (settings.payment) setPayment(settings.payment);
+          if (settings.features) setFeatures(settings.features);
+          if (settings.apiKeys) setApiKeys(settings.apiKeys);
+        }
+      } catch {}
+    }
+    loadSettings();
+  }, []);
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      await fetch("/api/admin/settings", {
+      const res = await fetch("/api/admin/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ platform, email, payment, features, apiKeys }),
+        body: JSON.stringify({ settings: { platform, email, payment, features, apiKeys } }),
       });
+      if (res.ok) {
+        toast.success("Settings saved successfully");
+      } else {
+        toast.error("Failed to save settings");
+      }
     } catch {
-      // silently fail
+      toast.error("Failed to save settings");
     } finally {
       setSaving(false);
     }

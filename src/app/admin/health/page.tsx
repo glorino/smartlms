@@ -55,7 +55,7 @@ const fallbackHealth: HealthStatus = {
 const fallbackErrors: ErrorLog[] = [
   { id: "1", level: "error", message: "Failed to send email notification", source: "email-service", timestamp: "2 minutes ago" },
   { id: "2", level: "warning", message: "High memory usage detected", source: "system", timestamp: "15 minutes ago" },
-  { id: "3", level: "error", message: "Stripe webhook timeout", source: "payment-service", timestamp: "1 hour ago" },
+  { id: "3", level: "error", message: "Payment webhook timeout", source: "payment-service", timestamp: "1 hour ago" },
   { id: "4", level: "info", message: "Database backup completed", source: "database", timestamp: "3 hours ago" },
   { id: "5", level: "warning", message: "Rate limit exceeded for API", source: "api-gateway", timestamp: "5 hours ago" },
 ];

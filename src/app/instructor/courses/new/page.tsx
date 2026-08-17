@@ -72,6 +72,8 @@ interface Lesson {
   title: string;
   type: LessonType;
   content: string;
+  videoUrl: string | null;
+  videoType: string | null;
   duration: number;
   order: number;
   quiz?: QuizData;
@@ -170,12 +172,23 @@ function defaultQuestion(): QuizQuestion {
   };
 }
 
+function detectVideoType(url: string | null): string | null {
+  if (!url) return null;
+  const normalized = url.toLowerCase();
+  if (normalized.includes("youtube.com") || normalized.includes("youtu.be")) return "youtube";
+  if (normalized.includes("vimeo.com")) return "vimeo";
+  if (normalized.includes("loom.com")) return "loom";
+  return "file";
+}
+
 function defaultLesson(order: number): Lesson {
   return {
     id: generateId(),
     title: "",
     type: "VIDEO",
     content: "",
+    videoUrl: null,
+    videoType: null,
     duration: 0,
     order,
   };
@@ -470,7 +483,9 @@ export default function NewCoursePage() {
           const lessonPayload: Record<string, unknown> = {
             title: l.title,
             type: l.type,
-            content: l.content,
+            content: l.type === "VIDEO" ? null : l.content,
+            videoUrl: l.type === "VIDEO" ? (l.videoUrl || l.content) : null,
+            videoType: l.type === "VIDEO" ? (l.videoType || detectVideoType(l.videoUrl || l.content)) : null,
             duration: l.duration,
             order: lIdx,
           };
@@ -932,16 +947,26 @@ export default function NewCoursePage() {
                                       />
 
                                       {lesson.type === "VIDEO" && (
-                                        <Input
-                                          label="Video URL"
-                                          placeholder="https://youtube.com/watch?v=... or vimeo link"
-                                          value={lesson.content}
-                                          onChange={(e) =>
-                                            updateLesson(section.id, lesson.id, {
-                                              content: e.target.value,
-                                            })
-                                          }
-                                        />
+                                        <div className="space-y-3">
+                                          <Input
+                                            label="Video URL"
+                                            placeholder="https://youtube.com/watch?v=... or vimeo link, or upload a video file URL"
+                                            value={lesson.videoUrl || lesson.content || ""}
+                                            onChange={(e) => {
+                                              const val = e.target.value;
+                                              updateLesson(section.id, lesson.id, {
+                                                videoUrl: val || null,
+                                                content: val,
+                                                videoType: detectVideoType(val),
+                                              });
+                                            }}
+                                          />
+                                          {lesson.videoUrl && lesson.videoType && (
+                                            <div className="text-xs text-gray-500">
+                                              Detected video source: <span className="font-medium capitalize">{lesson.videoType}</span>
+                                            </div>
+                                          )}
+                                        </div>
                                       )}
 
                                       {lesson.type === "TEXT" && (
