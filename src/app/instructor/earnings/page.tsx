@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import {
   DollarSign,
   TrendingUp,
@@ -19,12 +20,6 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 
-interface Enrollment {
-  id: string;
-  enrolledAt: string;
-  course: { id: string; title: string; price: number };
-}
-
 interface Transaction {
   id: string;
   type: "sale" | "payout" | "refund";
@@ -36,16 +31,27 @@ interface Transaction {
 
 export default function InstructorEarningsPage() {
   const [activeTab, setActiveTab] = useState("overview");
-  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [monthlyData, setMonthlyData] = useState<{ month: string; amount: number }[]>([]);
+  const [totalEarnings, setTotalEarnings] = useState(0);
+  const [thisMonth, setThisMonth] = useState(0);
+  const [pending, setPending] = useState(0);
+  const [withdrawn, setWithdrawn] = useState(0);
 
   useEffect(() => {
     async function fetchEarnings() {
       try {
-        const res = await fetch("/api/enrollments");
+        const res = await fetch("/api/instructor/earnings");
         if (res.ok) {
-          const data = await res.json();
-          setEnrollments(data.enrollments || []);
+           const data = await res.json();
+          const e = data.earnings || {};
+          setTotalEarnings(e.totalEarnings || 0);
+          setThisMonth(e.thisMonth || 0);
+          setPending(e.pending || 0);
+          setWithdrawn(e.withdrawn || 0);
+          setMonthlyData(e.monthlyData || []);
+          setTransactions(e.transactions || []);
         }
       } catch {
         // Use empty state
@@ -56,43 +62,7 @@ export default function InstructorEarningsPage() {
     fetchEarnings();
   }, []);
 
-  const totalEarnings = enrollments.reduce((acc, e) => acc + (e.course?.price || 0), 0);
-  const thisMonth = enrollments
-    .filter((e) => {
-      const d = new Date(e.enrolledAt);
-      const now = new Date();
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    })
-    .reduce((acc, e) => acc + (e.course?.price || 0), 0);
-
-  const pending = 0;
-  const withdrawn = 0;
-
-  const monthlyData = (() => {
-    const months = ["Mar", "Apr", "May", "Jun", "Jul", "Aug"];
-    const now = new Date();
-    return months.map((m, i) => {
-      const monthIndex = i + 2;
-      const amount = enrollments
-        .filter((e) => {
-          const d = new Date(e.enrolledAt);
-          return d.getMonth() === monthIndex && d.getFullYear() === now.getFullYear();
-        })
-        .reduce((acc, e) => acc + (e.course?.price || 0), 0);
-      return { month: m, amount };
-    });
-  })();
-
   const maxMonthly = Math.max(...monthlyData.map((m) => m.amount), 1);
-
-  const transactions: Transaction[] = enrollments.slice(0, 10).map((e) => ({
-    id: e.id,
-    type: "sale" as const,
-    description: `Course Sale - ${e.course.title}`,
-    amount: e.course?.price || 0,
-    date: e.enrolledAt,
-    status: "completed" as const,
-  }));
 
   return (
     <div className="space-y-6">
@@ -310,7 +280,7 @@ export default function InstructorEarningsPage() {
                     <Badge variant="success">Default</Badge>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full gap-2" onClick={() => alert("Payout method setup coming soon!")}>
+                <Button variant="outline" className="w-full gap-2" onClick={() => toast("Payout method setup is not yet available. Please check back soon.", { icon: "🚧" })}>
                   <Plus className="h-4 w-4" />
                   Add Payout Method
                 </Button>
@@ -335,7 +305,7 @@ export default function InstructorEarningsPage() {
                   <label className="text-sm font-medium text-gray-700">Minimum Payout</label>
                   <Input type="number" placeholder="50.00" defaultValue="50.00" />
                 </div>
-                <Button className="w-full" onClick={() => alert("Payout settings saved!")}>Save Settings</Button>
+                <Button className="w-full" onClick={() => toast("Payout settings are not yet available. This feature is under development.", { icon: "🚧" })}>Save Settings</Button>
               </CardContent>
             </Card>
           </div>

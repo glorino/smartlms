@@ -284,11 +284,12 @@ export default function CourseLearnPage() {
                     />
                   ) : (
                     <video
-                      src={currentLesson.videoUrl}
+                      src={currentLesson.videoUrl || ""}
                       title={currentLesson.title}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full"
                       controls
                       autoPlay
+                      playsInline
                     />
                   )
                 ) : (
@@ -308,10 +309,9 @@ export default function CourseLearnPage() {
                     <p className="mt-4 text-gray-400">No video available for this lesson</p>
                   </div>
                 </div>
-              ) : currentLesson.content ? (
-                <div className="aspect-video h-auto min-h-[300px] bg-gray-900 p-6 overflow-y-auto">
+              )               : currentLesson.content ? (
+                <div className="lesson-content mx-auto max-w-3xl px-6 py-8 text-gray-300">
                   <div
-                    className="prose prose-invert max-w-none text-sm text-gray-300"
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentLesson.content) }}
                   />
                 </div>

@@ -18,7 +18,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import EnrollButton from "./enroll-button";
+import BookmarkButton from "./bookmark-button";
 import prisma from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 
 async function getCourse(id: string) {
   try {
@@ -85,6 +87,23 @@ export default async function CourseDetailPage({
 
   if (!course) {
     notFound();
+  }
+
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  let isBookmarked = false;
+  if (userId && course.id) {
+    const bookmark = await prisma.bookmark.findUnique({
+      where: {
+        userId_courseId: {
+          userId,
+          courseId: course.id,
+        },
+      },
+      select: { id: true },
+    });
+    isBookmarked = !!bookmark;
   }
 
   const reviews = await getReviews(id);
@@ -169,21 +188,24 @@ export default async function CourseDetailPage({
                 </span>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-400">
-                <span className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  {Math.floor(totalDuration / 60)}h {totalDuration % 60}m total
-                </span>
-                <span className="flex items-center gap-1">
-                  <BookOpen className="h-4 w-4" />
-                  {totalLessons} lessons
-                </span>
-                <span className="flex items-center gap-1">
-                  <Globe className="h-4 w-4" />
-                  {course.language}
-                </span>
-              </div>
-            </div>
+               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-400">
+               <span className="flex items-center gap-1">
+                 <Clock className="h-4 w-4" />
+                 {Math.floor(totalDuration / 60)}h {totalDuration % 60}m total
+               </span>
+               <span className="flex items-center gap-1">
+                 <BookOpen className="h-4 w-4" />
+                 {totalLessons} lessons
+               </span>
+               <span className="flex items-center gap-1">
+                 <Globe className="h-4 w-4" />
+                 {course.language}
+               </span>
+             </div>
+             {userId && (
+               <BookmarkButton courseId={course.id} initialBookmarked={isBookmarked} />
+             )}
+             </div>
 
             {/* Sticky CTA Card */}
             <div className="lg:col-span-1">

@@ -140,6 +140,110 @@ body {
   @apply border-red-500 bg-red-50;
 }
 
+/* Lesson Content (Markdown rendered) */
+.lesson-content {
+  line-height: 1.75;
+  color: #e2e8f0;
+}
+
+.lesson-content h1,
+.lesson-content h2,
+.lesson-content h3,
+.lesson-content h4 {
+  color: #f8fafc;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.lesson-content h1 { font-size: 2.25rem; }
+.lesson-content h2 { font-size: 1.875rem; border-bottom: 1px solid #334159; padding-bottom: 0.3em; }
+.lesson-content h3 { font-size: 1.5rem; }
+.lesson-content h4 { font-size: 1.25rem; }
+
+.lesson-content p {
+  margin: 0.75em 0;
+}
+
+.lesson-content a {
+  color: #818cf8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.lesson-content a:hover {
+  color: #a78bfa;
+}
+
+.lesson-content ul,
+.lesson-content ol {
+  margin: 0.75em 0;
+  padding-left: 1.5em;
+}
+
+.lesson-content li {
+  margin: 0.3em 0;
+}
+
+.lesson-content code {
+  background: #1e293b;
+  border-radius: 0.375rem;
+  padding: 0.125em 0.375em;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.875em;
+  color: #fbbf24;
+}
+
+.lesson-content pre {
+  background: #0f172a;
+  border: 1px solid #334159;
+  border-radius: 0.75rem;
+  padding: 1em;
+  overflow-x: auto;
+  margin: 0.75em 0;
+}
+
+.lesson-content pre code {
+  background: transparent;
+  padding: 0;
+  color: #cbd5e1;
+  font-size: 0.8125em;
+}
+
+.lesson-content blockquote {
+  border-left: 3px solid #4f46e5;
+  background: rgba(79, 70, 229, 0.1);
+  padding: 0.75em 1.25em;
+  margin: 0.75em 0;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.lesson-content img {
+  max-width: 100%;
+  border-radius: 0.5rem;
+  margin: 0.75em 0;
+}
+
+.lesson-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75em 0;
+}
+
+.lesson-content th,
+.lesson-content td {
+  border: 1px solid #334159;
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+
+.lesson-content th {
+  background: #1e293b;
+  color: #f8fafc;
+  font-weight: 600;
+}
+
 /* Certificate styles */
 .certificate-card {
   background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%);

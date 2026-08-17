@@ -70,26 +70,27 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  courses              Course[]
-  enrollments          Enrollment[]
-  quizAttempts         QuizAttempt[]
-  certificates         Certificate[]
-  reviews              Review[]
-  assignments          Assignment[]
-  grades               Grade[]
-  notes                Note[]
-  achievements         Achievement[]
-  purchases            Purchase[]
-  subscriptions        Subscription[]
-  liveClasses          LiveClass[]
-  liveClassAttendances LiveClassAttendance[]
-  aiGeneratedContent   AIGeneratedContent[]
-  notifications        Notification[]
-  activityLog          ActivityLog[]
-  analytics            AnalyticsEvent[]
-  messagesSent         Message[]            @relation("SentMessages")
-  messagesReceived     Message[]            @relation("ReceivedMessages")
-  lessonProgress       LessonProgress[]
+   courses              Course[]
+   enrollments          Enrollment[]
+   quizAttempts         QuizAttempt[]
+   certificates         Certificate[]
+   reviews              Review[]
+   assignments          Assignment[]
+   grades               Grade[]
+   notes                Note[]
+   achievements         Achievement[]
+   purchases            Purchase[]
+   subscriptions        Subscription[]
+   liveClasses          LiveClass[]
+   liveClassAttendances LiveClassAttendance[]
+   aiGeneratedContent   AIGeneratedContent[]
+   notifications        Notification[]
+   activityLog          ActivityLog[]
+   analytics            AnalyticsEvent[]
+   messagesSent         Message[]            @relation("SentMessages")
+   messagesReceived     Message[]            @relation("ReceivedMessages")
+   lessonProgress       LessonProgress[]
+   bookmarks            Bookmark[]
 
   @@index([email])
   @@index([role])
@@ -127,6 +128,7 @@ model Course {
   lessons         Lesson[]
   quizzes         Quiz[]
   enrollments     Enrollment[]
+  bookmarks       Bookmark[]
   reviews         Review[]
   certificates    Certificate[]
   bundles         CourseBundle[] @relation("BundleCourses")
@@ -144,6 +146,19 @@ model Course {
   @@index([status])
   @@index([category])
   @@index([instructorId])
+}
+
+model Bookmark {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
 }
 
 model CourseSection {
