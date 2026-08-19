@@ -215,7 +215,9 @@ export default function CourseLearnPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar - Curriculum */}
         <aside
-          className={`${sidebarOpen ? "w-80" : "w-0"} shrink-0 overflow-hidden border-r border-gray-800 bg-gray-900 transition-all duration-300`}
+          className={`absolute inset-y-0 left-0 z-40 flex-col transition-transform duration-300 md:relative md:z-auto md:flex-shrink-0 md:translate-x-0 ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } ${sidebarOpen ? "w-80" : "w-0"} md:w-80 shrink-0 overflow-hidden border-r border-gray-800 bg-gray-900`}
         >
           <div className="h-full w-80 overflow-y-auto">
             <div className="p-4">
@@ -265,10 +267,18 @@ export default function CourseLearnPage() {
               </div>
             </div>
           </div>
-        </aside>
+      </aside>
 
-        {/* Main Content Area */}
-        <main className="flex flex-1 flex-col overflow-hidden">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Main Content Area */}
+      <main className="flex flex-1 flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto">
             {/* Video / Content Player */}
             <div className="relative aspect-video bg-black">
@@ -282,6 +292,14 @@ export default function CourseLearnPage() {
                       allowFullScreen
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     />
+                  ) : currentLesson.videoType === "vimeo" ? (
+                    <iframe
+                      src={currentLesson.videoUrl}
+                      title={currentLesson.title}
+                      className="h-full w-full"
+                      allowFullScreen
+                      allow="autoplay; encrypted-media; picture-in-picture"
+                    />
                   ) : (
                     <video
                       src={currentLesson.videoUrl || ""}
@@ -290,19 +308,19 @@ export default function CourseLearnPage() {
                       controls
                       autoPlay
                       playsInline
-                    />
-                  )
-                ) : (
-                  <div className="flex h-full items-center justify-center">
-                    <button
-                      onClick={() => setIsPlaying(true)}
-                      className="group rounded-full bg-white/10 p-6 transition-all hover:bg-white/20"
-                    >
-                      <Play className="h-12 w-12 text-white group-hover:scale-110 transition-transform" />
-                    </button>
-                  </div>
-                )
-              ) : currentLesson.type === "VIDEO" ? (
+                     />
+                   )
+                 ) : (
+                   <div className="flex h-full items-center justify-center">
+                     <button
+                       onClick={() => setIsPlaying(true)}
+                       className="group rounded-full bg-white/10 p-6 transition-all hover:bg-white/20"
+                     >
+                       <Play className="h-12 w-12 text-white group-hover:scale-110 transition-transform" />
+                     </button>
+                   </div>
+                 )
+               ) : currentLesson.type === "VIDEO" ? (
                 <div className="flex h-full items-center justify-center">
                   <div className="text-center">
                     <Video className="mx-auto h-16 w-16 text-gray-600" />
@@ -310,7 +328,7 @@ export default function CourseLearnPage() {
                   </div>
                 </div>
               )               : currentLesson.content ? (
-                <div className="lesson-content mx-auto max-w-3xl px-6 py-8 text-gray-300">
+                <div className="lesson-content mx-auto max-w-3xl px-4 py-6 sm:px-6">
                   <div
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentLesson.content) }}
                   />
