@@ -139,221 +139,223 @@ export default function HelpPage() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Hero Section */}
-      <div className="rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-8 text-white">
-        <div className="flex items-center gap-3 mb-4">
-          <HelpCircle className="h-8 w-8" />
-          <h1 className="text-3xl font-bold">Help & Support</h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+        {/* Hero Section */}
+        <div className="rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-8 text-white shadow-lg">
+          <div className="flex items-center gap-3 mb-4">
+            <HelpCircle className="h-8 w-8" />
+            <h1 className="text-3xl font-bold">Help & Support</h1>
+          </div>
+          <p className="max-w-xl text-indigo-100">
+            Find answers to common questions or reach out to our support team.
+          </p>
         </div>
-        <p className="max-w-xl text-indigo-100">
-          Find answers to common questions or reach out to our support team.
-        </p>
-      </div>
 
-      {/* Support Channels */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {supportChannels.map((channel) => (
-          <Card key={channel.title} className="transition-shadow hover:shadow-md">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="rounded-xl bg-indigo-100 p-2.5">
-                  <channel.icon className="h-5 w-5 text-indigo-600" />
+        {/* Support Channels */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {supportChannels.map((channel) => (
+            <Card key={channel.title} className="transition-shadow hover:shadow-md border-gray-200">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="rounded-xl bg-indigo-100 p-2.5">
+                    <channel.icon className="h-5 w-5 text-indigo-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">{channel.title}</h3>
                 </div>
-                <h3 className="font-semibold text-gray-900">{channel.title}</h3>
-              </div>
-              <p className="text-sm text-gray-500 mb-3">{channel.description}</p>
-              <a
-                href={channel.action}
-                className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
-              >
-                {channel.contact}
-              </a>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* FAQ Section */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-        <div className="space-y-6">
-          {faqCategories.map((category) => (
-            <Card key={category.title}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <category.icon className="h-5 w-5 text-indigo-600" />
-                  {category.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {category.faqs.map((faq) => {
-                  const faqKey = `${category.title}-${faq.q}`;
-                  const isOpen = openFaq === faqKey;
-                  return (
-                    <div
-                      key={faq.q}
-                      className="rounded-xl border border-gray-100 overflow-hidden"
-                    >
-                      <button
-                        onClick={() => setOpenFaq(isOpen ? null : faqKey)}
-                        className="flex w-full items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
-                      >
-                        <span className="font-medium text-gray-900">{faq.q}</span>
-                        {isOpen ? (
-                          <ChevronUp className="h-5 w-5 text-gray-400 shrink-0" />
-                        ) : (
-                          <ChevronDown className="h-5 w-5 text-gray-400 shrink-0" />
-                        )}
-                      </button>
-                      {isOpen && (
-                        <div className="px-4 pb-4 text-sm text-gray-600">
-                          {faq.a}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                <p className="text-sm text-gray-500 mb-3">{channel.description}</p>
+                <a
+                  href={channel.action}
+                  className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                >
+                  {channel.contact}
+                </a>
               </CardContent>
             </Card>
           ))}
         </div>
-      </div>
 
-      {/* Contact Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Send className="h-5 w-5" />
-            Contact Us
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {submitted ? (
-            <div className="py-8 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-                <Send className="h-6 w-6 text-emerald-600" />
+        {/* FAQ Section */}
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            {faqCategories.map((category) => (
+              <Card key={category.title} className="border-gray-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <category.icon className="h-5 w-5 text-indigo-600" />
+                    {category.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {category.faqs.map((faq) => {
+                    const faqKey = `${category.title}-${faq.q}`;
+                    const isOpen = openFaq === faqKey;
+                    return (
+                      <div
+                        key={faq.q}
+                        className="rounded-xl border border-gray-100 overflow-hidden"
+                      >
+                        <button
+                          onClick={() => setOpenFaq(isOpen ? null : faqKey)}
+                          className="flex w-full items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
+                        >
+                          <span className="font-medium text-gray-900">{faq.q}</span>
+                          {isOpen ? (
+                            <ChevronUp className="h-5 w-5 text-gray-400 shrink-0" />
+                          ) : (
+                            <ChevronDown className="h-5 w-5 text-gray-400 shrink-0" />
+                          )}
+                        </button>
+                        {isOpen && (
+                          <div className="px-4 pb-4 text-sm text-gray-600 leading-relaxed">
+                            {faq.a}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Contact Form */}
+        <Card className="border-gray-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Send className="h-5 w-5" />
+              Contact Us
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {submitted ? (
+              <div className="py-8 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
+                  <Send className="h-6 w-6 text-emerald-600" />
+                </div>
+                <h3 className="mt-4 text-lg font-medium text-gray-900">Message Sent!</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  We&apos;ll get back to you within 24 hours.
+                </p>
               </div>
-              <h3 className="mt-4 text-lg font-medium text-gray-900">Message Sent!</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                We&apos;ll get back to you within 24 hours.
-              </p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={contactForm.name}
+                      onChange={(e) =>
+                        setContactForm({ ...contactForm, name: e.target.value })
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      placeholder="Your name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={contactForm.email}
+                      onChange={(e) =>
+                        setContactForm({ ...contactForm, email: e.target.value })
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Name
+                    Subject
                   </label>
                   <input
                     type="text"
                     required
-                    value={contactForm.name}
+                    value={contactForm.subject}
                     onChange={(e) =>
-                      setContactForm({ ...contactForm, name: e.target.value })
+                      setContactForm({ ...contactForm, subject: e.target.value })
                     }
                     className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    placeholder="Your name"
+                    placeholder="How can we help?"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
+                    Message
                   </label>
-                  <input
-                    type="email"
+                  <textarea
                     required
-                    value={contactForm.email}
+                    rows={5}
+                    value={contactForm.message}
                     onChange={(e) =>
-                      setContactForm({ ...contactForm, email: e.target.value })
+                      setContactForm({ ...contactForm, message: e.target.value })
                     }
                     className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    placeholder="your@email.com"
+                    placeholder="Describe your issue or question..."
                   />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={contactForm.subject}
-                  onChange={(e) =>
-                    setContactForm({ ...contactForm, subject: e.target.value })
-                  }
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  placeholder="How can we help?"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Message
-                </label>
-                <textarea
-                  required
-                  rows={5}
-                  value={contactForm.message}
-                  onChange={(e) =>
-                    setContactForm({ ...contactForm, message: e.target.value })
-                  }
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  placeholder="Describe your issue or question..."
-                />
-              </div>
-              <div className="flex justify-end">
-                <Button type="submit">
-                  <Send className="mr-2 h-4 w-4" />
-                  Send Message
-                </Button>
-              </div>
-            </form>
-          )}
-        </CardContent>
-      </Card>
+                <div className="flex justify-end">
+                  <Button type="submit">
+                    <Send className="mr-2 h-4 w-4" />
+                    Send Message
+                  </Button>
+                </div>
+              </form>
+            )}
+          </CardContent>
+        </Card>
 
-      {/* Resources */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Additional Resources</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Link
-              href="/courses"
-              className="flex items-center gap-3 rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50"
-            >
-              <FileText className="h-5 w-5 text-indigo-600" />
-              <div>
-                <p className="font-medium text-gray-900">Documentation</p>
-                <p className="text-sm text-gray-500">Platform guides and tutorials</p>
-              </div>
-            </Link>
-            <Link
-              href="/courses"
-              className="flex items-center gap-3 rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50"
-            >
-              <Video className="h-5 w-5 text-indigo-600" />
-              <div>
-                <p className="font-medium text-gray-900">Video Tutorials</p>
-                <p className="text-sm text-gray-500">Step-by-step video guides</p>
-              </div>
-            </Link>
-            <Link
-              href="/contact"
-              className="flex items-center gap-3 rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50"
-            >
-              <Shield className="h-5 w-5 text-indigo-600" />
-              <div>
-                <p className="font-medium text-gray-900">Community Forum</p>
-                <p className="text-sm text-gray-500">Ask questions and share tips</p>
-              </div>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Resources */}
+        <Card className="border-gray-200">
+          <CardHeader>
+            <CardTitle>Additional Resources</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <Link
+                href="/courses"
+                className="flex items-center gap-3 rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50"
+              >
+                <FileText className="h-5 w-5 text-indigo-600" />
+                <div>
+                  <p className="font-medium text-gray-900">Documentation</p>
+                  <p className="text-sm text-gray-500">Platform guides and tutorials</p>
+                </div>
+              </Link>
+              <Link
+                href="/courses"
+                className="flex items-center gap-3 rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50"
+              >
+                <Video className="h-5 w-5 text-indigo-600" />
+                <div>
+                  <p className="font-medium text-gray-900">Video Tutorials</p>
+                  <p className="text-sm text-gray-500">Step-by-step video guides</p>
+                </div>
+              </Link>
+              <Link
+                href="/community"
+                className="flex items-center gap-3 rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50"
+              >
+                <Shield className="h-5 w-5 text-indigo-600" />
+                <div>
+                  <p className="font-medium text-gray-900">Community Forum</p>
+                  <p className="text-sm text-gray-500">Ask questions and share tips</p>
+                </div>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

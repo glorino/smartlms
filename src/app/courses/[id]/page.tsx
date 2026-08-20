@@ -27,6 +27,7 @@ import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import EnrollButton from "./enroll-button";
 import BookmarkButton from "./bookmark-button";
+import ShareButton from "./share-button";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
@@ -44,7 +45,7 @@ async function getCourse(id: string) {
           },
           orderBy: { order: "asc" },
         },
-        _count: { select: { enrollments: true, reviews: true } },
+        _count: { select: { enrollments: true, reviews: true, quizzes: true } },
       },
     });
     return course;
@@ -396,10 +397,7 @@ export default async function CourseDetailPage({
 
                       <div className="my-5 h-px bg-gray-800" />
 
-                      <button className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-700 bg-transparent px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-800 hover:text-white">
-                        <Share2 className="h-4 w-4" />
-                        Share this course
-                      </button>
+                      <ShareButton courseTitle={course.title} courseId={course.id} />
                     </div>
                   </div>
                 </div>
@@ -653,6 +651,7 @@ export default async function CourseDetailPage({
                       { icon: Clock, label: "Duration", value: `${Math.floor(totalDuration / 60)}h ${totalDuration % 60}m` },
                       { icon: Users, label: "Students", value: displayTotalStudents.toLocaleString() },
                       { icon: Star, label: "Rating", value: `${displayRating.toFixed(1)} / 5` },
+                      ...(course._count.quizzes > 0 ? [{ icon: Target, label: "Quizzes", value: course._count.quizzes }] : []),
                     ].map(({ icon: Icon, label, value }) => (
                       <div key={label} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
