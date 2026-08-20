@@ -483,7 +483,7 @@ export default function CourseLearnPage() {
             )}
 
             {/* Navigation */}
-            <div className="flex items-center justify-between bg-gray-900 px-6 py-4">
+            <div className="flex items-center justify-between bg-gray-900 px-6 pb-20 pr-24 pt-4">
               <Button
                 variant="outline"
                 onClick={goPrev}
