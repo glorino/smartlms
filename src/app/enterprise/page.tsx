@@ -47,6 +47,21 @@ const features = [
     title: "Custom Content",
     description: "Create branded learning portals with custom courses, paths, and certifications.",
   },
+  {
+    icon: Globe,
+    title: "Global Accessibility",
+    description: "Multi-language support, timezone-aware scheduling, and mobile access for distributed teams.",
+  },
+  {
+    icon: Building2,
+    title: "Staff Onboarding",
+    description: "Streamline new hire onboarding with automated learning paths, compliance tracking, and progress dashboards.",
+  },
+  {
+    icon: Users,
+    title: "Staff Routine Training",
+    description: "Schedule and manage recurring training sessions, certifications, and compliance refreshers across departments.",
+  },
 ];
 
 const plans = [
