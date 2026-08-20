@@ -184,11 +184,12 @@ export default function MyCertificatesPage() {
                       className="flex-1"
                       onClick={() => {
                         const url = `${window.location.origin}/certificate/${cert.certificateId}`;
-                        navigator.share?.({ title: `Certificate: ${cert.course.title}`, url }) || copyToClipboard(url, `share-${cert.id}`);
+                        const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+                        window.open(linkedinUrl, "_blank", "width=600,height=400");
                       }}
                     >
                       <Share2 className="mr-1.5 h-3.5 w-3.5" />
-                      Share
+                      LinkedIn
                     </Button>
                     <Button
                       variant="outline"

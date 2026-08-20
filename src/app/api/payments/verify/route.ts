@@ -92,7 +92,7 @@ export async function GET(request: Request) {
 
       if (existingPurchase) {
         return NextResponse.redirect(
-          new URL("/payment/success?already=1", request.url)
+          new URL("/dashboard", request.url)
         );
       }
 
@@ -129,7 +129,7 @@ export async function GET(request: Request) {
       }
 
       return NextResponse.redirect(
-        new URL(`/payment/success?tx_ref=${tx_ref}&course_id=${courseId}`, request.url)
+        new URL(`/dashboard?enrolled=1&course_id=${courseId}`, request.url)
       );
     }
 

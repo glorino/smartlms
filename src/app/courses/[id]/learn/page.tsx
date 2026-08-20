@@ -236,9 +236,9 @@ export default function CourseLearnPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar - Curriculum */}
         <aside
-          className={`absolute inset-y-0 left-0 z-40 flex-col transition-transform duration-300 md:relative md:z-auto md:flex-shrink-0 md:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-40 w-80 shrink-0 overflow-hidden border-r border-gray-800 bg-gray-900 transition-transform duration-300 md:relative md:z-auto md:translate-x-0 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } ${sidebarOpen ? "w-80" : "w-0"} md:w-80 shrink-0 overflow-hidden border-r border-gray-800 bg-gray-900`}
+          }`}
         >
           <div className="h-full w-80 overflow-y-auto">
             <div className="p-4">
@@ -288,7 +288,7 @@ export default function CourseLearnPage() {
               </div>
             </div>
           </div>
-      </aside>
+        </aside>
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
@@ -439,16 +439,19 @@ export default function CourseLearnPage() {
                 variant="outline"
                 onClick={goPrev}
                 disabled={currentIndex <= 0}
-                className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                className="border-gray-600 bg-gray-800 text-gray-200 hover:bg-gray-700 hover:text-white disabled:opacity-30 disabled:hover:bg-gray-800"
               >
                 <ChevronLeft className="mr-2 h-4 w-4" />
                 Previous
               </Button>
               <Button
                 onClick={goNext}
-                disabled={currentIndex >= allLessons.length - 1}
+                disabled={currentIndex >= allLessons.length - 1 || !completedLessons.has(currentLesson.id)}
+                className="disabled:opacity-30"
               >
-                Next
+                {!completedLessons.has(currentLesson.id) && currentIndex < allLessons.length - 1
+                  ? "Complete this lesson first"
+                  : "Next"}
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
