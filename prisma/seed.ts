@@ -1,5 +1,6 @@
 import { PrismaClient, UserRole, CourseStatus, EnrollmentStatus, QuestionDifficulty, CertificateStatus, PaymentStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import enrichedLessons from "./enriched-lessons";
 
 const prisma = new PrismaClient();
 
@@ -1425,11 +1426,12 @@ async function createCourseWithContent(
 
     for (let lIdx = 0; lIdx < secData.lessons.length; lIdx++) {
       const l = secData.lessons[lIdx];
+      const enrichedContent = enrichedLessons[l.title as keyof typeof enrichedLessons];
       await prisma.lesson.create({
         data: {
           title: l.title,
           type: l.type,
-          content: l.content,
+          content: enrichedContent ?? l.content,
           videoUrl: l.videoUrl,
           videoType: l.videoType,
           duration: l.duration,
