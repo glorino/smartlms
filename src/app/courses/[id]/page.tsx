@@ -16,12 +16,15 @@ import {
   BarChart3,
   Download,
   Share2,
+  Target,
+  Zap,
+  MessageSquare,
+  Trophy,
+  Smartphone,
+  RefreshCw,
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import EnrollButton from "./enroll-button";
 import BookmarkButton from "./bookmark-button";
 import prisma from "@/lib/prisma";
@@ -64,6 +67,28 @@ async function getReviews(id: string) {
   }
 }
 
+async function getInstructorStats(instructorId: string) {
+  try {
+    const stats = await prisma.course.aggregate({
+      where: { instructorId, status: "PUBLISHED" },
+      _count: { id: true },
+      _sum: { totalStudents: true, revenue: true },
+    });
+    const avgRating = await prisma.course.aggregate({
+      where: { instructorId, status: "PUBLISHED" },
+      _avg: { rating: true },
+    });
+    return {
+      courseCount: stats._count.id,
+      totalStudents: stats._sum.totalStudents || 0,
+      totalRevenue: stats._sum.revenue || 0,
+      avgRating: avgRating._avg.rating || 0,
+    };
+  } catch {
+    return { courseCount: 0, totalStudents: 0, totalRevenue: 0, avgRating: 0 };
+  }
+}
+
 function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "lg" }) {
   const sizeClass = size === "lg" ? "h-5 w-5" : "h-4 w-4";
   return (
@@ -99,19 +124,27 @@ export default async function CourseDetailPage({
 
   let isBookmarked = false;
   if (userId && course.id) {
-    const bookmark = await prisma.bookmark.findUnique({
-      where: {
-        userId_courseId: {
-          userId,
-          courseId: course.id,
+    try {
+      const bookmark = await prisma.bookmark.findUnique({
+        where: {
+          userId_courseId: {
+            userId,
+            courseId: course.id,
+          },
         },
-      },
-      select: { id: true },
-    });
-    isBookmarked = !!bookmark;
+        select: { id: true },
+      });
+      isBookmarked = !!bookmark;
+    } catch {
+      isBookmarked = false;
+    }
   }
 
-  const reviews = await getReviews(id);
+  const [reviews, instructorStats] = await Promise.all([
+    getReviews(id),
+    course.instructor ? getInstructorStats(course.instructor.id) : null,
+  ]);
+
   const totalLessons =
     course.sections?.reduce(
       (acc: number, s: any) => acc + (s.lessons?.length || 0),
@@ -135,14 +168,24 @@ export default async function CourseDetailPage({
 
   const textLessons = totalLessons - videoLessons;
 
+  const descriptionLines = course.description
+    ? course.description.split("\n").filter((l: string) => l.trim())
+    : [];
+
+  const requirementLines = course.prerequisites && course.prerequisites.length > 0
+    ? course.prerequisites
+    : ["No prior experience required", "A computer with internet access", "Willingness to learn"];
+
   return (
     <>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-gray-50">
         <Navbar />
 
-        {/* Hero Section - Dark gradient */}
+        {/* Hero Section */}
         <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-indigo-950">
-          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-transparent" />
+          </div>
           <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
             <div className="grid gap-10 lg:grid-cols-5">
               {/* Left - Course Info */}
@@ -177,6 +220,11 @@ export default async function CourseDetailPage({
                       Free Course
                     </span>
                   )}
+                  {course.isFeatured && (
+                    <span className="inline-flex items-center rounded-full bg-orange-500/10 px-3 py-1 text-xs font-medium text-orange-300 ring-1 ring-inset ring-orange-500/20">
+                      Featured
+                    </span>
+                  )}
                 </div>
 
                 <h1 className="text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
@@ -184,10 +232,10 @@ export default async function CourseDetailPage({
                 </h1>
 
                 <p className="mt-5 max-w-2xl text-lg leading-relaxed text-gray-300">
-                  {course.shortDescription || course.description?.substring(0, 200)}
+                  {course.shortDescription || descriptionLines[0] || "Master the skills with this comprehensive course designed for all levels."}
                 </p>
 
-                {/* Rating & Stats Row */}
+                {/* Rating & Stats */}
                 <div className="mt-6 flex flex-wrap items-center gap-4">
                   <div className="flex items-center gap-2">
                     <StarRating rating={Math.round(displayRating)} size="lg" />
@@ -205,16 +253,14 @@ export default async function CourseDetailPage({
 
                 {/* Instructor */}
                 <div className="mt-6 flex items-center gap-3">
-                  <div className="relative">
-                    <img
-                      src={course.instructor?.avatar || "/avatars/default.png"}
-                      alt={course.instructor?.name || "Instructor"}
-                      className="h-10 w-10 rounded-full ring-2 ring-white/10"
-                    />
-                  </div>
+                  <img
+                    src={course.instructor?.avatar || "/avatars/default.png"}
+                    alt={course.instructor?.name || "Instructor"}
+                    className="h-10 w-10 rounded-full ring-2 ring-white/10"
+                  />
                   <div>
                     <span className="text-sm text-gray-400">Created by</span>
-                    <span className="ml-1 text-sm font-semibold text-white">
+                    <span className="ml-1 text-sm font-semibold text-white hover:underline">
                       {course.instructor?.name}
                     </span>
                   </div>
@@ -259,15 +305,11 @@ export default async function CourseDetailPage({
                           alt={course.title}
                           className="h-full w-full object-cover"
                         />
-                      ) : course.trailerVideo ? (
+                      ) : (
                         <div className="flex h-full items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-700">
                           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
                             <Play className="h-8 w-8 text-white ml-1" fill="white" />
                           </div>
-                        </div>
-                      ) : (
-                        <div className="flex h-full items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
-                          <BookOpen className="h-12 w-12 text-gray-600" />
                         </div>
                       )}
                       {course.price === 0 && (
@@ -316,9 +358,8 @@ export default async function CourseDetailPage({
                         30-day money-back guarantee
                       </p>
 
-                      <Separator className="my-5 bg-gray-800" />
+                      <div className="my-5 h-px bg-gray-800" />
 
-                      {/* Course Includes */}
                       <h4 className="mb-4 text-sm font-semibold text-white">
                         This course includes:
                       </h4>
@@ -329,11 +370,11 @@ export default async function CourseDetailPage({
                         </li>
                         <li className="flex items-center gap-3 text-sm text-gray-300">
                           <FileText className="h-4 w-4 text-indigo-400" />
-                          {textLessons} text lessons
+                          {totalLessons} engaging lessons
                         </li>
                         <li className="flex items-center gap-3 text-sm text-gray-300">
                           <Download className="h-4 w-4 text-indigo-400" />
-                          Downloadable resources
+                          Downloadable resources & source code
                         </li>
                         <li className="flex items-center gap-3 text-sm text-gray-300">
                           <Infinity className="h-4 w-4 text-indigo-400" />
@@ -344,14 +385,17 @@ export default async function CourseDetailPage({
                           Certificate of completion
                         </li>
                         <li className="flex items-center gap-3 text-sm text-gray-300">
-                          <Globe className="h-4 w-4 text-indigo-400" />
-                          Access on mobile & desktop
+                          <Smartphone className="h-4 w-4 text-indigo-400" />
+                          Access on mobile, tablet & desktop
+                        </li>
+                        <li className="flex items-center gap-3 text-sm text-gray-300">
+                          <MessageSquare className="h-4 w-4 text-indigo-400" />
+                          Direct instructor support via Q&A
                         </li>
                       </ul>
 
-                      <Separator className="my-5 bg-gray-800" />
+                      <div className="my-5 h-px bg-gray-800" />
 
-                      {/* Share */}
                       <button className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-700 bg-transparent px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-800 hover:text-white">
                         <Share2 className="h-4 w-4" />
                         Share this course
@@ -368,27 +412,43 @@ export default async function CourseDetailPage({
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-5">
             <div className="lg:col-span-3 space-y-8">
-              {/* What You'll Learn */}
-              {course.description && (
-                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-                  <h2 className="mb-6 text-2xl font-bold text-gray-900">
-                    What you&apos;ll learn
-                  </h2>
+
+              {/* What You'll Learn - Rich Card */}
+              {descriptionLines.length > 0 && (
+                <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-white p-6 shadow-sm sm:p-8">
+                  <div className="mb-6 flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100">
+                      <Target className="h-5 w-5 text-indigo-600" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      What you&apos;ll learn
+                    </h2>
+                  </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    {course.description
-                      .split("\n")
-                      .filter(Boolean)
-                      .map((item: string, i: number) => (
-                        <div key={i} className="flex items-start gap-3 rounded-lg bg-gray-50 p-3">
-                          <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100">
-                            <Check className="h-3 w-3 text-emerald-600" />
-                          </div>
-                          <span className="text-sm leading-relaxed text-gray-700">{item}</span>
+                    {descriptionLines.map((item: string, i: number) => (
+                      <div key={i} className="flex items-start gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
+                        <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100">
+                          <Check className="h-3.5 w-3.5 text-emerald-600" />
                         </div>
-                      ))}
+                        <span className="text-sm leading-relaxed text-gray-700">{item}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
+
+              {/* Requirements */}
+              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="mb-5 text-2xl font-bold text-gray-900">Requirements</h2>
+                <ul className="space-y-3">
+                  {requirementLines.map((req: string, i: number) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
+                      <Zap className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                      {req}
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
               {/* Course Content / Curriculum */}
               {course.sections && course.sections.length > 0 && (
@@ -401,81 +461,92 @@ export default async function CourseDetailPage({
                     {Math.floor(totalDuration / 60)}h {totalDuration % 60}m total length
                   </p>
                   <div className="space-y-3">
-                    {course.sections.map((section: any, sIdx: number) => (
-                      <details
-                        key={section.id}
-                        className="group rounded-xl border border-gray-200"
-                        open={sIdx === 0}
-                      >
-                        <summary className="flex cursor-pointer items-center justify-between rounded-xl bg-gray-50 px-5 py-4 transition-colors hover:bg-gray-100">
-                          <div className="flex items-center gap-3">
-                            <ChevronRight className="h-4 w-4 text-gray-400 transition-transform group-open:rotate-90" />
-                            <span className="text-sm font-semibold text-gray-900">
-                              Section {sIdx + 1}: {section.title}
-                            </span>
-                          </div>
-                          <span className="text-xs font-medium text-gray-500">
-                            {section.lessons?.length || 0} lessons
-                          </span>
-                        </summary>
-                        {section.lessons && section.lessons.length > 0 && (
-                          <div className="divide-y divide-gray-100 border-t border-gray-100">
-                            {section.lessons.map((lesson: any) => (
-                              <div
-                                key={lesson.id}
-                                className="flex items-center justify-between px-5 py-3 transition-colors hover:bg-gray-50"
-                              >
-                                <div className="flex items-center gap-3">
-                                  {lesson.type === "VIDEO" ? (
-                                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-50">
-                                      <Play className="h-3 w-3 text-indigo-600 ml-0.5" fill="currentColor" />
+                    {course.sections.map((section: any, sIdx: number) => {
+                      const sectionDuration = section.lessons?.reduce(
+                        (acc: number, l: any) => acc + (l.duration || 0), 0
+                      ) || 0;
+                      return (
+                        <details
+                          key={section.id}
+                          className="group rounded-xl border border-gray-200"
+                          open={sIdx === 0}
+                        >
+                          <summary className="flex cursor-pointer items-center justify-between rounded-xl bg-gray-50 px-5 py-4 transition-colors hover:bg-gray-100">
+                            <div className="flex items-center gap-3">
+                              <ChevronRight className="h-4 w-4 text-gray-400 transition-transform group-open:rotate-90" />
+                              <span className="text-sm font-semibold text-gray-900">
+                                Section {sIdx + 1}: {section.title}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                              <span>{section.lessons?.length || 0} lessons</span>
+                              {sectionDuration > 0 && (
+                                <span>{Math.floor(sectionDuration / 60)}m</span>
+                              )}
+                            </div>
+                          </summary>
+                          {section.lessons && section.lessons.length > 0 && (
+                            <div className="divide-y divide-gray-100 border-t border-gray-100">
+                              {section.lessons.map((lesson: any) => (
+                                <div
+                                  key={lesson.id}
+                                  className="flex items-center justify-between px-5 py-3 transition-colors hover:bg-gray-50"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    {lesson.type === "VIDEO" ? (
+                                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-50">
+                                        <Play className="h-3 w-3 text-indigo-600 ml-0.5" fill="currentColor" />
+                                      </div>
+                                    ) : (
+                                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50">
+                                        <FileText className="h-3.5 w-3.5 text-emerald-600" />
+                                      </div>
+                                    )}
+                                    <div>
+                                      <span className="text-sm font-medium text-gray-800">
+                                        {lesson.title}
+                                      </span>
+                                      {lesson.description && (
+                                        <p className="mt-0.5 text-xs text-gray-500 line-clamp-1">
+                                          {lesson.description}
+                                        </p>
+                                      )}
                                     </div>
-                                  ) : (
-                                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50">
-                                      <FileText className="h-3.5 w-3.5 text-emerald-600" />
-                                    </div>
-                                  )}
-                                  <span className="text-sm text-gray-700">
-                                    {lesson.title}
-                                  </span>
-                                  {lesson.isPreview && (
-                                    <span className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600 ring-1 ring-inset ring-indigo-500/10">
-                                      Preview
+                                    {lesson.isPreview && (
+                                      <span className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600 ring-1 ring-inset ring-indigo-500/10">
+                                        Preview
+                                      </span>
+                                    )}
+                                  </div>
+                                  {lesson.duration && (
+                                    <span className="text-xs text-gray-400">
+                                      {Math.floor(lesson.duration / 60)}:
+                                      {String(lesson.duration % 60).padStart(2, "0")}
                                     </span>
                                   )}
                                 </div>
-                                {lesson.duration && (
-                                  <span className="text-xs text-gray-400">
-                                    {Math.floor(lesson.duration / 60)}:
-                                    {String(lesson.duration % 60).padStart(2, "0")}
-                                  </span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </details>
-                    ))}
+                              ))}
+                            </div>
+                          )}
+                        </details>
+                      );
+                    })}
                   </div>
                 </div>
               )}
 
-              {/* Instructor */}
+              {/* Instructor - Enhanced */}
               {course.instructor && (
                 <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-                  <h2 className="mb-6 text-2xl font-bold text-gray-900">
-                    Instructor
-                  </h2>
+                  <h2 className="mb-6 text-2xl font-bold text-gray-900">Instructor</h2>
                   <div className="flex items-start gap-5">
-                    <div className="relative shrink-0">
-                      <img
-                        src={course.instructor.avatar || "/avatars/default.png"}
-                        alt={course.instructor.name || "Instructor"}
-                        className="h-20 w-20 rounded-2xl object-cover ring-2 ring-gray-100"
-                      />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900">
+                    <img
+                      src={course.instructor.avatar || "/avatars/default.png"}
+                      alt={course.instructor.name || "Instructor"}
+                      className="h-20 w-20 shrink-0 rounded-2xl object-cover ring-2 ring-gray-100"
+                    />
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900 hover:text-indigo-600 transition-colors">
                         {course.instructor.name}
                       </h3>
                       <p className="mt-0.5 text-sm font-medium text-indigo-600">Instructor</p>
@@ -483,6 +554,24 @@ export default async function CourseDetailPage({
                         <p className="mt-3 text-sm leading-relaxed text-gray-600">
                           {course.instructor.bio}
                         </p>
+                      )}
+                      {instructorStats && (
+                        <div className="mt-4 flex flex-wrap gap-4">
+                          <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                            <BookOpen className="h-4 w-4 text-gray-400" />
+                            <span><strong>{instructorStats.courseCount}</strong> courses</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                            <Users className="h-4 w-4 text-gray-400" />
+                            <span><strong>{instructorStats.totalStudents.toLocaleString()}</strong> students</span>
+                          </div>
+                          {instructorStats.avgRating > 0 && (
+                            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                              <span><strong>{instructorStats.avgRating.toFixed(1)}</strong> avg rating</span>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -514,7 +603,7 @@ export default async function CourseDetailPage({
                     {reviews.map((review: any) => (
                       <div
                         key={review.id}
-                        className="rounded-xl border border-gray-100 p-4"
+                        className="rounded-xl border border-gray-100 p-5"
                       >
                         <div className="flex items-start gap-4">
                           <img
@@ -550,9 +639,10 @@ export default async function CourseDetailPage({
               </div>
             </div>
 
-            {/* Sidebar - Additional Info */}
+            {/* Sidebar */}
             <div className="lg:col-span-2">
               <div className="sticky top-24 space-y-6">
+                {/* Course Details */}
                 <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                   <h3 className="mb-5 text-lg font-bold text-gray-900">Course Details</h3>
                   <div className="space-y-4">
@@ -599,6 +689,30 @@ export default async function CourseDetailPage({
                   </div>
                 </div>
 
+                {/* Features */}
+                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                  <h3 className="mb-5 text-lg font-bold text-gray-900">Features</h3>
+                  <div className="space-y-4">
+                    {[
+                      { icon: Award, label: "Certificate of Completion", desc: "Showcase your achievement" },
+                      { icon: Infinity, label: "Lifetime Access", desc: "Learn at your own pace" },
+                      { icon: Smartphone, label: "Mobile Friendly", desc: "Learn anywhere, anytime" },
+                      { icon: RefreshCw, label: "Free Updates", desc: "Get new content automatically" },
+                      { icon: Trophy, label: "Community Access", desc: "Connect with other learners" },
+                    ].map(({ icon: Icon, label, desc }) => (
+                      <div key={label} className="flex items-start gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50">
+                          <Icon className="h-4 w-4 text-indigo-600" />
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-gray-900">{label}</span>
+                          <p className="text-xs text-gray-500">{desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Tags */}
                 {course.tags && course.tags.length > 0 && (
                   <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -607,7 +721,7 @@ export default async function CourseDetailPage({
                       {course.tags.map((tag: string) => (
                         <span
                           key={tag}
-                          className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700"
+                          className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-500/10"
                         >
                           {tag}
                         </span>
