@@ -20,6 +20,7 @@ import {
   Circle,
   Menu,
   ArrowLeft,
+  ClipboardCheck,
 } from "lucide-react";
 import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,7 @@ interface CourseData {
   id: string;
   title: string;
   sections: SectionData[];
+  quizzes: { id: string; title: string; passingScore: number; lessonId: string | null }[];
 }
 
 interface Note {
@@ -106,6 +108,7 @@ export default function CourseLearnPage() {
   const [newNote, setNewNote] = useState("");
   const [questions, setQuestions] = useState<QAItem[]>([]);
   const [newQuestion, setNewQuestion] = useState("");
+  const [passedQuizzes, setPassedQuizzes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function loadCourse() {
@@ -128,6 +131,31 @@ export default function CourseLearnPage() {
   }, [courseId]);
 
   useEffect(() => {
+    if (!course) return;
+    async function loadQuizAttempts() {
+      try {
+        const passed = new Set<string>();
+        for (const quiz of course!.quizzes || []) {
+          if (!quiz.lessonId) continue;
+          try {
+            const res = await fetch(`/api/quizzes/attempts?quizId=${quiz.id}`);
+            if (res.ok) {
+              const data = await res.json();
+              const attempts = data.attempts || [];
+              const hasPassed = attempts.some((a: any) => a.passed);
+              if (hasPassed) {
+                passed.add(quiz.lessonId);
+              }
+            }
+          } catch {}
+        }
+        setPassedQuizzes(passed);
+      } catch {}
+    }
+    loadQuizAttempts();
+  }, [course]);
+
+  useEffect(() => {
     if (course) {
       const total = course.sections.reduce(
         (acc, s) => acc + s.lessons.length,
@@ -140,6 +168,14 @@ export default function CourseLearnPage() {
 
   const allLessons = course?.sections.flatMap((s) => s.lessons) || [];
   const currentIndex = allLessons.findIndex((l) => l.id === currentLesson?.id);
+
+  const getQuizForLesson = (lessonId: string) => {
+    return course?.quizzes?.find((q) => q.lessonId === lessonId) || null;
+  };
+
+  const currentQuiz = currentLesson ? getQuizForLesson(currentLesson.id) : null;
+  const hasPassedCurrentQuiz = currentLesson ? passedQuizzes.has(currentLesson.id) : true;
+  const canGoNext = completedLessons.has(currentLesson?.id || "") && hasPassedCurrentQuiz;
 
   const goToLesson = (lesson: LessonData) => {
     setCurrentLesson(lesson);
@@ -161,6 +197,12 @@ export default function CourseLearnPage() {
   const markComplete = () => {
     if (currentLesson) {
       setCompletedLessons((prev) => new Set(prev).add(currentLesson.id));
+    }
+  };
+
+  const handleQuizComplete = (lessonId: string, passed: boolean) => {
+    if (passed) {
+      setPassedQuizzes((prev) => new Set(prev).add(lessonId));
     }
   };
 
@@ -255,6 +297,8 @@ export default function CourseLearnPage() {
                       {section.lessons.map((lesson) => {
                         const isActive = lesson.id === currentLesson.id;
                         const isComplete = completedLessons.has(lesson.id);
+                        const lessonQuiz = getQuizForLesson(lesson.id);
+                        const quizPassed = passedQuizzes.has(lesson.id);
                         return (
                           <button
                             key={lesson.id}
@@ -273,6 +317,11 @@ export default function CourseLearnPage() {
                               <FileText className="h-4 w-4 shrink-0" />
                             )}
                             <span className="line-clamp-1">{lesson.title}</span>
+                            {lessonQuiz && (
+                              <span className={`shrink-0 rounded px-1 py-0.5 text-[10px] font-bold ${quizPassed ? "bg-green-900/50 text-green-400" : "bg-amber-900/50 text-amber-400"}`}>
+                                Q
+                              </span>
+                            )}
                             {lesson.duration && (
                               <span className="ml-auto shrink-0 text-xs text-gray-600">
                                 {Math.floor(lesson.duration / 60)}:
@@ -444,16 +493,37 @@ export default function CourseLearnPage() {
                 <ChevronLeft className="mr-2 h-4 w-4" />
                 Previous
               </Button>
-              <Button
-                onClick={goNext}
-                disabled={currentIndex >= allLessons.length - 1 || !completedLessons.has(currentLesson.id)}
-                className="disabled:opacity-30"
-              >
-                {!completedLessons.has(currentLesson.id) && currentIndex < allLessons.length - 1
-                  ? "Complete this lesson first"
-                  : "Next"}
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-3">
+                {currentQuiz && !hasPassedCurrentQuiz && (
+                  <a href={`/quiz/${currentQuiz.id}`} target="_blank" rel="noopener noreferrer">
+                    <Button
+                      variant="outline"
+                      className="border-amber-600 bg-amber-900/30 text-amber-300 hover:bg-amber-900/50 hover:text-amber-200"
+                    >
+                      <ClipboardCheck className="mr-2 h-4 w-4" />
+                      Take Quiz ({Math.round(currentQuiz.passingScore)}% to pass)
+                    </Button>
+                  </a>
+                )}
+                {currentQuiz && hasPassedCurrentQuiz && (
+                  <span className="flex items-center gap-1.5 text-sm text-green-400">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Quiz Passed
+                  </span>
+                )}
+                <Button
+                  onClick={goNext}
+                  disabled={currentIndex >= allLessons.length - 1 || !canGoNext}
+                  className="disabled:opacity-30"
+                >
+                  {!completedLessons.has(currentLesson?.id || "")
+                    ? "Complete this lesson first"
+                    : currentQuiz && !hasPassedCurrentQuiz
+                    ? "Pass the quiz to continue"
+                    : "Next"}
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </main>
