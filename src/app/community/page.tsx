@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import {
@@ -146,6 +147,8 @@ const trendingTopics = [
 const commonEmojis = ["👍", "❤️", "😊", "🎉", "🔥", "💡"];
 
 export default function CommunityPage() {
+  const { data: session } = useSession();
+  const isLoggedIn = !!session;
   const [connections, setConnections] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMember, setSelectedMember] = useState<typeof communityMembers[0] | null>(null);
@@ -280,10 +283,10 @@ export default function CommunityPage() {
   };
 
   const addReply = () => {
-    if (!selectedDiscussion || !replyText.trim()) return;
+    if (!isLoggedIn || !selectedDiscussion || !replyText.trim()) return;
     const newReply: Reply = {
       id: `r${Date.now()}`,
-      author: "You",
+      author: session?.user?.name || "You",
       content: replyText.trim(),
       timeAgo: "Just now",
       likes: 0,
@@ -337,6 +340,24 @@ export default function CommunityPage() {
         </section>
 
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          {!isLoggedIn && (
+            <div className="mb-8 rounded-xl border border-indigo-200 bg-indigo-50 p-6">
+              <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-indigo-900">Join the Community</h3>
+                  <p className="text-sm text-indigo-700">Login to participate in discussions, connect with members, and share your knowledge.</p>
+                </div>
+                <div className="flex gap-3">
+                  <Link href="/login" className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">
+                    Login
+                  </Link>
+                  <Link href="/register" className="rounded-lg border border-indigo-300 px-5 py-2.5 text-sm font-semibold text-indigo-700 hover:bg-indigo-100">
+                    Sign Up
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="grid gap-8 lg:grid-cols-3">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
@@ -380,12 +401,15 @@ export default function CommunityPage() {
                           )}
                         </div>
                         <button
-                          onClick={(e) => { e.stopPropagation(); toggleConnection(member.id); }}
+                          onClick={(e) => { e.stopPropagation(); if (!isLoggedIn) return; toggleConnection(member.id); }}
                           className={`flex shrink-0 items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                            connections.has(member.id)
-                              ? "bg-green-100 text-green-700"
-                              : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                            !isLoggedIn
+                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              : connections.has(member.id)
+                                ? "bg-green-100 text-green-700"
+                                : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
                           }`}
+                          title={!isLoggedIn ? "Login to connect" : ""}
                         >
                           {connections.has(member.id) ? (
                             <>
@@ -395,7 +419,7 @@ export default function CommunityPage() {
                           ) : (
                             <>
                               <UserPlus className="h-3 w-3" />
-                              Connect
+                              {isLoggedIn ? "Connect" : "Login to Connect"}
                             </>
                           )}
                         </button>
@@ -428,8 +452,9 @@ export default function CommunityPage() {
                         </div>
                         <div className="flex shrink-0 gap-2">
                           <button
-                            onClick={(e) => { e.stopPropagation(); toggleDiscussionLike(post.id); }}
-                            className={`flex items-center gap-1 rounded-lg px-2 py-1 text-xs transition-colors ${post.liked ? "text-red-500 bg-red-50" : "text-gray-500 hover:bg-gray-100"}`}
+                            onClick={(e) => { e.stopPropagation(); if (!isLoggedIn) return; toggleDiscussionLike(post.id); }}
+                            className={`flex items-center gap-1 rounded-lg px-2 py-1 text-xs transition-colors ${!isLoggedIn ? "text-gray-300 cursor-not-allowed" : post.liked ? "text-red-500 bg-red-50" : "text-gray-500 hover:bg-gray-100"}`}
+                            title={!isLoggedIn ? "Login to like" : ""}
                           >
                             <Heart className={`h-3.5 w-3.5 ${post.liked ? "fill-red-500" : ""}`} />
                             {post.likes}
@@ -584,26 +609,35 @@ export default function CommunityPage() {
               )}
 
               <div className="mt-6 flex gap-3">
-                <button
-                  onClick={() => { toggleConnection(selectedMember.id); }}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3 font-medium transition-colors ${
-                    connections.has(selectedMember.id)
-                      ? "bg-green-100 text-green-700 hover:bg-green-200"
-                      : "bg-indigo-600 text-white hover:bg-indigo-700"
-                  }`}
-                >
-                  {connections.has(selectedMember.id) ? (
-                    <>
-                      <UserCheck className="h-4 w-4" />
-                      Connected
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="h-4 w-4" />
-                      Connect
-                    </>
-                  )}
-                </button>
+                {isLoggedIn ? (
+                  <button
+                    onClick={() => { toggleConnection(selectedMember.id); }}
+                    className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3 font-medium transition-colors ${
+                      connections.has(selectedMember.id)
+                        ? "bg-green-100 text-green-700 hover:bg-green-200"
+                        : "bg-indigo-600 text-white hover:bg-indigo-700"
+                    }`}
+                  >
+                    {connections.has(selectedMember.id) ? (
+                      <>
+                        <UserCheck className="h-4 w-4" />
+                        Connected
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="h-4 w-4" />
+                        Connect
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 font-medium text-white hover:bg-indigo-700"
+                  >
+                    Login to Connect
+                  </Link>
+                )}
                 <button
                   onClick={() => setSelectedMember(null)}
                   className="rounded-xl border border-gray-200 px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -642,24 +676,34 @@ export default function CommunityPage() {
 
               <div className="mt-4 flex items-center gap-4 border-t border-b py-3">
                 <button
-                  onClick={() => toggleDiscussionLike(selectedDiscussion.id)}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${selectedDiscussion.liked ? "text-red-500 bg-red-50" : "text-gray-500 hover:bg-gray-100"}`}
+                  onClick={() => { if (!isLoggedIn) return; toggleDiscussionLike(selectedDiscussion.id); }}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${!isLoggedIn ? "text-gray-300 cursor-not-allowed" : selectedDiscussion.liked ? "text-red-500 bg-red-50" : "text-gray-500 hover:bg-gray-100"}`}
+                  title={!isLoggedIn ? "Login to like" : ""}
                 >
                   <Heart className={`h-4 w-4 ${selectedDiscussion.liked ? "fill-red-500" : ""}`} />
                   {selectedDiscussion.likes}
                 </button>
                 <button
-                  onClick={() => toggleDiscussionDislike(selectedDiscussion.id)}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${selectedDiscussion.disliked ? "text-blue-500 bg-blue-50" : "text-gray-500 hover:bg-gray-100"}`}
+                  onClick={() => { if (!isLoggedIn) return; toggleDiscussionDislike(selectedDiscussion.id); }}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${!isLoggedIn ? "text-gray-300 cursor-not-allowed" : selectedDiscussion.disliked ? "text-blue-500 bg-blue-50" : "text-gray-500 hover:bg-gray-100"}`}
+                  title={!isLoggedIn ? "Login to dislike" : ""}
                 >
                   <ThumbsDown className={`h-4 w-4 ${selectedDiscussion.disliked ? "fill-blue-500" : ""}`} />
                   {selectedDiscussion.dislikes}
                 </button>
-                <button className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100">
+                <button
+                  onClick={() => { if (!isLoggedIn) return; }}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${!isLoggedIn ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-100"}`}
+                  title={!isLoggedIn ? "Login to repost" : ""}
+                >
                   <Repeat className="h-4 w-4" />
                   Repost
                 </button>
-                <button className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100">
+                <button
+                  onClick={() => { if (!isLoggedIn) return; }}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${!isLoggedIn ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-100"}`}
+                  title={!isLoggedIn ? "Login to share" : ""}
+                >
                   <Share2 className="h-4 w-4" />
                   Share
                 </button>
@@ -684,15 +728,17 @@ export default function CommunityPage() {
                       <p className="mt-2 text-sm text-gray-700">{reply.content}</p>
                       <div className="mt-2 flex items-center gap-3">
                         <button
-                          onClick={() => toggleReplyLike(selectedDiscussion.id, reply.id)}
-                          className={`flex items-center gap-1 text-xs font-medium transition-colors ${reply.liked ? "text-red-500" : "text-gray-400 hover:text-gray-600"}`}
+                          onClick={() => { if (!isLoggedIn) return; toggleReplyLike(selectedDiscussion.id, reply.id); }}
+                          className={`flex items-center gap-1 text-xs font-medium transition-colors ${!isLoggedIn ? "text-gray-300 cursor-not-allowed" : reply.liked ? "text-red-500" : "text-gray-400 hover:text-gray-600"}`}
+                          title={!isLoggedIn ? "Login to like" : ""}
                         >
                           <Heart className={`h-3.5 w-3.5 ${reply.liked ? "fill-red-500" : ""}`} />
                           {reply.likes}
                         </button>
                         <button
-                          onClick={() => toggleReplyDislike(selectedDiscussion.id, reply.id)}
-                          className={`flex items-center gap-1 text-xs font-medium transition-colors ${reply.disliked ? "text-blue-500" : "text-gray-400 hover:text-gray-600"}`}
+                          onClick={() => { if (!isLoggedIn) return; toggleReplyDislike(selectedDiscussion.id, reply.id); }}
+                          className={`flex items-center gap-1 text-xs font-medium transition-colors ${!isLoggedIn ? "text-gray-300 cursor-not-allowed" : reply.disliked ? "text-blue-500" : "text-gray-400 hover:text-gray-600"}`}
+                          title={!isLoggedIn ? "Login to dislike" : ""}
                         >
                           <ThumbsDown className={`h-3.5 w-3.5 ${reply.disliked ? "fill-blue-500" : ""}`} />
                           {reply.dislikes}
@@ -705,44 +751,56 @@ export default function CommunityPage() {
             </div>
 
             <div className="border-t p-4">
-              <div className="relative flex items-center gap-2">
-                <div className="relative">
+              {isLoggedIn ? (
+                <div className="relative flex items-center gap-2">
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    >
+                      <Smile className="h-5 w-5" />
+                    </button>
+                    {showEmojiPicker && (
+                      <div className="absolute bottom-full left-0 mb-2 flex gap-1 rounded-xl border bg-white p-2 shadow-lg">
+                        {commonEmojis.map((emoji) => (
+                          <button
+                            key={emoji}
+                            onClick={() => insertEmoji(emoji)}
+                            className="rounded-lg p-2 text-lg hover:bg-gray-100"
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Write a reply..."
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") addReply(); }}
+                    className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
                   <button
-                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    onClick={addReply}
+                    disabled={!replyText.trim()}
+                    className="rounded-xl bg-indigo-600 p-2.5 text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Smile className="h-5 w-5" />
+                    <Send className="h-4 w-4" />
                   </button>
-                  {showEmojiPicker && (
-                    <div className="absolute bottom-full left-0 mb-2 flex gap-1 rounded-xl border bg-white p-2 shadow-lg">
-                      {commonEmojis.map((emoji) => (
-                        <button
-                          key={emoji}
-                          onClick={() => insertEmoji(emoji)}
-                          className="rounded-lg p-2 text-lg hover:bg-gray-100"
-                        >
-                          {emoji}
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
-                <input
-                  type="text"
-                  placeholder="Write a reply..."
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") addReply(); }}
-                  className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
-                <button
-                  onClick={addReply}
-                  disabled={!replyText.trim()}
-                  className="rounded-xl bg-indigo-600 p-2.5 text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Send className="h-4 w-4" />
-                </button>
-              </div>
+              ) : (
+                <div className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3">
+                  <p className="text-sm text-gray-500">Login to join the discussion</p>
+                  <Link
+                    href="/login"
+                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                  >
+                    Login
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
