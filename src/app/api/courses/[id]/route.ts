@@ -25,7 +25,7 @@ export async function GET(
         },
         quizzes: {
           where: { isPublished: true },
-          select: { id: true, title: true, description: true, passingScore: true },
+          select: { id: true, title: true, description: true, passingScore: true, lessonId: true },
         },
         reviews: {
           include: {

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -10,9 +10,16 @@ export async function GET() {
     }
 
     const userId = session.user.id;
+    const { searchParams } = new URL(request.url);
+    const quizId = searchParams.get("quizId");
+
+    const where: any = { userId };
+    if (quizId) {
+      where.quizId = quizId;
+    }
 
     const attempts = await prisma.quizAttempt.findMany({
-      where: { userId },
+      where,
       select: {
         id: true,
         score: true,
