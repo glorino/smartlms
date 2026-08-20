@@ -18,6 +18,8 @@ import {
   GraduationCap,
 } from "lucide-react";
 import Link from "next/link";
+import Navbar from "@/components/layout/navbar";
+import Footer from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -139,7 +141,9 @@ export default function HelpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex min-h-screen flex-col">
+      <Navbar />
+      <main className="flex-1 bg-gray-50">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
         {/* Hero Section */}
         <div className="rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-8 text-white shadow-lg">
@@ -356,6 +360,8 @@ export default function HelpPage() {
           </CardContent>
         </Card>
       </div>
+      </main>
+      <Footer />
     </div>
   );
 }
