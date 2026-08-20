@@ -68,6 +68,27 @@ interface QAItem {
   createdAt: string;
 }
 
+function getVideoType(url: string | null): string | null {
+  if (!url) return null;
+  if (url.includes("youtube.com") || url.includes("youtu.be")) return "youtube";
+  if (url.includes("vimeo.com")) return "vimeo";
+  return "native";
+}
+
+function getEmbedUrl(url: string, type: string): string {
+  if (type === "youtube") {
+    const match = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+    if (match) return `https://www.youtube.com/embed/${match[1]}`;
+    return url;
+  }
+  if (type === "vimeo") {
+    const match = url.match(/vimeo\.com\/(\d+)/);
+    if (match) return `https://player.vimeo.com/video/${match[1]}`;
+    return url;
+  }
+  return url;
+}
+
 export default function CourseLearnPage() {
   const params = useParams();
   const courseId = params.id as string;
@@ -280,70 +301,78 @@ export default function CourseLearnPage() {
       {/* Main Content Area */}
       <main className="flex flex-1 flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto">
-            {/* Video / Content Player */}
-            <div className="relative aspect-video bg-black">
-              {currentLesson.type === "VIDEO" && currentLesson.videoUrl ? (
-                isPlaying ? (
-                  currentLesson.videoType === "youtube" ? (
-                    <iframe
-                      src={currentLesson.videoUrl}
-                      title={currentLesson.title}
-                      className="h-full w-full"
-                      allowFullScreen
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    />
-                  ) : currentLesson.videoType === "vimeo" ? (
-                    <iframe
-                      src={currentLesson.videoUrl}
-                      title={currentLesson.title}
-                      className="h-full w-full"
-                      allowFullScreen
-                      allow="autoplay; encrypted-media; picture-in-picture"
-                    />
+            {/* Video Player */}
+            {currentLesson.type === "VIDEO" && (
+              <div className="relative aspect-video bg-black">
+                {currentLesson.videoUrl ? (
+                  isPlaying ? (
+                    (() => {
+                      const detectedType = currentLesson.videoType || getVideoType(currentLesson.videoUrl);
+                      const embedUrl = getEmbedUrl(currentLesson.videoUrl, detectedType || "native");
+                      if (detectedType === "youtube" || detectedType === "vimeo") {
+                        return (
+                          <iframe
+                            src={embedUrl}
+                            title={currentLesson.title}
+                            className="h-full w-full"
+                            allowFullScreen
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          />
+                        );
+                      }
+                      return (
+                        <video
+                          src={currentLesson.videoUrl}
+                          title={currentLesson.title}
+                          className="h-full w-full"
+                          controls
+                          autoPlay
+                          playsInline
+                        />
+                      );
+                    })()
                   ) : (
-                    <video
-                      src={currentLesson.videoUrl || ""}
-                      title={currentLesson.title}
-                      className="h-full w-full"
-                      controls
-                      autoPlay
-                      playsInline
-                     />
-                   )
-                 ) : (
-                   <div className="flex h-full items-center justify-center">
-                     <button
-                       onClick={() => setIsPlaying(true)}
-                       className="group rounded-full bg-white/10 p-6 transition-all hover:bg-white/20"
-                     >
-                       <Play className="h-12 w-12 text-white group-hover:scale-110 transition-transform" />
-                     </button>
-                   </div>
-                 )
-               ) : currentLesson.type === "VIDEO" ? (
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-center">
-                    <Video className="mx-auto h-16 w-16 text-gray-600" />
-                    <p className="mt-4 text-gray-400">No video available for this lesson</p>
+                    <div className="flex h-full items-center justify-center">
+                      <button
+                        onClick={() => setIsPlaying(true)}
+                        className="group rounded-full bg-white/10 p-6 transition-all hover:bg-white/20"
+                      >
+                        <Play className="h-12 w-12 text-white group-hover:scale-110 transition-transform" />
+                      </button>
+                    </div>
+                  )
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <div className="text-center">
+                      <Video className="mx-auto h-16 w-16 text-gray-600" />
+                      <p className="mt-4 text-gray-400">No video available for this lesson</p>
+                    </div>
                   </div>
-                </div>
-              )               : currentLesson.content ? (
-                <div className="lesson-content mx-auto max-w-3xl px-4 py-6 sm:px-6">
-                  <div
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentLesson.content) }}
-                  />
-                </div>
-              ) : (
-                <div className="flex h-full items-center justify-center bg-gray-900">
-                  <div className="text-center">
-                    <FileText className="mx-auto h-16 w-16 text-gray-600" />
-                    <p className="mt-4 text-gray-400">
-                      {currentLesson.type === "TEXT" ? "No content available" : "Text content"}
-                    </p>
+                )}
+              </div>
+            )}
+
+            {/* Text / Content */}
+            {currentLesson.type !== "VIDEO" && (
+              <div className="min-h-[60vh] bg-gray-900">
+                {currentLesson.content ? (
+                  <div className="lesson-content mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+                    <div
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentLesson.content) }}
+                    />
                   </div>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div className="flex min-h-[60vh] items-center justify-center">
+                    <div className="text-center">
+                      <FileText className="mx-auto h-16 w-16 text-gray-600" />
+                      <p className="mt-4 text-gray-400">
+                        {currentLesson.type === "TEXT" ? "No content available" : "Text content"}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Lesson Info */}
             <div className="border-b border-gray-800 bg-gray-900 px-6 py-4">
