@@ -60,12 +60,21 @@ export async function GET(
       certificate.course.instructor?.name || "SmartLMS Team";
     const certPageUrl = `https://smartlms-bay.vercel.app/certificate/${certificate.certificateId}`;
 
-    const qrDataUrl = await QRCode.toDataURL(certPageUrl, {
-      width: 200,
-      margin: 1,
-      color: { dark: "#1a1a2e", light: "#ffffff" },
-      errorCorrectionLevel: "M",
-    });
+    let qrMatrix: boolean[][] | null = null;
+    try {
+      const qr = QRCode.create(certPageUrl, { errorCorrectionLevel: "M" });
+      const modules = qr.modules;
+      qrMatrix = [];
+      for (let row = 0; row < modules.size; row++) {
+        const rowData: boolean[] = [];
+        for (let col = 0; col < modules.size; col++) {
+          rowData.push(modules.get(row, col) === 1);
+        }
+        qrMatrix.push(rowData);
+      }
+    } catch {
+      qrMatrix = null;
+    }
 
     const courseDesc = certificate.course.description
       ? certificate.course.description.replace(/<[^>]*>/g, "").slice(0, 160)
@@ -204,7 +213,25 @@ export async function GET(
     const qrY = ph - 48;
     doc.setFillColor(255, 255, 255);
     doc.roundedRect(qrX - 2, qrY - 2, 28, 28, 1, 1, "F");
-    doc.addImage(qrDataUrl, "PNG", qrX, qrY, 24, 24);
+
+    if (qrMatrix) {
+      const size = qrMatrix.length;
+      const cellSize = 24 / size;
+      doc.setFillColor(26, 26, 46);
+      for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+          if (qrMatrix[row][col]) {
+            doc.rect(
+              qrX + col * cellSize,
+              qrY + row * cellSize,
+              cellSize + 0.1,
+              cellSize + 0.1,
+              "F"
+            );
+          }
+        }
+      }
+    }
     doc.setFont("times", "normal");
     doc.setFontSize(5.5);
     doc.setTextColor(140, 130, 110);
@@ -230,7 +257,8 @@ export async function GET(
       ph - 11
     );
 
-    const pdfBuffer = Buffer.from(doc.output("arraybuffer"));
+    const pdfArrayBuffer = doc.output("arraybuffer");
+    const pdfBuffer = Buffer.from(pdfArrayBuffer);
 
     return new NextResponse(pdfBuffer, {
       headers: {
