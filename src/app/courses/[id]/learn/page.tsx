@@ -166,6 +166,24 @@ export default function CourseLearnPage() {
     }
   }, [course, completedLessons]);
 
+  useEffect(() => {
+    if (!currentLesson) return;
+    async function loadNotes() {
+      try {
+        const res = await fetch(
+          `/api/notes?lessonId=${currentLesson!.id}&courseId=${courseId}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setNotes(data.notes || []);
+        }
+      } catch (err) {
+        console.error("Failed to load notes", err);
+      }
+    }
+    loadNotes();
+  }, [currentLesson, courseId]);
+
   const allLessons = course?.sections.flatMap((s) => s.lessons) || [];
   const currentIndex = allLessons.findIndex((l) => l.id === currentLesson?.id);
 
@@ -194,9 +212,22 @@ export default function CourseLearnPage() {
     }
   };
 
-  const markComplete = () => {
+  const markComplete = async () => {
     if (currentLesson) {
       setCompletedLessons((prev) => new Set(prev).add(currentLesson.id));
+      try {
+        await fetch("/api/progress", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            lessonId: currentLesson.id,
+            courseId,
+            completed: true,
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to save progress", err);
+      }
     }
   };
 
@@ -206,13 +237,37 @@ export default function CourseLearnPage() {
     }
   };
 
-  const addNote = () => {
-    if (newNote.trim()) {
-      setNotes((prev) => [
-        { id: Date.now().toString(), content: newNote, createdAt: new Date().toISOString() },
-        ...prev,
-      ]);
+  const addNote = async () => {
+    if (newNote.trim() && currentLesson) {
+      try {
+        const res = await fetch("/api/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            lessonId: currentLesson.id,
+            courseId,
+            content: newNote,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setNotes((prev) => [data.note, ...prev]);
+        }
+      } catch (err) {
+        console.error("Failed to save note", err);
+      }
       setNewNote("");
+    }
+  };
+
+  const deleteNote = async (noteId: string) => {
+    try {
+      const res = await fetch(`/api/notes/${noteId}`, { method: "DELETE" });
+      if (res.ok) {
+        setNotes((prev) => prev.filter((n) => n.id !== noteId));
+      }
+    } catch (err) {
+      console.error("Failed to delete note", err);
     }
   };
 
@@ -566,7 +621,15 @@ export default function CourseLearnPage() {
                           key={note.id}
                           className="rounded-lg border border-gray-700 bg-gray-800 p-3"
                         >
-                          <p className="text-sm text-gray-300">{note.content}</p>
+                          <div className="flex items-start justify-between">
+                            <p className="text-sm text-gray-300">{note.content}</p>
+                            <button
+                              onClick={() => deleteNote(note.id)}
+                              className="ml-2 shrink-0 rounded p-1 text-gray-500 hover:bg-gray-700 hover:text-red-400"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
                           <p className="mt-1 text-xs text-gray-500">
                             {new Date(note.createdAt).toLocaleString()}
                           </p>

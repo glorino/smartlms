@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { checkAndAwardFirstLesson, awardAchievement, checkAndAwardStreak7 } from "@/lib/achievements";
 
 export async function GET(request: Request) {
   try {
@@ -153,6 +154,15 @@ export async function POST(request: Request) {
         completedAt: courseProgress >= 100 ? new Date() : null,
       },
     });
+
+    if (completed || completed === undefined) {
+      await checkAndAwardFirstLesson(userId, prisma);
+      await checkAndAwardStreak7(userId, prisma);
+    }
+
+    if (courseProgress >= 100) {
+      await awardAchievement(userId, "course_complete", prisma);
+    }
 
     return NextResponse.json({ progress, courseProgress });
   } catch (error) {

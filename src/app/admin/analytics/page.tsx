@@ -101,6 +101,24 @@ interface AnalyticsData {
     avgCompletionRate: string;
     dailyActiveUsers: number;
   };
+  paymentStats: {
+    totalPayments: number;
+    completedPayments: number;
+    failedPayments: number;
+    refundedPayments: number;
+    paymentSuccessRate: number;
+    refundRate: number;
+  };
+  courseStartRate: number;
+  revenueByInstructor: Array<{
+    instructorId: string;
+    instructorName: string;
+    revenue: number;
+  }>;
+  categoryDistribution: Array<{
+    category: string;
+    count: number;
+  }>;
 }
 
 export default function AdminAnalyticsPage() {
@@ -389,6 +407,38 @@ export default function AdminAnalyticsPage() {
       trend: (data?.userGrowth || 0) >= 0 ? ("up" as const) : ("down" as const),
       icon: TrendingUp,
       color: "bg-orange-500",
+    },
+    {
+      label: "Payment Success",
+      value: data?.paymentStats ? `${data.paymentStats.paymentSuccessRate}%` : "—",
+      change: 0,
+      trend: "up" as const,
+      icon: Shield,
+      color: "bg-green-500",
+    },
+    {
+      label: "Refund Rate",
+      value: data?.paymentStats ? `${data.paymentStats.refundRate}%` : "—",
+      change: 0,
+      trend: (data?.paymentStats?.refundRate || 0) <= 5 ? ("up" as const) : ("down" as const),
+      icon: AlertTriangle,
+      color: "bg-red-500",
+    },
+    {
+      label: "Course Start Rate",
+      value: data?.courseStartRate !== undefined ? `${data.courseStartRate}%` : "—",
+      change: 0,
+      trend: "up" as const,
+      icon: Rocket,
+      color: "bg-cyan-500",
+    },
+    {
+      label: "Certificates Issued",
+      value: engagement?.avgCompletionRate ? `${Math.round((data?.totalEnrollments || 0) * (engagement.avgCompletionRate / 100) * 0.8)}` : "—",
+      change: 0,
+      trend: "up" as const,
+      icon: Award,
+      color: "bg-amber-500",
     },
   ];
 
@@ -956,21 +1006,27 @@ export default function AdminAnalyticsPage() {
                 icon: Brain,
                 color: "from-indigo-500 to-blue-500",
                 title: "Growth Opportunity",
-                insight: "Student enrollment increased 18% this month. Consider launching a promotional campaign to capitalize on momentum.",
+                insight: data?.enrollmentGrowth
+                  ? `Enrollment grew ${data.enrollmentGrowth}% in the selected period. Consider launching a promotional campaign to capitalize on momentum.`
+                  : "Enrollment data will appear here once students start enrolling.",
                 action: "Create a limited-time discount",
               },
               {
                 icon: AlertTriangle,
                 color: "from-amber-500 to-orange-500",
                 title: "Drop-off Alert",
-                insight: `${engagement?.dropOffRate || 15}% of students drop off after Lesson 3. Consider adding interactive elements to early lessons.`,
-                action: "Review Lesson 3 content",
+                insight: engagement?.dropOffRate
+                  ? `${engagement.dropOffRate}% of students drop off before completing. Consider adding interactive elements to early lessons.`
+                  : "Drop-off data will appear once students begin courses.",
+                action: "Review course content",
               },
               {
                 icon: Lightbulb,
                 color: "from-emerald-500 to-teal-500",
                 title: "Content Recommendation",
-                insight: "React and Python courses have the highest completion rates. Create more courses in these categories.",
+                insight: data?.topCourses?.length
+                  ? `"${data.topCourses[0].title}" is your top course with ${data.topCourses[0]._count.enrollments} enrollments. Create more content in this category.`
+                  : "Content recommendations will appear based on enrollment patterns.",
                 action: "Plan new course content",
               },
               {
@@ -983,15 +1039,19 @@ export default function AdminAnalyticsPage() {
               {
                 icon: Shield,
                 color: "from-rose-500 to-red-500",
-                title: "Quality Alert",
-                insight: "3 courses have ratings below 3.5 stars. Review feedback and update content to improve satisfaction.",
-                action: "Review low-rated courses",
+                title: "Payment Health",
+                insight: data?.paymentStats
+                  ? `Payment success rate is ${data.paymentStats.paymentSuccessRate}%. ${data.paymentStats.refundRate}% refund rate.`
+                  : "Payment health data will appear once transactions are processed.",
+                action: "View payment analytics",
               },
               {
                 icon: Zap,
                 color: "from-yellow-500 to-amber-500",
                 title: "Engagement Spike",
-                insight: "Live class attendance is up 34% this week. Schedule more interactive sessions to maintain engagement.",
+                insight: data?.courseStartRate
+                  ? `${data.courseStartRate}% of enrolled students start learning. ${engagement?.engagementScore || 0}/100 engagement score.`
+                  : "Engagement metrics will appear as students interact with courses.",
                 action: "Schedule more live classes",
               },
             ].map((item) => (
@@ -1009,7 +1069,7 @@ export default function AdminAnalyticsPage() {
                     <button
                       className="mt-2 text-xs font-medium text-indigo-600 hover:text-indigo-700"
                       onClick={() => {
-                        if (item.title === "Revenue Forecast") {
+                        if (item.title === "Revenue Forecast" || item.title === "Payment Health") {
                           handleExportAll();
                         } else {
                           window.location.href = "/admin/courses";
@@ -1038,12 +1098,12 @@ export default function AdminAnalyticsPage() {
           <CardContent>
             <div className="space-y-3">
               {[
-                { stage: "Visited Site", count: Math.round((data?.totalStudents || 0) * 2.5), pct: 100, color: "bg-indigo-500" },
-                { stage: "Viewed Course", count: Math.round((data?.totalStudents || 0) * 1.8), pct: 72, color: "bg-blue-500" },
-                { stage: "Enrolled", count: data?.totalEnrollments || 0, pct: 45, color: "bg-purple-500" },
-                { stage: "Completed 25%", count: Math.round((data?.totalEnrollments || 0) * 0.7), pct: 32, color: "bg-amber-500" },
-                { stage: "Completed 100%", count: Math.round((data?.totalEnrollments || 0) * (data?.completionRate || 40) / 100), pct: Math.round((data?.completionRate || 40) * 0.45), color: "bg-emerald-500" },
-                { stage: "Earned Certificate", count: Math.round((data?.totalEnrollments || 0) * (data?.completionRate || 40) / 100 * 0.8), pct: Math.round((data?.completionRate || 40) * 0.36), color: "bg-green-500" },
+                { stage: "Total Students", count: data?.totalStudents || 0, pct: 100, color: "bg-indigo-500" },
+                { stage: "Active (30d)", count: data?.activeUsers || 0, pct: data?.totalStudents ? Math.round(((data?.activeUsers || 0) / data.totalStudents) * 100) : 0, color: "bg-blue-500" },
+                { stage: "Enrolled", count: data?.totalEnrollments || 0, pct: data?.totalStudents ? Math.round(((data?.totalEnrollments || 0) / data.totalStudents) * 100) : 0, color: "bg-purple-500" },
+                { stage: "Started Learning", count: data?.totalEnrollments ? Math.round(data.totalEnrollments * ((data?.courseStartRate || 0) / 100)) : 0, pct: data?.courseStartRate || 0, color: "bg-amber-500" },
+                { stage: "Completed 100%", count: data?.totalEnrollments ? Math.round(data.totalEnrollments * ((data?.completionRate || 0) / 100)) : 0, pct: Math.round(data?.completionRate || 0), color: "bg-emerald-500" },
+                { stage: "Earned Certificate", count: data?.totalEnrollments ? Math.round(data.totalEnrollments * ((data?.completionRate || 0) / 100) * 0.8) : 0, pct: Math.round((data?.completionRate || 0) * 0.8), color: "bg-green-500" },
               ].map((item) => (
                 <div key={item.stage} className="flex items-center gap-3">
                   <span className="w-36 text-xs font-medium text-gray-600 shrink-0">{item.stage}</span>
@@ -1063,41 +1123,48 @@ export default function AdminAnalyticsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <PieChart className="h-5 w-5 text-purple-500" />
-              Course Categories Distribution
+              <Activity className="h-5 w-5 text-purple-500" />
+              Payment Breakdown
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {[
-                { category: "Web Development", students: 1240, color: "bg-indigo-500", pct: 35 },
-                { category: "Data Science", students: 890, color: "bg-blue-500", pct: 25 },
-                { category: "AI & Machine Learning", students: 620, color: "bg-purple-500", pct: 18 },
-                { category: "Design", students: 430, color: "bg-pink-500", pct: 12 },
-                { category: "Business", students: 350, color: "bg-amber-500", pct: 10 },
-              ].map((item) => (
-                <div key={item.category} className="flex items-center gap-3">
-                  <div className={`h-3 w-3 rounded-full ${item.color} shrink-0`} />
-                  <span className="flex-1 text-sm text-gray-700">{item.category}</span>
-                  <span className="text-sm font-semibold text-gray-900">{item.students.toLocaleString()}</span>
-                  <span className="w-10 text-right text-xs text-gray-500">{item.pct}%</span>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-xl border border-gray-100 p-4 text-center">
+                  <p className="text-2xl font-bold text-green-600">{data?.paymentStats?.completedPayments || 0}</p>
+                  <p className="text-xs text-gray-500">Completed</p>
                 </div>
-              ))}
-            </div>
-            <div className="mt-4 flex h-4 overflow-hidden rounded-full">
-              {[
-                { pct: 35, color: "bg-indigo-500" },
-                { pct: 25, color: "bg-blue-500" },
-                { pct: 18, color: "bg-purple-500" },
-                { pct: 12, color: "bg-pink-500" },
-                { pct: 10, color: "bg-amber-500" },
-              ].map((seg, i) => (
-                <div
-                  key={i}
-                  className={`${seg.color} transition-all duration-700`}
-                  style={{ width: `${seg.pct}%` }}
-                />
-              ))}
+                <div className="rounded-xl border border-gray-100 p-4 text-center">
+                  <p className="text-2xl font-bold text-red-500">{data?.paymentStats?.failedPayments || 0}</p>
+                  <p className="text-xs text-gray-500">Failed</p>
+                </div>
+                <div className="rounded-xl border border-gray-100 p-4 text-center">
+                  <p className="text-2xl font-bold text-amber-500">{data?.paymentStats?.refundedPayments || 0}</p>
+                  <p className="text-xs text-gray-500">Refunded</p>
+                </div>
+                <div className="rounded-xl border border-gray-100 p-4 text-center">
+                  <p className="text-2xl font-bold text-indigo-600">{data?.paymentStats?.totalPayments || 0}</p>
+                  <p className="text-xs text-gray-500">Total</p>
+                </div>
+              </div>
+              <div className="rounded-xl border border-gray-100 p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Success Rate</span>
+                  <span className="text-lg font-bold text-green-600">{data?.paymentStats?.paymentSuccessRate || 0}%</span>
+                </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100">
+                  <div className="h-full rounded-full bg-green-500 transition-all duration-700" style={{ width: `${data?.paymentStats?.paymentSuccessRate || 0}%` }} />
+                </div>
+              </div>
+              <div className="rounded-xl border border-gray-100 p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Refund Rate</span>
+                  <span className="text-lg font-bold text-amber-600">{data?.paymentStats?.refundRate || 0}%</span>
+                </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100">
+                  <div className="h-full rounded-full bg-amber-500 transition-all duration-700" style={{ width: `${data?.paymentStats?.refundRate || 0}%` }} />
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -1136,77 +1203,93 @@ export default function AdminAnalyticsPage() {
         </CardContent>
       </Card>
 
-      {/* Geographic Distribution */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5 text-indigo-500" />
-            Student Geographic Distribution
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              { country: "Nigeria", students: 2150, pct: 38, flag: "🇳🇬" },
-              { country: "United States", students: 1420, pct: 25, flag: "🇺🇸" },
-              { country: "United Kingdom", students: 780, pct: 14, flag: "🇬🇧" },
-              { country: "India", students: 620, pct: 11, flag: "🇮🇳" },
-              { country: "South Africa", students: 430, pct: 8, flag: "🇿🇦" },
-              { country: "Others", students: 250, pct: 4, flag: "🌍" },
-            ].map((item) => (
-              <div key={item.country} className="flex items-center gap-3 rounded-lg border border-gray-100 p-3">
-                <span className="text-2xl">{item.flag}</span>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{item.country}</p>
-                  <p className="text-xs text-gray-500">{item.students.toLocaleString()} students</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-gray-900">{item.pct}%</p>
-                  <div className="mt-1 h-1.5 w-16 overflow-hidden rounded-full bg-gray-100">
-                    <div className="h-full rounded-full bg-indigo-500" style={{ width: `${item.pct}%` }} />
+      {/* Revenue by Instructor (Admin only) */}
+      {data?.revenueByInstructor && data.revenueByInstructor.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-indigo-500" />
+              Revenue by Instructor
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {data.revenueByInstructor.map((inst) => {
+                const maxRev = data.revenueByInstructor[0]?.revenue || 1;
+                return (
+                  <div key={inst.instructorId} className="flex items-center gap-3">
+                    <span className="w-40 truncate text-sm font-medium text-gray-700 shrink-0">{inst.instructorName}</span>
+                    <div className="flex-1 h-6 rounded-full bg-gray-100 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-700"
+                        style={{ width: `${maxRev > 0 ? (inst.revenue / maxRev) * 100 : 0}%` }}
+                      />
+                    </div>
+                    <span className="w-20 text-right text-sm font-semibold text-gray-900">₦{inst.revenue.toLocaleString()}</span>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Quick Actions */}
+      {/* Course Categories Distribution */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-yellow-500" />
-            Recommended Actions
+            <PieChart className="h-5 w-5 text-purple-500" />
+            Course Categories Distribution
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { label: "Send bulk notification", desc: "Engage inactive students", icon: Users, color: "bg-indigo-50 text-indigo-600 hover:bg-indigo-100", href: "/admin/users" },
-              { label: "Review low-rated courses", desc: "3 courses need attention", icon: AlertTriangle, color: "bg-amber-50 text-amber-600 hover:bg-amber-100", href: "/admin/courses" },
-              { label: "Schedule live class", desc: "Boost engagement by 34%", icon: Calendar, color: "bg-emerald-50 text-emerald-600 hover:bg-emerald-100", href: "/instructor/live-classes" },
-              { label: "Export monthly report", desc: "Share with stakeholders", icon: Download, color: "bg-purple-50 text-purple-600 hover:bg-purple-100", href: "#" },
-            ].map((action) => (
-              <button
-                key={action.label}
-                className={`flex items-start gap-3 rounded-xl p-4 text-left transition-all ${action.color}`}
-                onClick={() => {
-                  if (action.href === "#") {
-                    handleExportAll();
-                  } else {
-                    window.location.href = action.href;
-                  }
-                }}
-              >
-                <action.icon className="h-5 w-5 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-semibold">{action.label}</p>
-                  <p className="text-xs opacity-70">{action.desc}</p>
+          {data?.categoryDistribution && data.categoryDistribution.length > 0 ? (
+            <div className="space-y-3">
+              {data.categoryDistribution.map((item) => {
+                const totalCats = data.categoryDistribution.reduce((sum, c) => sum + c.count, 0);
+                const pct = totalCats > 0 ? Math.round((item.count / totalCats) * 100) : 0;
+                const colors = ["bg-indigo-500", "bg-blue-500", "bg-purple-500", "bg-pink-500", "bg-amber-500", "bg-emerald-500", "bg-cyan-500", "bg-rose-500"];
+                const colorIdx = data.categoryDistribution.indexOf(item) % colors.length;
+                return (
+                  <div key={item.category} className="flex items-center gap-3">
+                    <div className={`h-3 w-3 rounded-full ${colors[colorIdx]} shrink-0`} />
+                    <span className="flex-1 text-sm text-gray-700">{item.category}</span>
+                    <span className="text-sm font-semibold text-gray-900">{item.count}</span>
+                    <span className="w-10 text-right text-xs text-gray-500">{pct}%</span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {[
+                { category: "Web Development", students: 1240, color: "bg-indigo-500", pct: 35 },
+                { category: "Data Science", students: 890, color: "bg-blue-500", pct: 25 },
+                { category: "AI & Machine Learning", students: 620, color: "bg-purple-500", pct: 18 },
+                { category: "Design", students: 430, color: "bg-pink-500", pct: 12 },
+                { category: "Business", students: 350, color: "bg-amber-500", pct: 10 },
+              ].map((item) => (
+                <div key={item.category} className="flex items-center gap-3">
+                  <div className={`h-3 w-3 rounded-full ${item.color} shrink-0`} />
+                  <span className="flex-1 text-sm text-gray-700">{item.category}</span>
+                  <span className="text-sm font-semibold text-gray-900">{item.students.toLocaleString()}</span>
+                  <span className="w-10 text-right text-xs text-gray-500">{item.pct}%</span>
                 </div>
-              </button>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
+          {data?.categoryDistribution && data.categoryDistribution.length > 0 && (
+            <div className="mt-4 flex h-4 overflow-hidden rounded-full">
+              {data.categoryDistribution.map((item, i) => {
+                const totalCats = data.categoryDistribution.reduce((sum, c) => sum + c.count, 0);
+                const pct = totalCats > 0 ? (item.count / totalCats) * 100 : 0;
+                const colors = ["bg-indigo-500", "bg-blue-500", "bg-purple-500", "bg-pink-500", "bg-amber-500", "bg-emerald-500", "bg-cyan-500", "bg-rose-500"];
+                return (
+                  <div key={i} className={`${colors[i % colors.length]} transition-all duration-700`} style={{ width: `${pct}%` }} />
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

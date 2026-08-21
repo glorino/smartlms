@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { sendEmail, enrollmentConfirmation } from "@/lib/email";
 
 export async function GET(request: Request) {
   try {
@@ -146,6 +147,26 @@ export async function POST(request: Request) {
 
       return newEnrollment;
     });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, email: true },
+    });
+
+    if (user?.email) {
+      const courseForEmail = await prisma.course.findUnique({
+        where: { id: courseId },
+        select: { title: true, slug: true, category: true, level: true },
+      });
+
+      if (courseForEmail) {
+        sendEmail({
+          to: user.email,
+          subject: `Enrolled in ${courseForEmail.title}`,
+          html: enrollmentConfirmation(user, courseForEmail),
+        }).catch(() => {});
+      }
+    }
 
     return NextResponse.json({ enrollment }, { status: 201 });
   } catch (error) {

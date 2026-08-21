@@ -90,7 +90,8 @@ model User {
    messagesSent         Message[]            @relation("SentMessages")
    messagesReceived     Message[]            @relation("ReceivedMessages")
    lessonProgress       LessonProgress[]
-   bookmarks            Bookmark[]
+    bookmarks            Bookmark[]
+    announcements        Announcement[]
 
   @@index([email])
   @@index([role])
@@ -137,7 +138,8 @@ model Course {
   purchases       Purchase[]
   assignments     Assignment[]
   grades          Grade[]
-  notes           Note[]
+   notes           Note[]
+   announcements   Announcement[]
 
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
@@ -616,6 +618,22 @@ model AnalyticsEvent {
 
   @@index([event])
   @@index([createdAt])
+}
+
+model Announcement {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  courseId     String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([courseId])
+  @@index([authorId])
 }
 
 model SiteSettings {
