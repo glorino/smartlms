@@ -21,6 +21,8 @@ import {
   Menu,
   ArrowLeft,
   ClipboardCheck,
+  Award,
+  RotateCcw,
 } from "lucide-react";
 import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,8 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
+import QuizEngine from "@/components/quiz/quiz-engine";
+import type { Quiz as AppQuiz, Question as AppQuestion } from "@/types";
 
 interface LessonData {
   id: string;
@@ -109,6 +113,12 @@ export default function CourseLearnPage() {
   const [questions, setQuestions] = useState<QAItem[]>([]);
   const [newQuestion, setNewQuestion] = useState("");
   const [passedQuizzes, setPassedQuizzes] = useState<Set<string>>(new Set());
+  const [showInlineQuiz, setShowInlineQuiz] = useState(false);
+  const [inlineQuiz, setInlineQuiz] = useState<any>(null);
+  const [inlineQuizScreen, setInlineQuizScreen] = useState<"info" | "quiz" | "results">("info");
+  const [inlineQuizResult, setInlineQuizResult] = useState<{ score: number; totalPoints: number; passed: boolean; correctCount: number; incorrectCount: number; answers: Record<string, string> } | null>(null);
+  const [inlineQuizAttemptCount, setInlineQuizAttemptCount] = useState(0);
+  const [inlineQuizPreviousAttempts, setInlineQuizPreviousAttempts] = useState<{ score: number; passed: boolean; completedAt: string }[]>([]);
 
   useEffect(() => {
     async function loadCourse() {
@@ -234,6 +244,82 @@ export default function CourseLearnPage() {
   const handleQuizComplete = (lessonId: string, passed: boolean) => {
     if (passed) {
       setPassedQuizzes((prev) => new Set(prev).add(lessonId));
+    }
+  };
+
+  const openInlineQuiz = async (quizId: string) => {
+    try {
+      const res = await fetch(`/api/quizzes/${quizId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setInlineQuiz(data.quiz);
+        setInlineQuizAttemptCount(data.attemptCount || 0);
+        setInlineQuizPreviousAttempts(data.previousAttempts || []);
+        setShowInlineQuiz(true);
+        setInlineQuizScreen("info");
+        setInlineQuizResult(null);
+      }
+    } catch (err) {
+      console.error("Failed to load quiz", err);
+    }
+  };
+
+  const handleInlineQuizSubmit = async (
+    quizAnswers: Record<string, string | string[] | Record<string, string>>,
+    attemptNumber: number
+  ) => {
+    if (!inlineQuiz) return;
+
+    let correctCount = 0;
+    let incorrectCount = 0;
+    let totalPoints = 0;
+    let score = 0;
+
+    inlineQuiz.questions.forEach((q: any) => {
+      totalPoints += q.points;
+      const selectedAnswerId = quizAnswers[q.id] as string;
+      const correctAnswer = q.answers.find((a: any) => a.isCorrect);
+      if (selectedAnswerId && correctAnswer && selectedAnswerId === correctAnswer.id) {
+        correctCount++;
+        score += q.points;
+      } else {
+        incorrectCount++;
+      }
+    });
+
+    const passed = totalPoints > 0 ? (score / totalPoints) * 100 >= inlineQuiz.passingScore : false;
+
+    setInlineQuizResult({
+      score,
+      totalPoints,
+      passed,
+      correctCount,
+      incorrectCount,
+      answers: quizAnswers as Record<string, string>,
+    });
+    setInlineQuizScreen("results");
+    setInlineQuizAttemptCount((prev) => prev + 1);
+    setInlineQuizPreviousAttempts((prev) => [
+      ...prev,
+      { score, passed, completedAt: new Date().toISOString() },
+    ]);
+
+    try {
+      await fetch(`/api/quizzes/${inlineQuiz.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          answers: quizAnswers,
+          timeTaken: null,
+          attemptNumber,
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to save attempt", err);
+    }
+
+    if (passed && currentLesson) {
+      handleQuizComplete(currentLesson.id, true);
     }
   };
 
@@ -550,15 +636,14 @@ export default function CourseLearnPage() {
               </Button>
               <div className="flex items-center gap-3">
                 {currentQuiz && !hasPassedCurrentQuiz && (
-                  <a href={`/quiz/${currentQuiz.id}`} target="_blank" rel="noopener noreferrer">
-                    <Button
-                      variant="outline"
-                      className="border-amber-600 bg-amber-900/30 text-amber-300 hover:bg-amber-900/50 hover:text-amber-200"
-                    >
-                      <ClipboardCheck className="mr-2 h-4 w-4" />
-                      Take Quiz ({Math.round(currentQuiz.passingScore)}% to pass)
-                    </Button>
-                  </a>
+                  <Button
+                    variant="outline"
+                    onClick={() => openInlineQuiz(currentQuiz.id)}
+                    className="border-amber-600 bg-amber-900/30 text-amber-300 hover:bg-amber-900/50 hover:text-amber-200"
+                  >
+                    <ClipboardCheck className="mr-2 h-4 w-4" />
+                    Take Quiz ({Math.round(currentQuiz.passingScore)}% to pass)
+                  </Button>
                 )}
                 {currentQuiz && hasPassedCurrentQuiz && (
                   <span className="flex items-center gap-1.5 text-sm text-green-400">
@@ -700,6 +785,177 @@ export default function CourseLearnPage() {
           Q&A
         </button>
       </div>
+
+      {/* Inline Quiz Overlay */}
+      {showInlineQuiz && inlineQuiz && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+          <div className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+            <button
+              onClick={() => {
+                setShowInlineQuiz(false);
+                setInlineQuiz(null);
+              }}
+              className="absolute right-4 top-4 z-10 rounded-full bg-gray-100 p-2 text-gray-600 hover:bg-gray-200"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {inlineQuizScreen === "info" && (
+              <div className="p-8">
+                <div className="mb-6 text-center">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-100">
+                    <ClipboardCheck className="h-8 w-8 text-indigo-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">{inlineQuiz.title}</h2>
+                  {inlineQuiz.description && (
+                    <p className="mt-2 text-gray-500">{inlineQuiz.description}</p>
+                  )}
+                </div>
+
+                <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div className="rounded-xl bg-gray-50 p-4 text-center">
+                    <p className="text-2xl font-bold text-gray-900">{inlineQuiz.questions.length}</p>
+                    <p className="text-sm text-gray-500">Questions</p>
+                  </div>
+                  <div className="rounded-xl bg-gray-50 p-4 text-center">
+                    <p className="text-2xl font-bold text-gray-900">{inlineQuiz.timeLimit ? `${inlineQuiz.timeLimit}m` : "None"}</p>
+                    <p className="text-sm text-gray-500">Time Limit</p>
+                  </div>
+                  <div className="rounded-xl bg-gray-50 p-4 text-center">
+                    <p className="text-2xl font-bold text-gray-900">{inlineQuiz.passingScore}%</p>
+                    <p className="text-sm text-gray-500">Passing Score</p>
+                  </div>
+                  <div className="rounded-xl bg-gray-50 p-4 text-center">
+                    <p className="text-2xl font-bold text-gray-900">{inlineQuizAttemptCount}</p>
+                    <p className="text-sm text-gray-500">Attempts Used</p>
+                  </div>
+                </div>
+
+                {inlineQuizPreviousAttempts.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="mb-3 text-sm font-semibold text-gray-700">Previous Attempts</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {inlineQuizPreviousAttempts.map((attempt, i) => (
+                        <span
+                          key={i}
+                          className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${
+                            attempt.passed ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          #{i + 1}: {Math.round(attempt.score)}% — {attempt.passed ? "Passed" : "Failed"}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                  <h4 className="font-medium text-amber-800">Instructions</h4>
+                  <ul className="mt-2 space-y-1 text-sm text-amber-700">
+                    <li>• Read each question carefully before answering</li>
+                    <li>• You can navigate between questions freely</li>
+                    <li>• You need {inlineQuiz.passingScore}% to pass</li>
+                  </ul>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowInlineQuiz(false);
+                      setInlineQuiz(null);
+                    }}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => setInlineQuizScreen("quiz")}
+                    className="flex-1"
+                  >
+                    Start Quiz
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {inlineQuizScreen === "quiz" && (
+              <div className="p-4">
+                <QuizEngine
+                  quiz={inlineQuiz}
+                  maxAttempts={inlineQuiz.maxAttempts}
+                  currentAttempt={inlineQuizAttemptCount + 1}
+                  previousAttempts={inlineQuizPreviousAttempts}
+                  onSubmit={handleInlineQuizSubmit}
+                />
+              </div>
+            )}
+
+            {inlineQuizScreen === "results" && inlineQuizResult && (
+              <div className="p-8 text-center">
+                <div
+                  className={`mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full ${
+                    inlineQuizResult.passed ? "bg-green-100" : "bg-red-100"
+                  }`}
+                >
+                  {inlineQuizResult.passed ? (
+                    <Award className="h-10 w-10 text-green-600" />
+                  ) : (
+                    <RotateCcw className="h-10 w-10 text-red-600" />
+                  )}
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {inlineQuizResult.passed ? "Congratulations!" : "Keep Practicing!"}
+                </h2>
+                <p className="mt-2 text-gray-600">
+                  {inlineQuizResult.passed ? "You passed the quiz!" : "You didn't pass this time, but don't give up!"}
+                </p>
+                <div className="mt-6 grid grid-cols-3 gap-4">
+                  <div className="rounded-xl bg-gray-50 p-4">
+                    <p className="text-3xl font-bold text-gray-900">
+                      {inlineQuizResult.totalPoints > 0 ? Math.round((inlineQuizResult.score / inlineQuizResult.totalPoints) * 100) : 0}%
+                    </p>
+                    <p className="text-sm text-gray-500">Your Score</p>
+                  </div>
+                  <div className="rounded-xl bg-green-50 p-4">
+                    <p className="text-3xl font-bold text-green-600">{inlineQuizResult.correctCount}</p>
+                    <p className="text-sm text-gray-500">Correct</p>
+                  </div>
+                  <div className="rounded-xl bg-red-50 p-4">
+                    <p className="text-3xl font-bold text-red-600">{inlineQuizResult.incorrectCount}</p>
+                    <p className="text-sm text-gray-500">Incorrect</p>
+                  </div>
+                </div>
+                <p className="mt-4 text-sm text-gray-500">Passing score: {inlineQuiz.passingScore}%</p>
+                <div className="mt-8 flex gap-3">
+                  {!inlineQuizResult.passed && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setInlineQuizScreen("info");
+                        setInlineQuizResult(null);
+                      }}
+                      className="flex-1"
+                    >
+                      <RotateCcw className="mr-2 h-4 w-4" />
+                      Retry
+                    </Button>
+                  )}
+                  <Button
+                    onClick={() => {
+                      setShowInlineQuiz(false);
+                      setInlineQuiz(null);
+                    }}
+                    className="flex-1"
+                  >
+                    {inlineQuizResult.passed ? "Continue to Next Lesson" : "Close"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
