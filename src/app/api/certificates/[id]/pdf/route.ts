@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { jsPDF } from "jspdf";
 
 export async function GET(
   request: Request,
@@ -13,17 +14,17 @@ export async function GET(
     const certificate = await prisma.certificate.findUnique({
       where: { certificateId: id },
       include: {
-        course: { select: { title: true } },
+        course: { select: { title: true, instructor: { select: { name: true } } } },
         user: { select: { id: true, name: true, email: true } },
       },
     });
 
     if (!certificate) {
-      return NextResponse.redirect(new URL("/dashboard/certificates", request.url));
+      return NextResponse.json({ error: "Certificate not found" }, { status: 404 });
     }
 
     if (session?.user?.id !== certificate.user.id) {
-      return NextResponse.redirect(new URL("/dashboard/certificates", request.url));
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
     const issuedDate = certificate.issuedAt.toLocaleDateString("en-US", {
@@ -32,89 +33,130 @@ export async function GET(
       day: "numeric",
     });
 
-    const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Certificate - ${certificate.title}</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f3f4f6; font-family: 'Inter', sans-serif; }
-    .certificate {
-      width: 800px; height: 560px; background: white; position: relative;
-      border: 3px solid #6366f1; border-radius: 12px; overflow: hidden;
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-    }
-    .corner { position: absolute; width: 80px; height: 80px; }
-    .corner-tl { top: 0; left: 0; border-top: 4px solid #6366f1; border-left: 4px solid #6366f1; border-radius: 12px 0 0 0; }
-    .corner-tr { top: 0; right: 0; border-top: 4px solid #6366f1; border-right: 4px solid #6366f1; border-radius: 0 12px 0 0; }
-    .corner-bl { bottom: 0; left: 0; border-bottom: 4px solid #6366f1; border-left: 4px solid #6366f1; border-radius: 0 0 0 12px; }
-    .corner-br { bottom: 0; right: 0; border-bottom: 4px solid #6366f1; border-right: 4px solid #6366f1; border-radius: 0 0 12px 0; }
-    .content { text-align: center; padding: 50px 60px; position: relative; z-index: 1; }
-    .logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
-    .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
-    .logo-text { font-size: 22px; font-weight: 700; color: #1f2937; }
-    .subtitle { font-size: 11px; text-transform: uppercase; letter-spacing: 4px; color: #6366f1; margin-bottom: 20px; }
-    .heading { font-family: 'Playfair Display', serif; font-size: 28px; color: #1f2937; margin-bottom: 15px; }
-    .description { font-size: 13px; color: #6b7280; margin-bottom: 5px; }
-    .name { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: #1f2937; margin: 10px 0; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb; display: inline-block; }
-    .course-text { font-size: 14px; color: #6b7280; margin-top: 10px; }
-    .course-title { font-size: 18px; font-weight: 600; color: #6366f1; margin-top: 5px; }
-    .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
-    .footer-col { text-align: center; }
-    .footer-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #9ca3af; }
-    .footer-value { font-size: 13px; color: #374151; margin-top: 3px; font-weight: 500; }
-    .verify-id { font-size: 10px; color: #9ca3af; margin-top: 15px; }
-    .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 100px; font-weight: 700; color: rgba(99,102,241,0.03); pointer-events: none; z-index: 0; white-space: nowrap; }
-    @media print { body { background: white; } .certificate { box-shadow: none; border: 2px solid #6366f1; } }
-  </style>
-</head>
-<body>
-  <div class="certificate">
-    <div class="corner corner-tl"></div>
-    <div class="corner corner-tr"></div>
-    <div class="corner corner-bl"></div>
-    <div class="corner corner-br"></div>
-    <div class="watermark">CERTIFICATE</div>
-    <div class="content">
-      <div class="logo">
-        <div class="logo-icon">🎓</div>
-        <div class="logo-text">SmartLMS</div>
-      </div>
-      <div class="subtitle">Certificate of Completion</div>
-      <div class="heading">This is to certify that</div>
-      <div class="name">${certificate.user.name}</div>
-      <div class="description">has successfully completed the course</div>
-      <div class="course-title">${certificate.course.title}</div>
-      <div class="footer">
-        <div class="footer-col">
-          <div class="footer-label">Date Issued</div>
-          <div class="footer-value">${issuedDate}</div>
-        </div>
-        <div class="footer-col">
-          <div class="footer-label">Certificate ID</div>
-          <div class="footer-value">${certificate.certificateId}</div>
-        </div>
-        <div class="footer-col">
-          <div class="footer-label">Status</div>
-          <div class="footer-value">${certificate.status}</div>
-        </div>
-      </div>
-      <div class="verify-id">Verify at: smartlms-bay.vercel.app/verify-certificate?id=${certificate.certificateId}</div>
-    </div>
-  </div>
-  <script>window.onload = function() { window.print(); }</script>
-</body>
-</html>`;
+    const instructorName = certificate.course.instructor?.name || "SmartLMS Team";
 
-    return new NextResponse(html, {
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const w = doc.internal.pageSize.getWidth();
+    const h = doc.internal.pageSize.getHeight();
+
+    doc.setFillColor(255, 254, 247);
+    doc.rect(0, 0, w, h, "F");
+
+    doc.setDrawColor(99, 102, 241);
+    doc.setLineWidth(1.5);
+    doc.roundedRect(8, 8, w - 16, h - 16, 4, 4, "S");
+
+    doc.setDrawColor(165, 180, 252);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(12, 12, w - 24, h - 24, 3, 3, "S");
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(99, 102, 241);
+    doc.text("CERTIFICATE OF COMPLETION", w / 2, 28, { align: "center" });
+
+    doc.setFontSize(14);
+    doc.setTextColor(31, 41, 55);
+    doc.text("SmartLMS", w / 2, 36, { align: "center" });
+
+    doc.setDrawColor(209, 213, 219);
+    doc.setLineWidth(0.3);
+    doc.line(w / 2 - 30, 40, w / 2 + 30, 40);
+
+    doc.setFontSize(13);
+    doc.setTextColor(107, 114, 128);
+    doc.text("This is to certify that", w / 2, 52, { align: "center" });
+
+    doc.setFontSize(26);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(31, 41, 55);
+    doc.text(certificate.user.name || "Student", w / 2, 66, { align: "center" });
+
+    doc.setDrawColor(209, 213, 219);
+    doc.setLineWidth(0.3);
+    doc.line(w / 2 - 40, 70, w / 2 + 40, 70);
+
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(107, 114, 128);
+    doc.text("has successfully completed the course", w / 2, 80, { align: "center" });
+
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(99, 102, 241);
+    doc.text(certificate.course.title, w / 2, 92, { align: "center" });
+
+    doc.setDrawColor(209, 213, 219);
+    doc.setLineWidth(0.3);
+    doc.line(30, 102, w - 30, 102);
+
+    const col1 = w * 0.25;
+    const col2 = w * 0.5;
+    const col3 = w * 0.75;
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(156, 163, 175);
+    doc.text("INSTRUCTOR", col1, 110, { align: "center" });
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(55, 65, 81);
+    doc.text(instructorName, col1, 116, { align: "center" });
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(156, 163, 175);
+    doc.text("DATE ISSUED", col2, 110, { align: "center" });
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(55, 65, 81);
+    doc.text(issuedDate, col2, 116, { align: "center" });
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(156, 163, 175);
+    doc.text("CERTIFICATE ID", col3, 110, { align: "center" });
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(55, 65, 81);
+    doc.text(certificate.certificateId, col3, 116, { align: "center" });
+
+    doc.setDrawColor(209, 213, 219);
+    doc.setLineWidth(0.3);
+    doc.line(col1 - 25, 120, col1 + 25, 120);
+    doc.line(col2 - 25, 120, col2 + 25, 120);
+    doc.line(col3 - 25, 120, col3 + 25, 120);
+
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(156, 163, 175);
+    doc.text("INSTRUCTOR SIGNATURE", col1, 124, { align: "center" });
+    doc.text("DATE", col2, 124, { align: "center" });
+    doc.text("VERIFICATION ID", col3, 124, { align: "center" });
+
+    doc.setFontSize(7);
+    doc.setTextColor(156, 163, 175);
+    doc.text("Verify at: smartlms-bay.vercel.app/verify-certificate?id=" + certificate.certificateId, w / 2, h - 14, { align: "center" });
+
+    doc.setFontSize(7);
+    doc.setTextColor(156, 163, 175);
+    doc.text("This certificate was issued by SmartLMS Platform", w / 2, h - 10, { align: "center" });
+
+    const pdfBuffer = Buffer.from(doc.output("arraybuffer"));
+
+    return new NextResponse(pdfBuffer, {
       headers: {
-        "Content-Type": "text/html; charset=utf-8",
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="SmartLMS-Certificate-${certificate.certificateId}.pdf"`,
+        "Cache-Control": "no-cache",
       },
     });
   } catch {
-    return NextResponse.redirect(new URL("/dashboard/certificates", request.url));
+    return NextResponse.json({ error: "Failed to generate PDF" }, { status: 500 });
   }
 }

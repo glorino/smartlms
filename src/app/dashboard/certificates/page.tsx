@@ -22,6 +22,28 @@ export default function MyCertificatesPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  const handleDownloadPDF = async (cert: Certificate) => {
+    setDownloadingId(cert.id);
+    try {
+      const res = await fetch(`/api/certificates/${cert.certificateId}/pdf`);
+      if (!res.ok) throw new Error("Download failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `SmartLMS-Certificate-${cert.certificateId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("Failed to download PDF. Please try again.");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   useEffect(() => {
     async function loadCertificates() {
@@ -173,10 +195,11 @@ export default function MyCertificatesPage() {
                       variant="outline"
                       size="sm"
                       className="flex-1"
-                      onClick={() => window.open(`/api/certificates/${cert.id}/pdf`, "_blank")}
+                      disabled={downloadingId === cert.id}
+                      onClick={() => handleDownloadPDF(cert)}
                     >
                       <Download className="mr-1.5 h-3.5 w-3.5" />
-                      PDF
+                      {downloadingId === cert.id ? "Downloading..." : "PDF"}
                     </Button>
                     <Button
                       variant="outline"
