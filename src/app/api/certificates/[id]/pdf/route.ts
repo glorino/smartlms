@@ -12,15 +12,19 @@ export async function GET(
     const { id } = await context.params;
     const session = await auth();
 
+    const courseSelect = {
+      title: true,
+      description: true,
+      level: true,
+      tags: true,
+      duration: true,
+      instructor: { select: { name: true, image: true } },
+    };
+
     let certificate = await prisma.certificate.findUnique({
       where: { certificateId: id },
       include: {
-        course: {
-          select: {
-            title: true,
-            instructor: { select: { name: true } },
-          },
-        },
+        course: { select: courseSelect },
         user: { select: { id: true, name: true, email: true } },
       },
     });
@@ -29,12 +33,7 @@ export async function GET(
       certificate = await prisma.certificate.findUnique({
         where: { id },
         include: {
-          course: {
-            select: {
-              title: true,
-              instructor: { select: { name: true } },
-            },
-          },
+          course: { select: courseSelect },
           user: { select: { id: true, name: true, email: true } },
         },
       });
@@ -59,14 +58,23 @@ export async function GET(
 
     const instructorName =
       certificate.course.instructor?.name || "SmartLMS Team";
-    const verifyUrl = `https://smartlms-bay.vercel.app/verify-certificate?id=${certificate.certificateId}`;
+    const certPageUrl = `https://smartlms-bay.vercel.app/certificate/${certificate.certificateId}`;
 
-    const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
+    const qrDataUrl = await QRCode.toDataURL(certPageUrl, {
       width: 200,
       margin: 1,
       color: { dark: "#1a1a2e", light: "#ffffff" },
       errorCorrectionLevel: "M",
     });
+
+    const courseDesc = certificate.course.description
+      ? certificate.course.description.replace(/<[^>]*>/g, "").slice(0, 160)
+      : "";
+    const courseLevel = certificate.course.level || "All Levels";
+    const courseTags = certificate.course.tags || [];
+    const durationHours = certificate.course.duration
+      ? Math.round(certificate.course.duration / 60)
+      : null;
 
     const doc = new jsPDF({
       orientation: "landscape",
@@ -147,11 +155,33 @@ export async function GET(
     doc.setTextColor(140, 115, 50);
     doc.text(certificate.course.title, cx, 85, { align: "center" });
 
+    let detailY = 92;
+    const detailParts: string[] = [];
+    detailParts.push(`Level: ${courseLevel}`);
+    if (durationHours) detailParts.push(`Duration: ${durationHours} hours`);
+    if (courseTags.length > 0)
+      detailParts.push(`Skills: ${courseTags.slice(0, 5).join(" | ")}`);
+
+    doc.setFont("times", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(130, 120, 100);
+    doc.text(detailParts.join("   |   "), cx, detailY, { align: "center" });
+    detailY += 5;
+
+    if (courseDesc) {
+      doc.setFont("times", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(140, 130, 110);
+      const descLines = doc.splitTextToSize(courseDesc, pw - 100);
+      doc.text(descLines.slice(0, 2), cx, detailY, { align: "center" });
+      detailY += descLines.length > 1 ? 10 : 6;
+    }
+
     doc.setDrawColor(210, 195, 150);
     doc.setLineWidth(0.2);
-    doc.line(35, 93, pw - 35, 93);
+    doc.line(35, detailY, pw - 35, detailY);
 
-    const sigY = 103;
+    const sigY = detailY + 10;
     const drawSig = (x: number, label: string, value: string) => {
       doc.setFont("times", "normal");
       doc.setFontSize(9);
@@ -178,7 +208,7 @@ export async function GET(
     doc.setFont("times", "normal");
     doc.setFontSize(5.5);
     doc.setTextColor(140, 130, 110);
-    doc.text("Scan to verify", qrX + 12, qrY + 27, { align: "center" });
+    doc.text("Scan to view certificate", qrX + 12, qrY + 27, { align: "center" });
 
     doc.setFont("times", "bold");
     doc.setFontSize(6.5);
@@ -189,7 +219,7 @@ export async function GET(
     doc.setFontSize(5.5);
     doc.setTextColor(160, 150, 130);
     doc.text(
-      "Verify at: smartlms-bay.vercel.app/verify-certificate?id=" +
+      "View certificate at: smartlms-bay.vercel.app/certificate/" +
         certificate.certificateId,
       35,
       ph - 15
