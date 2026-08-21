@@ -1287,7 +1287,7 @@ export const lessonQuizzes: Record<string, {
   title: "Semantic HTML Elements Quiz",
   description: "Test your knowledge of HTML5 semantic elements.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Which element wraps main navigation?", type: "SINGLE_CHOICE", points: 10, explanation: "nav is for navigation blocks.", difficulty: "easy", answers: [{ content: "<header>", isCorrect: false, points: 0 }, { content: "<nav>", isCorrect: true, points: 10 }, { content: "<section>", isCorrect: false, points: 0 }, { content: "<div>", isCorrect: false, points: 0 }] },
     { content: "How many <main> elements per page?", type: "SINGLE_CHOICE", points: 10, explanation: "Exactly one main element.", difficulty: "easy", answers: [{ content: "As many as needed", isCorrect: false, points: 0 }, { content: "Exactly one", isCorrect: true, points: 10 }, { content: "Exactly two", isCorrect: false, points: 0 }, { content: "None", isCorrect: false, points: 0 }] },
@@ -1301,7 +1301,7 @@ export const lessonQuizzes: Record<string, {
   title: "ES6+ Features Quiz",
   description: "Test your understanding of modern JavaScript features.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Key difference between arrow and regular functions regarding 'this'?", type: "SINGLE_CHOICE", points: 10, explanation: "Arrow functions lexically bind this.", difficulty: "medium", answers: [{ content: "Arrow has own this", isCorrect: false, points: 0 }, { content: "Arrow inherits this from enclosing scope", isCorrect: true, points: 10 }, { content: "No difference", isCorrect: false, points: 0 }, { content: "Arrow uses global this", isCorrect: false, points: 0 }] },
     { content: "Which syntax creates a template literal?", type: "SINGLE_CHOICE", points: 10, explanation: "Backticks with interpolation.", difficulty: "easy", answers: [{ content: "Single quotes", isCorrect: false, points: 0 }, { content: "Double quotes", isCorrect: false, points: 0 }, { content: "Backticks", isCorrect: true, points: 10 }, { content: "Parentheses", isCorrect: false, points: 0 }] },
@@ -1315,7 +1315,7 @@ export const lessonQuizzes: Record<string, {
   title: "State & Props Quiz",
   description: "Test your understanding of React state and props.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Which statement about props is correct?", type: "SINGLE_CHOICE", points: 10, explanation: "Props are read-only from parent to child.", difficulty: "easy", answers: [{ content: "Props can be modified by children", isCorrect: false, points: 0 }, { content: "Props flow child to parent", isCorrect: false, points: 0 }, { content: "Props are read-only from parent to child", isCorrect: true, points: 10 }, { content: "Props only work with classes", isCorrect: false, points: 0 }] },
     { content: "Why must state updates be immutable?", type: "SINGLE_CHOICE", points: 10, explanation: "React detects changes by reference comparison.", difficulty: "medium", answers: [{ content: "Performance only", isCorrect: false, points: 0 }, { content: "React detects by reference comparison", isCorrect: true, points: 10 }, { content: "Style preference", isCorrect: false, points: 0 }, { content: "JavaScript requirement", isCorrect: false, points: 0 }] },
@@ -1329,7 +1329,7 @@ export const lessonQuizzes: Record<string, {
   title: "RESTful API Design Quiz",
   description: "Evaluate your knowledge of REST API design.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Which status code for successful creation?", type: "SINGLE_CHOICE", points: 10, explanation: "201 Created on POST.", difficulty: "easy", answers: [{ content: "200 OK", isCorrect: false, points: 0 }, { content: "201 Created", isCorrect: true, points: 10 }, { content: "204 No Content", isCorrect: false, points: 0 }, { content: "301 Redirect", isCorrect: false, points: 0 }] },
     { content: "REST APIs should use plural nouns.", type: "TRUE_FALSE", points: 10, explanation: "Convention uses /users, /products.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1343,7 +1343,7 @@ export const lessonQuizzes: Record<string, {
   title: "Linear Algebra Quiz",
   description: "Test your understanding of linear algebra in ML.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Dot product of [1,2,3] and [4,5,6]?", type: "SINGLE_CHOICE", points: 10, explanation: "1*4+2*5+3*6=32.", difficulty: "easy", answers: [{ content: "32", isCorrect: true, points: 10 }, { content: "[4,10,18]", isCorrect: false, points: 0 }, { content: "15", isCorrect: false, points: 0 }, { content: "21", isCorrect: false, points: 0 }] },
     { content: "PCA stands for Principal Component Analysis.", type: "TRUE_FALSE", points: 10, explanation: "Reduces dimensionality via variance.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1357,12 +1357,12 @@ export const lessonQuizzes: Record<string, {
   title: "Decision Trees Quiz",
   description: "Assess your knowledge of tree-based algorithms.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Splitting criterion for classification?", type: "SINGLE_CHOICE", points: 10, explanation: "Gini or information gain.", difficulty: "easy", answers: [{ content: "MSE", isCorrect: false, points: 0 }, { content: "Gini/Information Gain", isCorrect: true, points: 10 }, { content: "R-squared", isCorrect: false, points: 0 }, { content: "Cosine", isCorrect: false, points: 0 }] },
     { content: "Random forests reduce overfitting by?", type: "SINGLE_CHOICE", points: 10, explanation: "Averaging many trees on random subsets.", difficulty: "medium", answers: [{ content: "Deeper trees", isCorrect: false, points: 0 }, { content: "Averaging trees on random subsets", isCorrect: true, points: 10 }, { content: "One deep tree", isCorrect: false, points: 0 }, { content: "Removing features", isCorrect: false, points: 0 }] },
     { content: "Random forests are more interpretable than single trees.", type: "TRUE_FALSE", points: 10, explanation: "Single trees are easier to interpret.", difficulty: "medium", answers: [{ content: "True", isCorrect: false, points: 0 }, { content: "False", isCorrect: true, points: 10 }] },
-    { content: "What does feature_importances_ measure?", type: "SINGLE_CHOICE", points: 10, explanation: "Contribution to reducing impurity.", difficulty: "medium", answers: [{ content: "Features to remove", isCorrect: false, points: 0 }, { content: "Feature contribution to predictions", isCorrect: true, points: 10 }, { content: "Correlation", isCorrect: false, points: 0 }, { content: "Optimal tree count", isCorrect: false, points: 0 }] },
+    { content: "What does feature_importances_ measure?", type: "SINGLE_CHOICE", points: 10, explanation: "Contribution to reducing impurity.", difficulty: "medium", answers: [{ content: "Features to remove", isCorrect: false, points: 0 }, { content: "Feature contribution to reducing impurity", isCorrect: true, points: 10 }, { content: "Correlation", isCorrect: false, points: 0 }, { content: "Optimal tree count", isCorrect: false, points: 0 }] },
     { content: "Bagging trains on bootstrap samples.", type: "TRUE_FALSE", points: 10, explanation: "Random sampling with replacement.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
   ]
 },
@@ -1371,7 +1371,7 @@ export const lessonQuizzes: Record<string, {
   title: "PCA Quiz",
   description: "Test your understanding of PCA.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "What do before applying PCA?", type: "SINGLE_CHOICE", points: 10, explanation: "Standardize data first.", difficulty: "easy", answers: [{ content: "Normalize [0,1]", isCorrect: false, points: 0 }, { content: "Standardize to zero mean/unit variance", isCorrect: true, points: 10 }, { content: "Remove outliers", isCorrect: false, points: 0 }, { content: "No preprocessing", isCorrect: false, points: 0 }] },
     { content: "Scree plot helps determine?", type: "SINGLE_CHOICE", points: 10, explanation: "How many components to keep.", difficulty: "medium", answers: [{ content: "Best algorithm", isCorrect: false, points: 0 }, { content: "How many components to keep", isCorrect: true, points: 10 }, { content: "Learning rate", isCorrect: false, points: 0 }, { content: "Linear separability", isCorrect: false, points: 0 }] },
@@ -1385,7 +1385,7 @@ export const lessonQuizzes: Record<string, {
   title: "Backpropagation Quiz",
   description: "Evaluate your understanding of neural network training.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Backpropagation relies on?", type: "SINGLE_CHOICE", points: 10, explanation: "Chain rule of calculus.", difficulty: "easy", answers: [{ content: "Pythagorean theorem", isCorrect: false, points: 0 }, { content: "Chain rule", isCorrect: true, points: 10 }, { content: "Bayes theorem", isCorrect: false, points: 0 }, { content: "Fourier transform", isCorrect: false, points: 0 }] },
     { content: "Forward pass produces?", type: "SINGLE_CHOICE", points: 10, explanation: "Input flows to prediction.", difficulty: "easy", answers: [{ content: "Gradients", isCorrect: false, points: 0 }, { content: "Weight updates", isCorrect: false, points: 0 }, { content: "Prediction", isCorrect: true, points: 10 }, { content: "Loss minimization", isCorrect: false, points: 0 }] },
@@ -1399,7 +1399,7 @@ export const lessonQuizzes: Record<string, {
   title: "Keyword Research Quiz",
   description: "Test your knowledge of SEO keyword research.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Which intent means ready to purchase?", type: "SINGLE_CHOICE", points: 10, explanation: "Transactional intent.", difficulty: "easy", answers: [{ content: "Informational", isCorrect: false, points: 0 }, { content: "Navigational", isCorrect: false, points: 0 }, { content: "Commercial", isCorrect: false, points: 0 }, { content: "Transactional", isCorrect: true, points: 10 }] },
     { content: "Long-tail keywords have higher conversion rates.", type: "TRUE_FALSE", points: 10, explanation: "More specific = higher intent.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1413,13 +1413,13 @@ export const lessonQuizzes: Record<string, {
   title: "Content Calendar Quiz",
   description: "Test your understanding of content planning.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Primary benefit of a content calendar?", type: "SINGLE_CHOICE", points: 10, explanation: "Consistent publishing and alignment.", difficulty: "easy", answers: [{ content: "Eliminates creativity", isCorrect: false, points: 0 }, { content: "Consistent publishing and alignment", isCorrect: true, points: 10 }, { content: "Guarantees rankings", isCorrect: false, points: 0 }, { content: "Replaces analytics", isCorrect: false, points: 0 }] },
     { content: "TOFU means Top of Funnel.", type: "TRUE_FALSE", points: 10, explanation: "Focused on awareness.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
     { content: "How far ahead to plan?", type: "SINGLE_CHOICE", points: 10, explanation: "2-4 weeks.", difficulty: "medium", answers: [{ content: "1 day", isCorrect: false, points: 0 }, { content: "2-4 weeks", isCorrect: true, points: 10 }, { content: "6 months", isCorrect: false, points: 0 }, { content: "1 year", isCorrect: false, points: 0 }] },
     { content: "Repurposing content is wasteful.", type: "TRUE_FALSE", points: 10, explanation: "Maximizes content value.", difficulty: "easy", answers: [{ content: "True", isCorrect: false, points: 0 }, { content: "False", isCorrect: true, points: 10 }] },
-    { content: "Educational content percentage?", type: "SINGLE_CHOICE", points: 10, explanation: "40% builds authority.", difficulty: "medium", answers: [{ content: "10%", isCorrect: false, points: 0 }, { content: "40%", isCorrect: true, points: 10 }, { content: "70%", isCorrect: false, points: 0 }, { content: "100%", isCorrect: false, points: 0 }] }
+    { content: "Content marketing follows which ratio?", type: "SINGLE_CHOICE", points: 10, explanation: "80% educational, 20% promotional is the widely accepted rule.", difficulty: "medium", answers: [{ content: "50% educational, 50% promotional", isCorrect: false, points: 0 }, { content: "80% educational, 20% promotional", isCorrect: true, points: 10 }, { content: "30% educational, 70% promotional", isCorrect: false, points: 0 }, { content: "100% educational", isCorrect: false, points: 0 }] }
   ]
 },
 
@@ -1427,7 +1427,7 @@ export const lessonQuizzes: Record<string, {
   title: "Email Campaign Quiz",
   description: "Test your knowledge of email marketing.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Email marketing average ROI?", type: "SINGLE_CHOICE", points: 10, explanation: "$36 per $1 spent.", difficulty: "easy", answers: [{ content: "$5 per $1", isCorrect: false, points: 0 }, { content: "$36 per $1", isCorrect: true, points: 10 }, { content: "$100 per $1", isCorrect: false, points: 0 }, { content: "$10 per $1", isCorrect: false, points: 0 }] },
     { content: "Welcome series emails?", type: "SINGLE_CHOICE", points: 10, explanation: "3-5 emails over 1-2 weeks.", difficulty: "medium", answers: [{ content: "1 email", isCorrect: false, points: 0 }, { content: "3-5 emails", isCorrect: true, points: 10 }, { content: "10-15 emails", isCorrect: false, points: 0 }, { content: "20+ emails", isCorrect: false, points: 0 }] },
@@ -1441,7 +1441,7 @@ export const lessonQuizzes: Record<string, {
   title: "Generators & Itertools Quiz",
   description: "Test your understanding of Python generators.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Keyword for generator functions?", type: "SINGLE_CHOICE", points: 10, explanation: "yield creates generators.", difficulty: "easy", answers: [{ content: "return", isCorrect: false, points: 0 }, { content: "yield", isCorrect: true, points: 10 }, { content: "async", isCorrect: false, points: 0 }, { content: "await", isCorrect: false, points: 0 }] },
     { content: "Generators are single-use.", type: "TRUE_FALSE", points: 10, explanation: "Exhausted after one iteration.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1455,7 +1455,7 @@ export const lessonQuizzes: Record<string, {
   title: "Descriptors Quiz",
   description: "Test your knowledge of Python descriptors.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Which methods define a descriptor?", type: "SINGLE_CHOICE", points: 10, explanation: "__get__, __set__, __delete__.", difficulty: "medium", answers: [{ content: "__init__ and __str__", isCorrect: false, points: 0 }, { content: "__get__, __set__, __delete__", isCorrect: true, points: 10 }, { content: "__getattr__ and __setattr__", isCorrect: false, points: 0 }, { content: "__call__ and __iter__", isCorrect: false, points: 0 }] },
     { content: "Properties are built on descriptors.", type: "TRUE_FALSE", points: 10, explanation: "@property is descriptor syntactic sugar.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1469,7 +1469,7 @@ export const lessonQuizzes: Record<string, {
   title: "Coroutines & Tasks Quiz",
   description: "Test your understanding of async Python.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Keyword for async functions?", type: "SINGLE_CHOICE", points: 10, explanation: "async def defines coroutines.", difficulty: "easy", answers: [{ content: "def", isCorrect: false, points: 0 }, { content: "async def", isCorrect: true, points: 10 }, { content: "coroutine", isCorrect: false, points: 0 }, { content: "yield", isCorrect: false, points: 0 }] },
     { content: "await suspends coroutine and yields to event loop.", type: "TRUE_FALSE", points: 10, explanation: "Yields control while waiting.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1483,7 +1483,7 @@ export const lessonQuizzes: Record<string, {
   title: "Design Patterns Quiz",
   description: "Test your understanding of Observer and Strategy.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Observer pattern solves?", type: "SINGLE_CHOICE", points: 10, explanation: "One-to-many dependencies.", difficulty: "easy", answers: [{ content: "Object creation", isCorrect: false, points: 0 }, { content: "One-to-many notifications", isCorrect: true, points: 10 }, { content: "Algorithm encapsulation", isCorrect: false, points: 0 }, { content: "Dynamic responsibilities", isCorrect: false, points: 0 }] },
     { content: "Strategy allows runtime algorithm changes.", type: "TRUE_FALSE", points: 10, explanation: "Encapsulates interchangeable algorithms.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1497,7 +1497,7 @@ export const lessonQuizzes: Record<string, {
   title: "Visual Hierarchy Quiz",
   description: "Test your knowledge of visual hierarchy.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Which principle makes large elements attention-grabbing?", type: "SINGLE_CHOICE", points: 10, explanation: "Size is primary.", difficulty: "easy", answers: [{ content: "Color", isCorrect: false, points: 0 }, { content: "Size", isCorrect: true, points: 10 }, { content: "Spacing", isCorrect: false, points: 0 }, { content: "Typography", isCorrect: false, points: 0 }] },
     { content: "F-pattern describes text-heavy page scanning.", type: "TRUE_FALSE", points: 10, explanation: "Horizontal then vertical scan.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1511,7 +1511,7 @@ export const lessonQuizzes: Record<string, {
   title: "Low-Fi Wireframing Quiz",
   description: "Test your understanding of wireframing.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Primary focus of low-fi wireframes?", type: "SINGLE_CHOICE", points: 10, explanation: "Layout and user flow.", difficulty: "easy", answers: [{ content: "Visual design", isCorrect: false, points: 0 }, { content: "Layout, content, user flow", isCorrect: true, points: 10 }, { content: "Pixel-perfect", isCorrect: false, points: 0 }, { content: "Animations", isCorrect: false, points: 0 }] },
     { content: "Box with X represents?", type: "SINGLE_CHOICE", points: 10, explanation: "Image placeholder.", difficulty: "easy", answers: [{ content: "Text", isCorrect: false, points: 0 }, { content: "Image placeholder", isCorrect: true, points: 10 }, { content: "Button", isCorrect: false, points: 0 }, { content: "Navigation", isCorrect: false, points: 0 }] },
@@ -1525,7 +1525,7 @@ export const lessonQuizzes: Record<string, {
   title: "Design System Quiz",
   description: "Test your knowledge of design systems.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "What are design tokens?", type: "SINGLE_CHOICE", points: 10, explanation: "Basic visual values.", difficulty: "easy", answers: [{ content: "Code components", isCorrect: false, points: 0 }, { content: "Basic visual values", isCorrect: true, points: 10 }, { content: "Auth tokens", isCorrect: false, points: 0 }, { content: "API tokens", isCorrect: false, points: 0 }] },
     { content: "NOT a core component?", type: "SINGLE_CHOICE", points: 10, explanation: "Server instances are infrastructure.", difficulty: "easy", answers: [{ content: "Buttons", isCorrect: false, points: 0 }, { content: "Forms", isCorrect: false, points: 0 }, { content: "Server instances", isCorrect: true, points: 10 }, { content: "Navigation", isCorrect: false, points: 0 }] },
@@ -1539,7 +1539,7 @@ export const lessonQuizzes: Record<string, {
   title: "Attack Vectors Quiz",
   description: "Test your knowledge of cybersecurity attacks.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Which attack injects malicious SQL?", type: "SINGLE_CHOICE", points: 10, explanation: "SQL injection.", difficulty: "easy", answers: [{ content: "XSS", isCorrect: false, points: 0 }, { content: "SQL Injection", isCorrect: true, points: 10 }, { content: "DDoS", isCorrect: false, points: 0 }, { content: "Phishing", isCorrect: false, points: 0 }] },
     { content: "Best defense against SQL injection?", type: "SINGLE_CHOICE", points: 10, explanation: "Parameterized queries.", difficulty: "medium", answers: [{ content: "Input validation only", isCorrect: false, points: 0 }, { content: "Parameterized queries", isCorrect: true, points: 10 }, { content: "Longer passwords", isCorrect: false, points: 0 }, { content: "Encrypt DB", isCorrect: false, points: 0 }] },
@@ -1553,7 +1553,7 @@ export const lessonQuizzes: Record<string, {
   title: "VPNs & Encryption Quiz",
   description: "Test your understanding of VPN protocols.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Modern VPN protocol?", type: "SINGLE_CHOICE", points: 10, explanation: "WireGuard.", difficulty: "easy", answers: [{ content: "PPTP", isCorrect: false, points: 0 }, { content: "L2TP/IPSec", isCorrect: false, points: 0 }, { content: "WireGuard", isCorrect: true, points: 10 }, { content: "WEP", isCorrect: false, points: 0 }] },
     { content: "AES-256 is symmetric encryption.", type: "TRUE_FALSE", points: 10, explanation: "Standard for VPN tunnels.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1567,7 +1567,7 @@ export const lessonQuizzes: Record<string, {
   title: "Hashing Quiz",
   description: "Test your knowledge of hashing and signatures.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Good hash function property?", type: "SINGLE_CHOICE", points: 10, explanation: "Deterministic, uniform, few collisions.", difficulty: "easy", answers: [{ content: "Reversible", isCorrect: false, points: 0 }, { content: "Deterministic with uniform output", isCorrect: true, points: 10 }, { content: "Same output different inputs", isCorrect: false, points: 0 }, { content: "Slow", isCorrect: false, points: 0 }] },
     { content: "Password hashing library?", type: "SINGLE_CHOICE", points: 10, explanation: "bcrypt with salting.", difficulty: "easy", answers: [{ content: "hashlib", isCorrect: false, points: 0 }, { content: "bcrypt", isCorrect: true, points: 10 }, { content: "md5", isCorrect: false, points: 0 }, { content: "base64", isCorrect: false, points: 0 }] },
@@ -1581,7 +1581,7 @@ export const lessonQuizzes: Record<string, {
   title: "Nmap Quiz",
   description: "Test your knowledge of Nmap scanning.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Service version detection flag?", type: "SINGLE_CHOICE", points: 10, explanation: "-sV.", difficulty: "easy", answers: [{ content: "-sS", isCorrect: false, points: 0 }, { content: "-sV", isCorrect: true, points: 10 }, { content: "-O", isCorrect: false, points: 0 }, { content: "-A", isCorrect: false, points: 0 }] },
     { content: "Port 22 is SSH.", type: "TRUE_FALSE", points: 10, explanation: "Standard SSH port.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1595,7 +1595,7 @@ export const lessonQuizzes: Record<string, {
   title: "S3 Bucket Quiz",
   description: "Test your knowledge of AWS S3.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Protects against accidental deletion?", type: "SINGLE_CHOICE", points: 10, explanation: "Versioning.", difficulty: "easy", answers: [{ content: "Logging", isCorrect: false, points: 0 }, { content: "Versioning", isCorrect: true, points: 10 }, { content: "Transfer acceleration", isCorrect: false, points: 0 }, { content: "Static hosting", isCorrect: false, points: 0 }] },
     { content: "S3 buckets are private by default.", type: "TRUE_FALSE", points: 10, explanation: "Public access requires explicit config.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1609,7 +1609,7 @@ export const lessonQuizzes: Record<string, {
   title: "RDS & DynamoDB Quiz",
   description: "Test your knowledge of AWS databases.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "RDS is what type of database?", type: "SINGLE_CHOICE", points: 10, explanation: "Managed relational.", difficulty: "easy", answers: [{ content: "NoSQL key-value", isCorrect: false, points: 0 }, { content: "Managed relational", isCorrect: true, points: 10 }, { content: "Document", isCorrect: false, points: 0 }, { content: "Graph", isCorrect: false, points: 0 }] },
     { content: "DynamoDB uses key-value and document model.", type: "TRUE_FALSE", points: 10, explanation: "Supports both models.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1623,7 +1623,7 @@ export const lessonQuizzes: Record<string, {
   title: "CI/CD Quiz",
   description: "Test your understanding of CI/CD pipelines.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "CI stands for?", type: "SINGLE_CHOICE", points: 10, explanation: "Continuous Integration.", difficulty: "easy", answers: [{ content: "Code Integration", isCorrect: false, points: 0 }, { content: "Continuous Integration", isCorrect: true, points: 10 }, { content: "Continuous Improvement", isCorrect: false, points: 0 }, { content: "Central Infrastructure", isCorrect: false, points: 0 }] },
     { content: "CodeBuild compiles and tests code.", type: "TRUE_FALSE", points: 10, explanation: "Produces build artifacts.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1637,7 +1637,7 @@ export const lessonQuizzes: Record<string, {
   title: "Consensus Quiz",
   description: "Test your understanding of blockchain consensus.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Bitcoin uses?", type: "SINGLE_CHOICE", points: 10, explanation: "Proof of Work.", difficulty: "easy", answers: [{ content: "Proof of Stake", isCorrect: false, points: 0 }, { content: "Proof of Work", isCorrect: true, points: 10 }, { content: "Delegated PoS", isCorrect: false, points: 0 }, { content: "Proof of Authority", isCorrect: false, points: 0 }] },
     { content: "PoS is more energy efficient than PoW.", type: "TRUE_FALSE", points: 10, explanation: "Validators stake instead of mining.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1651,7 +1651,7 @@ export const lessonQuizzes: Record<string, {
   title: "ERC-20 Quiz",
   description: "Test your knowledge of ERC-20 tokens.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "ERC stands for?", type: "SINGLE_CHOICE", points: 10, explanation: "Ethereum Request for Comments.", difficulty: "easy", answers: [{ content: "Ethereum Resource Contract", isCorrect: false, points: 0 }, { content: "Ethereum Request for Comments", isCorrect: true, points: 10 }, { content: "Ethereum Runtime Code", isCorrect: false, points: 0 }, { content: "Ethereum Registry Standard", isCorrect: false, points: 0 }] },
     { content: "ERC-20 tokens are fungible.", type: "TRUE_FALSE", points: 10, explanation: "Each token is interchangeable.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1665,7 +1665,7 @@ export const lessonQuizzes: Record<string, {
   title: "Yield Farming Quiz",
   description: "Test your understanding of DeFi yield farming.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "x * y = k represents?", type: "SINGLE_CHOICE", points: 10, explanation: "Constant product AMM formula.", difficulty: "medium", answers: [{ content: "Interest calculation", isCorrect: false, points: 0 }, { content: "Constant product formula", isCorrect: true, points: 10 }, { content: "Gas estimation", isCorrect: false, points: 0 }, { content: "Block time", isCorrect: false, points: 0 }] },
     { content: "Impermanent loss occurs with price changes.", type: "TRUE_FALSE", points: 10, explanation: "Difference between pool and hold.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1679,7 +1679,7 @@ export const lessonQuizzes: Record<string, {
   title: "React Native Components Quiz",
   description: "Test your knowledge of React Native components.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Best component for long lists?", type: "SINGLE_CHOICE", points: 10, explanation: "FlatList virtualizes.", difficulty: "easy", answers: [{ content: "ScrollView", isCorrect: false, points: 0 }, { content: "FlatList", isCorrect: true, points: 10 }, { content: "View", isCorrect: false, points: 0 }, { content: "Text", isCorrect: false, points: 0 }] },
     { content: "React Native uses Flexbox by default.", type: "TRUE_FALSE", points: 10, explanation: "Default layout system.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1693,7 +1693,7 @@ export const lessonQuizzes: Record<string, {
   title: "State Management Quiz",
   description: "Test your understanding of Context and Zustand.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "When use Context?", type: "SINGLE_CHOICE", points: 10, explanation: "Simple global state like themes.", difficulty: "easy", answers: [{ content: "Complex logic", isCorrect: false, points: 0 }, { content: "Simple global state", isCorrect: true, points: 10 }, { content: "High-frequency updates", isCorrect: false, points: 0 }, { content: "Server state", isCorrect: false, points: 0 }] },
     { content: "Zustand avoids Context performance issues.", type: "TRUE_FALSE", points: 10, explanation: "Uses selectors.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1707,7 +1707,7 @@ export const lessonQuizzes: Record<string, {
   title: "Camera & Location Quiz",
   description: "Test your knowledge of React Native hardware access.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "When request permissions?", type: "SINGLE_CHOICE", points: 10, explanation: "At runtime.", difficulty: "easy", answers: [{ content: "Build time", isCorrect: false, points: 0 }, { content: "At runtime", isCorrect: true, points: 10 }, { content: "app.json only", isCorrect: false, points: 0 }, { content: "Never", isCorrect: false, points: 0 }] },
     { content: "Camera library?", type: "SINGLE_CHOICE", points: 10, explanation: "expo-camera.", difficulty: "easy", answers: [{ content: "react-native-camera", isCorrect: false, points: 0 }, { content: "expo-camera", isCorrect: true, points: 10 }, { content: "expo-media", isCorrect: false, points: 0 }, { content: "expo-capture", isCorrect: false, points: 0 }] },
@@ -1721,7 +1721,7 @@ export const lessonQuizzes: Record<string, {
   title: "App Store Submission Quiz",
   description: "Test your knowledge of app store submission.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Required app icon size?", type: "SINGLE_CHOICE", points: 10, explanation: "1024x1024 PNG.", difficulty: "easy", answers: [{ content: "512x512", isCorrect: false, points: 0 }, { content: "1024x1024", isCorrect: true, points: 10 }, { content: "2048x2048", isCorrect: false, points: 0 }, { content: "256x256", isCorrect: false, points: 0 }] },
     { content: "Privacy policy is required.", type: "TRUE_FALSE", points: 10, explanation: "Both stores require it.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1735,7 +1735,7 @@ export const lessonQuizzes: Record<string, {
   title: "Pivot Tables Quiz",
   description: "Test your knowledge of pivot tables.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Pivot tables transform raw data into?", type: "SINGLE_CHOICE", points: 10, explanation: "Meaningful summaries.", difficulty: "easy", answers: [{ content: "Raw data", isCorrect: false, points: 0 }, { content: "Meaningful summaries", isCorrect: true, points: 10 }, { content: "Charts only", isCorrect: false, points: 0 }, { content: "SQL queries", isCorrect: false, points: 0 }] },
     { content: "pd.pivot_table is a pandas function.", type: "TRUE_FALSE", points: 10, explanation: "Creates pivot tables in Python.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1749,7 +1749,7 @@ export const lessonQuizzes: Record<string, {
   title: "SQL JOIN Quiz",
   description: "Test your knowledge of SQL JOINs.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "INNER JOIN returns?", type: "SINGLE_CHOICE", points: 10, explanation: "Only matching rows.", difficulty: "easy", answers: [{ content: "All rows from both", isCorrect: false, points: 0 }, { content: "Only matching rows", isCorrect: true, points: 10 }, { content: "All from left only", isCorrect: false, points: 0 }, { content: "All from right only", isCorrect: false, points: 0 }] },
     { content: "LEFT JOIN includes all left table rows.", type: "TRUE_FALSE", points: 10, explanation: "Plus matching right rows.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
@@ -1763,7 +1763,7 @@ export const lessonQuizzes: Record<string, {
   title: "Window Functions Quiz",
   description: "Test your knowledge of SQL window functions.",
   timeLimit: 300,
-  passingScore: 70,
+  passingScore: 60,
   questions: [
     { content: "Window functions collapse rows?", type: "TRUE_FALSE", points: 10, explanation: "No, they preserve rows.", difficulty: "easy", answers: [{ content: "True", isCorrect: false, points: 0 }, { content: "False", isCorrect: true, points: 10 }] },
     { content: "PARTITION BY does?", type: "SINGLE_CHOICE", points: 10, explanation: "Divides data into groups.", difficulty: "easy", answers: [{ content: "Sorts data", isCorrect: false, points: 0 }, { content: "Divides into groups", isCorrect: true, points: 10 }, { content: "Filters rows", isCorrect: false, points: 0 }, { content: "Aggregates data", isCorrect: false, points: 0 }] },

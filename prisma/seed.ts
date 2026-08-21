@@ -1412,7 +1412,8 @@ async function createCourseWithContent(
   });
   console.log(`  Course: ${course.title}`);
 
-  // Delete existing sections and lessons to prevent duplicates on re-seed
+  // Delete existing sections, lessons, and quizzes to prevent duplicates on re-seed
+  await prisma.quiz.deleteMany({ where: { courseId: course.id, lessonId: { not: null } } });
   await prisma.lesson.deleteMany({ where: { courseId: course.id } });
   await prisma.courseSection.deleteMany({ where: { courseId: course.id } });
 
