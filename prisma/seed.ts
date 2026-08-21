@@ -1541,6 +1541,55 @@ async function createCourseWithContent(
   return course;
 }
 
+async function createLiveClasses(instructors: any[], courses: any[]) {
+  const threeDaysFromNow = new Date();
+  threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+  threeDaysFromNow.setHours(14, 0, 0, 0);
+
+  const instructor = instructors[0];
+  const course = courses[0];
+
+  await prisma.liveClass.upsert({
+    where: { id: "demo-live-class-1" },
+    update: {},
+    create: {
+      id: "demo-live-class-1",
+      title: "Advanced Web Development Masterclass",
+      description: "Join this interactive live session covering advanced React patterns, performance optimization, and real-world architecture decisions. Perfect for intermediate to advanced developers looking to level up their skills.",
+      platform: "GOOGLE_MEET",
+      meetingUrl: "https://meet.google.com/abc-defg-hij",
+      scheduledAt: threeDaysFromNow,
+      duration: 90,
+      isRecorded: true,
+      instructorId: instructor.id,
+      courseId: course.id,
+    },
+  });
+
+  const sevenDaysFromNow = new Date();
+  sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+  sevenDaysFromNow.setHours(10, 0, 0, 0);
+
+  await prisma.liveClass.upsert({
+    where: { id: "demo-live-class-2" },
+    update: {},
+    create: {
+      id: "demo-live-class-2",
+      title: "Data Science Workshop: Hands-on with Python",
+      description: "A practical workshop on data analysis using Python, Pandas, and Matplotlib. Bring your laptop and follow along with real datasets!",
+      platform: "GOOGLE_MEET",
+      meetingUrl: "https://meet.google.com/xyz-uvwx-rst",
+      scheduledAt: sevenDaysFromNow,
+      duration: 120,
+      isRecorded: true,
+      instructorId: instructors.length > 1 ? instructors[1].id : instructor.id,
+      courseId: courses.length > 1 ? courses[1].id : course.id,
+    },
+  });
+
+  console.log("  Created 2 live classes");
+}
+
 async function main() {
   console.log("=== SmartLMS Database Seed ===\n");
 
@@ -1568,6 +1617,10 @@ async function main() {
   console.log("\n--- Creating Enrollments ---");
   const allCourses = await prisma.course.findMany();
   const courseMap = new Map(allCourses.map(c => [c.slug, c]));
+
+  // 2b. Live Classes
+  console.log("\n--- Creating Live Classes ---");
+  await createLiveClasses([instructor1, instructor2], allCourses);
 
   const enrollments = [
     // student1 enrolled in courses 1-5
