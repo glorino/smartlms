@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
   Award,
   Download,
   Share2,
   Search,
   ExternalLink,
-  BookOpen,
   Copy,
   Check,
 } from "lucide-react";
@@ -15,6 +14,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import type { Certificate } from "@/types";
 
 export default function MyCertificatesPage() {
@@ -23,27 +24,51 @@ export default function MyCertificatesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [renderCert, setRenderCert] = useState<Certificate | null>(null);
+  const certRef = useRef<HTMLDivElement>(null);
 
-  const handleDownloadPDF = async (cert: Certificate) => {
+  const handleDownloadPDF = useCallback(async (cert: Certificate) => {
     setDownloadingId(cert.id);
-    try {
-      const res = await fetch(`/api/certificates/${cert.certificateId}/pdf`);
-      if (!res.ok) throw new Error("Download failed");
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `SmartLMS-Certificate-${cert.certificateId}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch {
-      alert("Failed to download PDF. Please try again.");
-    } finally {
-      setDownloadingId(null);
-    }
-  };
+    setRenderCert(cert);
+  }, []);
+
+  useEffect(() => {
+    if (!renderCert || !certRef.current) return;
+    const el = certRef.current;
+    let cancelled = false;
+
+    const timer = setTimeout(async () => {
+      try {
+        const canvas = await html2canvas(el, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: "#FFFEF7",
+        });
+        if (cancelled) return;
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF({
+          orientation: canvas.width > canvas.height ? "landscape" : "portrait",
+          unit: "px",
+          format: [canvas.width / 2, canvas.height / 2],
+        });
+        pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+        pdf.save(`SmartLMS-Certificate-${renderCert.certificateId}.pdf`);
+      } catch {
+        alert("Failed to generate PDF. Please try again.");
+      } finally {
+        if (!cancelled) {
+          setDownloadingId(null);
+          setRenderCert(null);
+        }
+      }
+    }, 100);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [renderCert]);
 
   useEffect(() => {
     async function loadCertificates() {
@@ -199,7 +224,7 @@ export default function MyCertificatesPage() {
                       onClick={() => handleDownloadPDF(cert)}
                     >
                       <Download className="mr-1.5 h-3.5 w-3.5" />
-                      {downloadingId === cert.id ? "Downloading..." : "PDF"}
+                      {downloadingId === cert.id ? "Generating..." : "PDF"}
                     </Button>
                     <Button
                       variant="outline"
@@ -229,6 +254,222 @@ export default function MyCertificatesPage() {
             ))}
           </div>
         )}
+        {renderCert && (
+          <HiddenCertificate cert={renderCert} certRef={certRef} />
+        )}
+    </div>
+  );
+}
+
+function HiddenCertificate({
+  cert,
+  certRef,
+}: {
+  cert: Certificate;
+  certRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const issuedDate = new Date(cert.issuedAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const studentName = "Student";
+  const courseName = cert.course.title;
+  const instructorName = "Instructor";
+  const verificationId = cert.certificateId;
+
+  return (
+    <div
+      ref={certRef}
+      style={{
+        position: "fixed",
+        left: "-9999px",
+        top: 0,
+        width: "1122px",
+        height: "794px",
+        background: "#FFFEF7",
+        fontFamily: "'Georgia', 'Palatino Linotype', serif",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          border: "4px double #b9a56e",
+          borderRadius: "8px",
+          margin: "10px",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          border: "1.5px solid #d2c396",
+          borderRadius: "6px",
+          margin: "16px",
+        }}
+      />
+      <div style={{ textAlign: "center", padding: "30px 60px", position: "relative", zIndex: 1 }}>
+        <div
+          style={{
+            fontSize: "8px",
+            fontWeight: 700,
+            letterSpacing: "3px",
+            color: "#a5915a",
+            marginBottom: "4px",
+          }}
+        >
+          SMARTLMS
+        </div>
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "12px",
+            marginBottom: "6px",
+          }}
+        >
+          <div style={{ height: "1px", width: "60px", background: "#b9a56e" }} />
+          <div
+            style={{
+              width: "8px",
+              height: "8px",
+              borderRadius: "50%",
+              background: "#b9a56e",
+            }}
+          />
+          <div style={{ height: "1px", width: "60px", background: "#b9a56e" }} />
+        </div>
+        <div
+          style={{
+            fontSize: "26px",
+            fontWeight: 700,
+            color: "#372d1e",
+            marginBottom: "8px",
+          }}
+        >
+          Certificate of Completion
+        </div>
+        <div
+          style={{
+            height: "2px",
+            width: "50%",
+            margin: "0 auto 12px",
+            background: "#b9a56e",
+          }}
+        />
+        <div
+          style={{
+            fontSize: "12px",
+            fontStyle: "italic",
+            color: "#827864",
+            marginBottom: "8px",
+          }}
+        >
+          This is to certify that
+        </div>
+        <div
+          style={{
+            fontSize: "36px",
+            fontWeight: 700,
+            fontStyle: "italic",
+            color: "#231e14",
+            marginBottom: "6px",
+            borderBottom: "2px solid #b9a56e",
+            display: "inline-block",
+            paddingBottom: "4px",
+          }}
+        >
+          {studentName}
+        </div>
+        <div
+          style={{
+            fontSize: "12px",
+            fontStyle: "italic",
+            color: "#827864",
+            marginTop: "12px",
+            marginBottom: "6px",
+          }}
+        >
+          has successfully completed the course
+        </div>
+        <div
+          style={{
+            fontSize: "20px",
+            fontWeight: 700,
+            color: "#8c7332",
+            marginBottom: "8px",
+          }}
+        >
+          {courseName}
+        </div>
+        <div
+          style={{
+            height: "1px",
+            width: "80%",
+            margin: "0 auto 10px",
+            background: "#d2c396",
+          }}
+        />
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-around",
+            maxWidth: "80%",
+            margin: "0 auto",
+          }}
+        >
+          {[
+            { label: "INSTRUCTOR", value: instructorName },
+            { label: "DATE OF ISSUE", value: issuedDate },
+            { label: "CERTIFICATE NO.", value: verificationId },
+          ].map((item) => (
+            <div key={item.label} style={{ textAlign: "center", minWidth: "140px" }}>
+              <div style={{ fontSize: "11px", color: "#504632", fontWeight: 400 }}>
+                {item.value}
+              </div>
+              <div
+                style={{
+                  height: "1px",
+                  background: "#b4aa96",
+                  margin: "6px auto",
+                  width: "120px",
+                }}
+              />
+              <div style={{ fontSize: "7px", letterSpacing: "1px", color: "#a09682" }}>
+                {item.label}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div
+          style={{
+            position: "absolute",
+            bottom: "20px",
+            left: "40px",
+            fontSize: "7px",
+            color: "#a09682",
+          }}
+        >
+          <div>View at: smartlms-bay.vercel.app/certificate/{verificationId}</div>
+          <div style={{ marginTop: "3px" }}>This certificate was issued by SmartLMS Platform</div>
+        </div>
+        <div
+          style={{
+            position: "absolute",
+            bottom: "20px",
+            right: "40px",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: "8px", fontWeight: 700, color: "#3c8250" }}>
+            VERIFIED
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
