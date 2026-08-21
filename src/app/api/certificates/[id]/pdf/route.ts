@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { jsPDF } from "jspdf";
+import QRCode from "qrcode";
 
 export async function GET(
   request: Request,
@@ -11,16 +12,39 @@ export async function GET(
     const { id } = await context.params;
     const session = await auth();
 
-    const certificate = await prisma.certificate.findUnique({
+    let certificate = await prisma.certificate.findUnique({
       where: { certificateId: id },
       include: {
-        course: { select: { title: true, instructor: { select: { name: true } } } },
+        course: {
+          select: {
+            title: true,
+            instructor: { select: { name: true } },
+          },
+        },
         user: { select: { id: true, name: true, email: true } },
       },
     });
 
     if (!certificate) {
-      return NextResponse.json({ error: "Certificate not found" }, { status: 404 });
+      certificate = await prisma.certificate.findUnique({
+        where: { id },
+        include: {
+          course: {
+            select: {
+              title: true,
+              instructor: { select: { name: true } },
+            },
+          },
+          user: { select: { id: true, name: true, email: true } },
+        },
+      });
+    }
+
+    if (!certificate) {
+      return NextResponse.json(
+        { error: "Certificate not found" },
+        { status: 404 }
+      );
     }
 
     if (session?.user?.id !== certificate.user.id) {
@@ -33,7 +57,16 @@ export async function GET(
       day: "numeric",
     });
 
-    const instructorName = certificate.course.instructor?.name || "SmartLMS Team";
+    const instructorName =
+      certificate.course.instructor?.name || "SmartLMS Team";
+    const verifyUrl = `https://smartlms-bay.vercel.app/verify-certificate?id=${certificate.certificateId}`;
+
+    const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
+      width: 200,
+      margin: 1,
+      color: { dark: "#1a1a2e", light: "#ffffff" },
+      errorCorrectionLevel: "M",
+    });
 
     const doc = new jsPDF({
       orientation: "landscape",
@@ -41,111 +74,131 @@ export async function GET(
       format: "a4",
     });
 
-    const w = doc.internal.pageSize.getWidth();
-    const h = doc.internal.pageSize.getHeight();
+    const pw = doc.internal.pageSize.getWidth();
+    const ph = doc.internal.pageSize.getHeight();
 
-    doc.setFillColor(255, 254, 247);
-    doc.rect(0, 0, w, h, "F");
+    doc.setFillColor(255, 253, 245);
+    doc.rect(0, 0, pw, ph, "F");
 
-    doc.setDrawColor(99, 102, 241);
-    doc.setLineWidth(1.5);
-    doc.roundedRect(8, 8, w - 16, h - 16, 4, 4, "S");
+    doc.setFillColor(45, 40, 30);
+    doc.rect(0, 0, pw, 2.5, "F");
+    doc.rect(0, ph - 2.5, pw, 2.5, "F");
 
-    doc.setDrawColor(165, 180, 252);
+    doc.setDrawColor(185, 165, 110);
+    doc.setLineWidth(1);
+    doc.roundedRect(8, 8, pw - 16, ph - 16, 2, 2, "S");
+
+    doc.setDrawColor(210, 195, 150);
+    doc.setLineWidth(0.25);
+    doc.roundedRect(12, 12, pw - 24, ph - 24, 1.5, 1.5, "S");
+
+    const cx = pw / 2;
+
+    doc.setDrawColor(185, 165, 110);
+    doc.setLineWidth(0.15);
+    doc.line(cx - 10, 22, cx - 2.5, 22);
+    doc.line(cx + 2.5, 22, cx + 10, 22);
+    doc.setFillColor(185, 165, 110);
+    doc.circle(cx, 22, 1.2, "F");
+
+    doc.setFont("times", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(165, 145, 90);
+    doc.text("SMARTLMS", cx, 18, { align: "center" });
+
+    doc.setFont("times", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(55, 45, 30);
+    doc.text("Certificate of Completion", cx, 32, { align: "center" });
+
+    doc.setDrawColor(185, 165, 110);
+    doc.setLineWidth(0.4);
+    doc.line(cx - 55, 36, cx + 55, 36);
+
+    doc.setFillColor(185, 165, 110);
+    doc.circle(cx - 57, 36, 0.8, "F");
+    doc.circle(cx + 57, 36, 0.8, "F");
+
+    doc.setFont("times", "italic");
+    doc.setFontSize(11);
+    doc.setTextColor(130, 120, 100);
+    doc.text("This is to certify that", cx, 46, { align: "center" });
+
+    doc.setFont("times", "bolditalic");
+    doc.setFontSize(32);
+    doc.setTextColor(35, 30, 20);
+    const studentName = certificate.user.name || "Student";
+    doc.text(studentName, cx, 60, { align: "center" });
+
+    const nameW = doc.getTextWidth(studentName);
+    doc.setDrawColor(185, 165, 110);
     doc.setLineWidth(0.5);
-    doc.roundedRect(12, 12, w - 24, h - 24, 3, 3, "S");
+    doc.line(cx - nameW / 2 - 15, 65, cx + nameW / 2 + 15, 65);
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(99, 102, 241);
-    doc.text("CERTIFICATE OF COMPLETION", w / 2, 28, { align: "center" });
-
-    doc.setFontSize(14);
-    doc.setTextColor(31, 41, 55);
-    doc.text("SmartLMS", w / 2, 36, { align: "center" });
-
-    doc.setDrawColor(209, 213, 219);
-    doc.setLineWidth(0.3);
-    doc.line(w / 2 - 30, 40, w / 2 + 30, 40);
-
-    doc.setFontSize(13);
-    doc.setTextColor(107, 114, 128);
-    doc.text("This is to certify that", w / 2, 52, { align: "center" });
-
-    doc.setFontSize(26);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(31, 41, 55);
-    doc.text(certificate.user.name || "Student", w / 2, 66, { align: "center" });
-
-    doc.setDrawColor(209, 213, 219);
-    doc.setLineWidth(0.3);
-    doc.line(w / 2 - 40, 70, w / 2 + 40, 70);
-
-    doc.setFontSize(13);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(107, 114, 128);
-    doc.text("has successfully completed the course", w / 2, 80, { align: "center" });
-
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(99, 102, 241);
-    doc.text(certificate.course.title, w / 2, 92, { align: "center" });
-
-    doc.setDrawColor(209, 213, 219);
-    doc.setLineWidth(0.3);
-    doc.line(30, 102, w - 30, 102);
-
-    const col1 = w * 0.25;
-    const col2 = w * 0.5;
-    const col3 = w * 0.75;
-
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(156, 163, 175);
-    doc.text("INSTRUCTOR", col1, 110, { align: "center" });
+    doc.setFont("times", "italic");
     doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(55, 65, 81);
-    doc.text(instructorName, col1, 116, { align: "center" });
+    doc.setTextColor(130, 120, 100);
+    doc.text("has successfully completed the course", cx, 74, {
+      align: "center",
+    });
 
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(156, 163, 175);
-    doc.text("DATE ISSUED", col2, 110, { align: "center" });
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(55, 65, 81);
-    doc.text(issuedDate, col2, 116, { align: "center" });
+    doc.setFont("times", "bold");
+    doc.setFontSize(17);
+    doc.setTextColor(140, 115, 50);
+    doc.text(certificate.course.title, cx, 85, { align: "center" });
 
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(156, 163, 175);
-    doc.text("CERTIFICATE ID", col3, 110, { align: "center" });
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(55, 65, 81);
-    doc.text(certificate.certificateId, col3, 116, { align: "center" });
+    doc.setDrawColor(210, 195, 150);
+    doc.setLineWidth(0.2);
+    doc.line(35, 93, pw - 35, 93);
 
-    doc.setDrawColor(209, 213, 219);
-    doc.setLineWidth(0.3);
-    doc.line(col1 - 25, 120, col1 + 25, 120);
-    doc.line(col2 - 25, 120, col2 + 25, 120);
-    doc.line(col3 - 25, 120, col3 + 25, 120);
+    const sigY = 103;
+    const drawSig = (x: number, label: string, value: string) => {
+      doc.setFont("times", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(80, 70, 50);
+      doc.text(value, x, sigY - 4, { align: "center" });
+      doc.setDrawColor(180, 170, 150);
+      doc.setLineWidth(0.2);
+      doc.line(x - 22, sigY, x + 22, sigY);
+      doc.setFont("times", "normal");
+      doc.setFontSize(6);
+      doc.setTextColor(160, 150, 130);
+      doc.text(label.toUpperCase(), x, sigY + 4, { align: "center" });
+    };
 
-    doc.setFontSize(7);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(156, 163, 175);
-    doc.text("INSTRUCTOR SIGNATURE", col1, 124, { align: "center" });
-    doc.text("DATE", col2, 124, { align: "center" });
-    doc.text("VERIFICATION ID", col3, 124, { align: "center" });
+    drawSig(pw * 0.22, "Instructor", instructorName);
+    drawSig(pw * 0.42, "Date of Issue", issuedDate);
+    drawSig(pw * 0.62, "Certificate No.", certificate.certificateId);
 
-    doc.setFontSize(7);
-    doc.setTextColor(156, 163, 175);
-    doc.text("Verify at: smartlms-bay.vercel.app/verify-certificate?id=" + certificate.certificateId, w / 2, h - 14, { align: "center" });
+    const qrX = pw - 50;
+    const qrY = ph - 48;
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(qrX - 2, qrY - 2, 28, 28, 1, 1, "F");
+    doc.addImage(qrDataUrl, "PNG", qrX, qrY, 24, 24);
+    doc.setFont("times", "normal");
+    doc.setFontSize(5.5);
+    doc.setTextColor(140, 130, 110);
+    doc.text("Scan to verify", qrX + 12, qrY + 27, { align: "center" });
 
-    doc.setFontSize(7);
-    doc.setTextColor(156, 163, 175);
-    doc.text("This certificate was issued by SmartLMS Platform", w / 2, h - 10, { align: "center" });
+    doc.setFont("times", "bold");
+    doc.setFontSize(6.5);
+    doc.setTextColor(60, 130, 80);
+    doc.text("VERIFIED", qrX + 12, ph - 17, { align: "center" });
+
+    doc.setFont("times", "normal");
+    doc.setFontSize(5.5);
+    doc.setTextColor(160, 150, 130);
+    doc.text(
+      "Verify at: smartlms-bay.vercel.app/verify-certificate?id=" +
+        certificate.certificateId,
+      35,
+      ph - 15
+    );
+    doc.text(
+      "This certificate was issued by SmartLMS Platform",
+      35,
+      ph - 11
+    );
 
     const pdfBuffer = Buffer.from(doc.output("arraybuffer"));
 
@@ -157,6 +210,9 @@ export async function GET(
       },
     });
   } catch {
-    return NextResponse.json({ error: "Failed to generate PDF" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to generate PDF" },
+      { status: 500 }
+    );
   }
 }
