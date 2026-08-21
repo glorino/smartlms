@@ -20,6 +20,10 @@ export async function GET(
             slug: true,
             thumbnail: true,
             description: true,
+            level: true,
+            tags: true,
+            duration: true,
+            instructor: { select: { name: true } },
           },
         },
         user: {
@@ -65,6 +69,11 @@ export async function GET(
         status: certificate.status,
         course: {
           title: certificate.course.title,
+          description: certificate.course.description,
+          level: certificate.course.level,
+          tags: certificate.course.tags,
+          duration: certificate.course.duration,
+          instructor: certificate.course.instructor,
         },
       },
     });

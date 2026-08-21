@@ -266,6 +266,10 @@ interface CertificateData {
   title?: string;
   course?: {
     title: string;
+    description?: string;
+    level?: string;
+    tags?: string[];
+    duration?: number;
     instructor?: { name: string };
   };
   user?: {
@@ -372,6 +376,31 @@ export default function CertificateView({
                 {courseName}
               </h3>
 
+              {/* Course Details */}
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-xs text-gray-500 print:text-xs">
+                {certificate.course?.level && (
+                  <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-0.5">
+                    {certificate.course.level}
+                  </span>
+                )}
+                {certificate.course?.duration && (
+                  <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-0.5">
+                    {Math.round(certificate.course.duration / 60)} hours
+                  </span>
+                )}
+                {certificate.course?.tags && certificate.course.tags.length > 0 && (
+                  <span className="text-gray-400">
+                    {certificate.course.tags.slice(0, 4).join(" · ")}
+                  </span>
+                )}
+              </div>
+              {certificate.course?.description && (
+                <p className="mt-2 max-w-lg text-xs leading-relaxed text-gray-400 print:text-xs">
+                  {certificate.course.description.replace(/<[^>]*>/g, "").slice(0, 140)}
+                  {certificate.course.description.length > 140 ? "..." : ""}
+                </p>
+              )}
+
               {/* Date Issued */}
               <p className="mt-6 text-sm text-gray-500 print:mt-4">
                 Issued on <span className="font-semibold text-gray-700">{issuedDate}</span>
@@ -427,11 +456,11 @@ export default function CertificateView({
                 <div className="flex flex-col items-center">
                   <div className="rounded-lg border border-gray-200 bg-white p-2 shadow-sm">
                     <QRCodeSVG
-                      data={`${typeof window !== "undefined" ? window.location.origin : ""}/verify-certificate?id=${verificationId}`}
+                      data={`${typeof window !== "undefined" ? window.location.origin : ""}/certificate/${verificationId}`}
                       size={90}
                     />
                   </div>
-                  <p className="mt-1 text-[10px] text-gray-400">Scan to verify</p>
+                  <p className="mt-1 text-[10px] text-gray-400">Scan to view</p>
                 </div>
               </div>
             </div>
