@@ -1,6 +1,6 @@
 import { PrismaClient, UserRole, CourseStatus, EnrollmentStatus, QuestionDifficulty, CertificateStatus, PaymentStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import enrichedLessons from "./enriched-lessons";
+import { enrichedLessons, lessonQuizzes } from "./enriched-lessons";
 
 const prisma = new PrismaClient();
 
@@ -1412,6 +1412,10 @@ async function createCourseWithContent(
   });
   console.log(`  Course: ${course.title}`);
 
+  // Delete existing sections and lessons to prevent duplicates on re-seed
+  await prisma.lesson.deleteMany({ where: { courseId: course.id } });
+  await prisma.courseSection.deleteMany({ where: { courseId: course.id } });
+
   // Sections & Lessons
   for (let sIdx = 0; sIdx < courseData.sections.length; sIdx++) {
     const secData = courseData.sections[sIdx];
@@ -1427,7 +1431,7 @@ async function createCourseWithContent(
     for (let lIdx = 0; lIdx < secData.lessons.length; lIdx++) {
       const l = secData.lessons[lIdx];
       const enrichedContent = enrichedLessons[l.title as keyof typeof enrichedLessons];
-      await prisma.lesson.create({
+      const lesson = await prisma.lesson.create({
         data: {
           title: l.title,
           type: l.type,
@@ -1441,6 +1445,50 @@ async function createCourseWithContent(
           courseId: course.id,
         },
       });
+
+      // Create per-lesson quiz if enriched quiz data exists
+      const quizData = lessonQuizzes[l.title as keyof typeof lessonQuizzes];
+      if (quizData && l.type === "TEXT") {
+        const lessonQuiz = await prisma.quiz.create({
+          data: {
+            title: quizData.title,
+            description: quizData.description,
+            timeLimit: quizData.timeLimit,
+            passingScore: quizData.passingScore,
+            maxAttempts: 3,
+            isPublished: true,
+            difficulty: QuestionDifficulty.MEDIUM,
+            courseId: course.id,
+            lessonId: lesson.id,
+            points: quizData.questions.reduce((a, q) => a + q.points, 0),
+          },
+        });
+
+        for (let qIdx = 0; qIdx < quizData.questions.length; qIdx++) {
+          const q = quizData.questions[qIdx];
+          const question = await prisma.question.create({
+            data: {
+              content: q.content,
+              type: q.type,
+              points: q.points,
+              explanation: q.explanation,
+              difficulty: q.difficulty.toUpperCase() as QuestionDifficulty,
+              order: qIdx,
+              quizId: lessonQuiz.id,
+            },
+          });
+
+          await prisma.answer.createMany({
+            data: q.answers.map((a, aIdx) => ({
+              content: a.content,
+              isCorrect: a.isCorrect,
+              points: a.isCorrect ? q.points : 0,
+              order: aIdx,
+              questionId: question.id,
+            })),
+          });
+        }
+      }
     }
   }
   console.log(

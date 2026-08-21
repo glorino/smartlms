@@ -1,7 +1,7 @@
 // Enriched lesson content for TEXT lessons
 // This file is loaded at seed time and merged into lesson content
 
-const enrichedLessons: Record<string, string> = {
+export const enrichedLessons: Record<string, string> = {
 
 "Semantic HTML Elements":
 `<h3>Understanding Semantic HTML Elements</h3>
@@ -39,7 +39,6 @@ const enrichedLessons: Record<string, string> = {
       &lt;/ul&gt;
     &lt;/nav&gt;
   &lt;/header&gt;
-
   &lt;main&gt;
     &lt;article&gt;
       &lt;h1&gt;Blog Post Title&lt;/h1&gt;
@@ -52,7 +51,6 @@ const enrichedLessons: Record<string, string> = {
       &lt;h3&gt;Related Posts&lt;/h3&gt;
     &lt;/aside&gt;
   &lt;/main&gt;
-
   &lt;footer&gt;
     &lt;p&gt;&amp;copy; 2024 My Website&lt;/p&gt;
   &lt;/footer&gt;
@@ -71,7 +69,9 @@ const enrichedLessons: Record<string, string> = {
 <li><code>&lt;aside&gt;</code> for content tangentially related to the main content</li>
 <li>Always include <code>lang</code> attribute on <code>&lt;html&gt;</code> for accessibility</li>
 <li>Nest headings hierarchically (h1, h2, h3, never skip levels)</li>
-</ul>`,
+</ul>
+<h4>Key Takeaways</h4>
+<blockquote>Semantic HTML is the foundation of accessible, SEO-friendly, and maintainable web development. Every div should be reconsidered - if it represents a header, navigation, article, section, or aside, use the appropriate semantic element instead.</blockquote>`,
 
 "ES6+ Features & Arrow Functions":
 `<h3>Mastering ES6+ Features and Arrow Functions</h3>
@@ -94,19 +94,13 @@ const greet = () => "Hello!";
 
 // Multi-line arrow function
 const processUser = (user) => {
-  const fullName = \`\${user.first} \${user.last}\`;
+  const fullName = user.first + " " + user.last;
   return { ...user, fullName, isActive: true };
 };</code></pre>
 <h4>Template Literals</h4>
-<p>Template literals use backticks and allow embedded expressions with <code>\${}</code> syntax, replacing string concatenation.</p>
 <pre><code>const name = "Alice";
-const age = 28;
-
-// Old way
-const msg1 = "Hello, " + name + "! You are " + age + " years old.";
-
-// Template literal
-const msg2 = \`Hello, \${name}! You are \${age} years old.\`;
+const age = 30;
+const greeting = \`Hello, \${name}! You are \${age} years old.\`;
 
 // Multi-line strings
 const html = \`
@@ -115,1031 +109,837 @@ const html = \`
     &lt;p&gt;Age: \${age}&lt;/p&gt;
   &lt;/div&gt;
 \`;</code></pre>
-<h4>Destructuring</h4>
-<p>Destructuring lets you unpack values from arrays or properties from objects into distinct variables.</p>
+<h4>Destructuring Assignment</h4>
 <pre><code>// Object destructuring
-const user = { name: "Bob", age: 25, city: "Lagos" };
+const user = { name: "Alice", age: 30 };
 const { name, age } = user;
 
-// Rename variables
-const { name: userName, age: userAge } = user;
-
-// Default values
-const { role = "student" } = user;
-
 // Array destructuring
-const [first, second, ...rest] = [10, 20, 30, 40, 50];
-// first = 10, second = 20, rest = [30, 40, 50]</code></pre>
+const [first, second, ...rest] = [1, 2, 3, 4, 5];
+
+// Nested destructuring
+const { address: { street } } = user;</code></pre>
 <h4>Spread and Rest Operators</h4>
-<p>The spread operator (<code>...</code>) expands iterables, while rest parameters collect remaining arguments.</p>
-<pre><code>// Spread - copying arrays
-const arr1 = [1, 2, 3];
-const arr2 = [...arr1, 4, 5]; // [1, 2, 3, 4, 5]
+<pre><code>// Spread - expands arrays/objects
+const arr = [...[1, 2], 3, 4];
+const obj = { ...{ a: 1 }, b: 2 };
 
-// Spread - copying objects
-const defaults = { theme: "dark", lang: "en" };
-const userPrefs = { ...defaults, lang: "fr" };
-
-// Rest - in function parameters
+// Rest - collects remaining elements
 function sum(...numbers) {
-  return numbers.reduce((total, n) => total + n, 0);
-}
-sum(1, 2, 3, 4); // 10</code></pre>
+  return numbers.reduce((acc, num) => acc + num, 0);
+}</code></pre>
 <h4>Optional Chaining and Nullish Coalescing</h4>
-<pre><code>const user = { profile: { address: null } };
+<pre><code>// Optional chaining (?.)
+const street = user?.address?.street;
 
-// Optional chaining
-const street = user.profile?.address?.street; // undefined (no error)
-
-// Nullish coalescing
-const zip = user.profile?.address?.zip ?? "N/A"; // "N/A"</code></pre>
-<h4>Modules (import/export)</h4>
-<pre><code>// Named exports
-export const add = (a, b) => a + b;
-export const subtract = (a, b) => a - b;
-
-// Default export
-export default class Utils {
-  static capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-}
-
-// Importing
-import { add, subtract } from "./math.js";
-import Utils from "./utils.js";</code></pre>
-<h4>Array Methods (map, filter, reduce)</h4>
-<pre><code>const products = [
-  { name: "Laptop", price: 999 },
-  { name: "Phone", price: 699 },
-  { name: "Tablet", price: 499 }
-];
-
-const names = products.map(p => p.name);
-const expensive = products.filter(p => p.price > 500);
-const total = products.reduce((sum, p) => sum + p.price, 0);
-
-// Chaining
-const result = products
-  .filter(p => p.price > 300)
-  .map(p => p.name);</code></pre>
-<h4>Key Takeaways</h4>
+// Nullish coalescing (??)
+const port = config.port ?? 3000;</code></pre>
+<h4>Best Practices</h4>
 <ul>
-<li><strong>Arrow functions</strong> simplify syntax and capture <code>this</code> lexically</li>
-<li><strong>Template literals</strong> replace concatenation with clean interpolation</li>
-<li><strong>Destructuring</strong> extracts values from objects and arrays elegantly</li>
-<li><strong>Spread/Rest</strong> operators handle copying, merging, and collecting data</li>
-<li><strong>Optional chaining</strong> prevents null reference errors safely</li>
-<li><strong>Modules</strong> enable clean code organization with import/export</li>
-<li><strong>Array methods</strong> (map, filter, reduce) are essential for data transformation</li>
-</ul>`,
+<li>Use arrow functions for callbacks; regular functions for methods and constructors</li>
+<li>Prefer const by default; let only when reassignment is needed</li>
+<li>Use destructuring to extract values from objects and arrays</li>
+<li>Use template literals instead of string concatenation</li>
+<li>Use optional chaining to safely access nested properties</li>
+</ul>
+<h4>Key Takeaways</h4>
+<blockquote>ES6+ features transformed JavaScript into a modern, expressive language. Arrow functions, destructuring, template literals, and spread operators are tools you will use every day.</blockquote>`,
 
 "State & Props Management":
-`<h3>State and Props Management in React</h3>
-<p>React components are defined by two fundamental concepts: <strong>state</strong> (internal, mutable data) and <strong>props</strong> (external, read-only data passed from parents). Understanding how to manage these effectively is the foundation of building interactive React applications.</p>
-<h4>The useState Hook</h4>
-<p>The <code>useState</code> hook lets you add state to functional components. It returns a state variable and a setter function.</p>
-<pre><code>import { useState } from "react";
+`<h3>Understanding State and Props Management in React</h3>
+<p>State and props are the two fundamental data mechanisms in React. Understanding how they work, when to use each, and how they flow through your component tree is critical for building predictable, maintainable applications.</p>
+<h4>What Are Props?</h4>
+<p>Props are read-only data passed from parent to child components. They are the primary way to configure and customize child components.</p>
+<pre><code>// Passing props
+&lt;UserProfile name="Alice" age={30} onUpdate={handleUpdate} /&gt;
+
+// Receiving props
+function UserProfile({ name, age, onUpdate }) {
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;{name}&lt;/h2&gt;
+      &lt;p&gt;Age: {age}&lt;/p&gt;
+      &lt;button onClick={onUpdate}&gt;Update&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+<h4>What Is State?</h4>
+<p>State is data managed within a component that can change over time. When state changes, React re-renders the component.</p>
+<pre><code>import { useState } from 'react';
 
 function Counter() {
   const [count, setCount] = useState(0);
-
   return (
     &lt;div&gt;
       &lt;p&gt;Count: {count}&lt;/p&gt;
       &lt;button onClick={() => setCount(count + 1)}&gt;Increment&lt;/button&gt;
-      &lt;button onClick={() => setCount(prev => prev - 1)}&gt;Decrement&lt;/button&gt;
     &lt;/div&gt;
   );
-}
+}</code></pre>
+<h4>Updating State Correctly</h4>
+<pre><code>// WRONG - Direct mutation
+user.name = "Bob";
 
-// Functional update - always use when next state depends on previous
+// CORRECT - Immutable update
+setUser({ ...user, name: "Bob" });
+
+// Functional updates
 setCount(prev => prev + 1);</code></pre>
-<h4>State Update Rules</h4>
-<ul>
-<li><strong>Never mutate state directly</strong> - always use the setter function</li>
-<li><strong>State updates are asynchronous</strong> - React batches updates for performance</li>
-<li><strong>Use functional updates</strong> when next state depends on current state</li>
-<li><strong>State is isolated</strong> - each component has its own state</li>
-</ul>
-<pre><code>// WRONG - mutating state
-const user = { name: "Alice", age: 25 };
-setUser(user.age = 26); // No re-render!
-
-// CORRECT - create new object
-setUser({ ...user, age: 26 });</code></pre>
-<h4>Understanding Props</h4>
-<p>Props (short for properties) are how you pass data from parent to child components. They are read-only.</p>
-<pre><code>// Parent component
-function App() {
-  return &lt;Greeting name="Alice" age={25} isAdmin={true} /&gt;;
-}
-
-// Child component receiving props
-function Greeting({ name, age, isAdmin }) {
-  return (
-    &lt;div&gt;
-      &lt;h1&gt;Hello, {name}!&lt;/h1&gt;
-      &lt;p&gt;Age: {age}&lt;/p&gt;
-      {isAdmin &amp;&amp; &lt;span&gt;Admin User&lt;/span&gt;}
-    &lt;/div&gt;
-  );
-}
-
-// Default props
-function Greeting({ name = "Guest", age = 0 }) {
-  return &lt;h1&gt;Hello, {name}!&lt;/h1&gt;;
-}</code></pre>
-<h4>Props Children</h4>
-<p>The <code>children</code> prop is a special prop that lets you pass components as nested content.</p>
-<pre><code>function Card({ title, children }) {
-  return (
-    &lt;div className="card"&gt;
-      &lt;h2&gt;{title}&lt;/h2&gt;
-      &lt;div className="card-body"&gt;
-        {children}
-      &lt;/div&gt;
-    &lt;/div&gt;
-  );
-}
-
-&lt;Card title="User Profile"&gt;
-  &lt;p&gt;Name: Alice&lt;/p&gt;
-  &lt;p&gt;Email: alice@example.com&lt;/p&gt;
-&lt;/Card&gt;</code></pre>
 <h4>useReducer for Complex State</h4>
-<pre><code>import { useReducer } from "react";
-
-const initialState = { count: 0, step: 1 };
-
-function reducer(state, action) {
+<pre><code>function todoReducer(state, action) {
   switch (action.type) {
-    case "increment":
-      return { ...state, count: state.count + state.step };
-    case "decrement":
-      return { ...state, count: state.count - state.step };
-    case "setStep":
-      return { ...state, step: action.payload };
-    case "reset":
-      return initialState;
+    case "ADD_TODO":
+      return [...state, { id: Date.now(), text: action.payload, completed: false }];
+    case "TOGGLE_TODO":
+      return state.map(todo =>
+        todo.id === action.payload ? { ...todo, completed: !todo.completed } : todo
+      );
+    case "DELETE_TODO":
+      return state.filter(todo => todo.id !== action.payload);
     default:
-      throw new Error("Unknown action: " + action.type);
+      throw new Error("Unknown action");
   }
-}
-
-function Counter() {
-  const [state, dispatch] = useReducer(reducer, initialState);
-
-  return (
-    &lt;div&gt;
-      &lt;p&gt;Count: {state.count}, Step: {state.step}&lt;/p&gt;
-      &lt;button onClick={() => dispatch({ type: "increment" })}&gt;+&lt;/button&gt;
-      &lt;button onClick={() => dispatch({ type: "setStep", payload: 5 })}&gt;Set Step 5&lt;/button&gt;
-      &lt;button onClick={() => dispatch({ type: "reset" })}&gt;Reset&lt;/button&gt;
-    &lt;/div&gt;
-  );
-}</code></pre>
-<h4>Context API Solution</h4>
-<p>The Context API provides a way to pass data through the component tree without manually threading props at every level.</p>
-<pre><code>import { createContext, useContext, useState } from "react";
-
-const UserContext = createContext(null);
-
-function UserProvider({ children }) {
-  const [user, setUser] = useState({ name: "Alice", role: "admin" });
-
-  return (
-    &lt;UserContext.Provider value={{ user, setUser }}&gt;
-      {children}
-    &lt;/UserContext.Provider&gt;
-  );
-}
-
-// Consuming component (any depth)
-function UserAvatar() {
-  const { user } = useContext(UserContext);
-  return &lt;img src={user.avatar} alt={user.name} /&gt;;
-}
-
-function App() {
-  return (
-    &lt;UserProvider&gt;
-      &lt;Layout /&gt;
-    &lt;/UserProvider&gt;
-  );
 }</code></pre>
 <h4>Key Takeaways</h4>
-<ul>
-<li><strong>useState</strong> manages local component state with setter functions</li>
-<li><strong>Never mutate state</strong> directly - always create new objects/arrays</li>
-<li><strong>Props are read-only</strong> - data flows one way (parent to child)</li>
-<li><strong>useReducer</strong> handles complex state logic with actions and dispatch</li>
-<li><strong>Context API</strong> eliminates prop drilling for global/shared state</li>
-<li><strong>Lift state up</strong> when siblings need to share data</li>
-</ul>`,
+<blockquote>Props flow data down from parent to child and are read-only. State is managed within a component and can change. Always update state immutably. For complex state logic, use useReducer.</blockquote>`,
 
 "RESTful API Design":
-`<h3>RESTful API Design Principles</h3>
-<p>REST (Representational State Transfer) is an architectural style for designing networked applications. A well-designed REST API is intuitive, scalable, and follows established conventions.</p>
+`<h3>Designing RESTful APIs</h3>
+<p>REST is an architectural style for designing networked applications. RESTful APIs use HTTP methods to perform operations on resources, following conventions that make APIs predictable and scalable.</p>
 <h4>Core REST Principles</h4>
 <ul>
-<li><strong>Client-Server:</strong> Separation of concerns between UI and data storage</li>
-<li><strong>Stateless:</strong> Each request contains all information needed to process it</li>
-<li><strong>Cacheable:</strong> Responses should define themselves as cacheable or not</li>
-<li><strong>Uniform Interface:</strong> Consistent way to interact with resources</li>
+<li><strong>Client-Server Separation:</strong> Client and server are independent</li>
+<li><strong>Stateless:</strong> Each request contains all information needed</li>
+<li><strong>Cacheable:</strong> Responses must define themselves as cacheable or not</li>
+<li><strong>Uniform Interface:</strong> Consistent resource identification and manipulation</li>
 </ul>
+<h4>Resource Naming</h4>
+<pre><code>GET    /api/v1/users          - List users
+GET    /api/v1/users/123      - Get user 123
+POST   /api/v1/users          - Create user
+PUT    /api/v1/users/123      - Update user
+DELETE /api/v1/users/123      - Delete user</code></pre>
 <h4>HTTP Methods and Status Codes</h4>
-<pre><code>GET    /api/users        → 200 OK           (List users)
-GET    /api/users/123    → 200 OK           (Get user 123)
-POST   /api/users        → 201 Created      (Create user)
-PUT    /api/users/123    → 200 OK           (Update user 123)
-PATCH  /api/users/123    → 200 OK           (Partial update)
-DELETE /api/users/123    → 204 No Content   (Delete user 123)</code></pre>
-<h4>Express.js Implementation</h4>
-<pre><code>const express = require("express");
-const router = express.Router();
-
-// GET /api/users - List all users
-router.get("/", async (req, res) => {
-  const { page = 1, limit = 10, sort = "name" } = req.query;
-  const users = await User.find()
-    .sort(sort)
-    .skip((page - 1) * limit)
-    .limit(parseInt(limit));
-  res.json({
-    data: users,
-    pagination: { page, limit, total: await User.countDocuments() }
-  });
-});
-
-// GET /api/users/:id - Get single user
-router.get("/:id", async (req, res) => {
-  const user = await User.findById(req.params.id);
-  if (!user) return res.status(404).json({ error: "User not found" });
-  res.json({ data: user });
-});
-
-// POST /api/users - Create user
-router.post("/", async (req, res) => {
-  const user = await User.create(req.body);
-  res.status(201).json({ data: user });
-});</code></pre>
-<h4>Error Response Format</h4>
-<pre><code>{
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid input data",
-    "details": [
-      { "field": "email", "message": "Invalid email format" }
-    ]
+<pre><code>GET    -> 200 OK, 404 Not Found
+POST   -> 201 Created, 400 Bad Request
+PUT    -> 200 OK, 404 Not Found
+PATCH  -> 200 OK, 404 Not Found
+DELETE -> 204 No Content, 404 Not Found</code></pre>
+<h4>Authentication</h4>
+<pre><code>// JWT middleware
+function authenticate(req, res, next) {
+  const token = req.header("Authorization")?.replace("Bearer ", "");
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+  try {
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch (err) {
+    res.status(401).json({ error: "Invalid token" });
   }
 }</code></pre>
 <h4>Best Practices</h4>
 <ul>
-<li>Use plural nouns for resources: <code>/users</code> not <code>/user</code></li>
-<li>Nest resources for relationships: <code>/users/123/orders</code></li>
-<li>Use query parameters for filtering, not URL path segments</li>
-<li>Implement rate limiting to protect your API</li>
-<li>Use HTTPS always in production</li>
-<li>Return meaningful HTTP status codes, not just 200</li>
-</ul>`,
+<li>Use plural nouns for resource names</li>
+<li>Version your API from the start</li>
+<li>Use HTTP status codes correctly</li>
+<li>Implement pagination for list endpoints</li>
+<li>Validate all incoming data</li>
+</ul>
+<h4>Key Takeaways</h4>
+<blockquote>A well-designed REST API uses HTTP methods correctly, resources with plural nouns, includes pagination, and follows consistent error formats.</blockquote>`,
 
 "Linear Algebra for ML":
-`<h3>Linear Algebra for Machine Learning</h3>
-<p>Linear algebra is the mathematical foundation of machine learning. Vectors, matrices, and their operations are used everywhere in ML — from data representation to model computations.</p>
-<h4>Vectors</h4>
-<p>A vector is an ordered list of numbers. In ML, data points are often represented as feature vectors.</p>
+`<h3>Linear Algebra Foundations for Machine Learning</h3>
+<p>Linear algebra is the mathematical backbone of machine learning. Every data point, feature, weight, and transformation in ML is represented using vectors, matrices, and tensors.</p>
+<h4>Scalars, Vectors, and Matrices</h4>
 <pre><code>import numpy as np
 
-v = np.array([1, 2, 3, 4, 5])  # 5-dimensional feature vector
-norm = np.linalg.norm(v)         # Magnitude
-dot_product = np.dot(v, v)       # Sum of element-wise products</code></pre>
-<h4>Matrices</h4>
-<pre><code># Dataset matrix: 100 samples, 5 features
-X = np.random.randn(100, 5)
+# Scalar
+scalar = 5.0
 
-# Matrix multiplication: apply transformation
-weights = np.array([0.3, 0.2, 0.1, 0.25, 0.15])
-predictions = X @ weights</code></pre>
-<h4>Eigenvalues and Eigenvectors</h4>
-<pre><code>A = np.array([[4, 2], [1, 3]])
-eigenvalues, eigenvectors = np.linalg.eig(A)</code></pre>
+# Vector (1D array)
+vector = np.array([1, 2, 3, 4, 5])
+print(vector.shape)  # (5,)
+
+# Matrix (2D array)
+matrix = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+print(matrix.shape)  # (3, 3)
+
+# Tensor (3D array)
+tensor = np.zeros((32, 28, 28, 3))</code></pre>
+<h4>Vector Operations</h4>
+<pre><code>a = np.array([1, 2, 3])
+b = np.array([4, 5, 6])
+
+# Dot product
+dot = np.dot(a, b)  # 32
+
+# Magnitude
+magnitude = np.linalg.norm(a)  # 3.74
+
+# Unit vector
+unit = a / np.linalg.norm(a)</code></pre>
+<h4>Matrix Operations</h4>
+<pre><code>A = np.array([[1, 2], [3, 4]])
+B = np.array([[5, 6], [7, 8]])
+
+# Matrix multiplication
+C = A @ B  # [[19, 22], [43, 50]]
+
+# Transpose, Determinant, Inverse
+A_T = A.T
+det = np.linalg.det(A)
+A_inv = np.linalg.inv(A)
+
+# Solving linear systems
+b = np.array([5, 7])
+x = np.linalg.solve(A, b)</code></pre>
+<h4>Eigenvalues and SVD</h4>
+<pre><code>eigenvalues, eigenvectors = np.linalg.eig(A)
+
+# SVD for dimensionality reduction
+U, S, Vt = np.linalg.svd(A)</code></pre>
 <h4>Applications in ML</h4>
 <ul>
-<li><strong>Linear Regression:</strong> y = Xw (matrix-vector multiplication)</li>
-<li><strong>Neural Networks:</strong> Layer computation is matrix multiplication + activation</li>
-<li><strong>PCA:</strong> Uses eigendecomposition for dimensionality reduction</li>
-<li><strong>Word Embeddings:</strong> Similarity measured by cosine distance</li>
-</ul>`,
+<li><strong>Linear Regression:</strong> w = (X^T X)^-1 X^T y</li>
+<li><strong>PCA:</strong> Eigendecomposition of covariance matrix</li>
+<li><strong>Neural Networks:</strong> Matrix multiplication per layer</li>
+<li><strong>Recommendations:</strong> SVD for collaborative filtering</li>
+</ul>
+<h4>Key Takeaways</h4>
+<blockquote>Linear algebra provides the mathematical foundation for all of machine learning. Vectors, matrices, and eigenvalues are essential for understanding ML algorithms deeply.</blockquote>`,
 
 "Decision Trees & Random Forests":
 `<h3>Decision Trees and Random Forests</h3>
-<p>Decision trees are intuitive, interpretable models that make predictions by learning simple rules from data. Random forests combine many decision trees to create a powerful ensemble model.</p>
-<h4>Building a Decision Tree</h4>
+<p>Decision trees are interpretable models that split data based on feature values. Random forests combine many trees to reduce overfitting and improve accuracy.</p>
+<h4>Splitting Criteria</h4>
+<pre><code>import numpy as np
+
+def gini_impurity(y):
+    classes, counts = np.unique(y, return_counts=True)
+    probs = counts / len(y)
+    return 1 - np.sum(probs ** 2)
+
+def entropy(y):
+    classes, counts = np.unique(y, return_counts=True)
+    probs = counts / len(y)
+    return -np.sum(probs * np.log2(probs + 1e-10))</code></pre>
+<h4>Scikit-Learn Implementation</h4>
 <pre><code>from sklearn.tree import DecisionTreeClassifier
-from sklearn.datasets import load_iris
+from sklearn.ensemble import RandomForestClassifier
 
-X, y = load_iris(return_X_y=True)
-tree = DecisionTreeClassifier(max_depth=5, random_state=42)
-tree.fit(X_train, y_train)
-print(f"Accuracy: {tree.score(X_test, y_test):.2%}")</code></pre>
-<h4>Random Forests</h4>
-<pre><code>from sklearn.ensemble import RandomForestClassifier
+clf = DecisionTreeClassifier(max_depth=3)
+clf.fit(X_train, y_train)
 
-rf = RandomForestClassifier(
-  n_estimators=100,
-  max_depth=10,
-  min_samples_split=5,
-  random_state=42
-)
-rf.fit(X_train, y_train)
-
-# Feature importance
-importances = rf.feature_importances_
-for name, imp in zip(iris.feature_names, importances):
-  print(f"  {name}: {imp:.3f}")</code></pre>
-<h4>Bias-Variance Tradeoff</h4>
-<ul>
-<li><strong>Deep trees</strong> (high depth): Low bias, high variance (overfit)</li>
-<li><strong>Shallow trees</strong> (low depth): High bias, low variance (underfit)</li>
-<li><strong>Random forests:</strong> Low bias AND low variance (best of both)</li>
-</ul>
+rf = RandomForestClassifier(n_estimators=100, max_features="sqrt")
+rf.fit(X_train, y_train)</code></pre>
 <h4>Hyperparameter Tuning</h4>
 <pre><code>from sklearn.model_selection import GridSearchCV
 
-params = {
-  "n_estimators": [50, 100, 200],
-  "max_depth": [5, 10, 20, None],
-  "min_samples_split": [2, 5, 10],
-}
-grid = GridSearchCV(rf, params, cv=5, scoring="accuracy")
+param_grid = {"n_estimators": [50, 100, 200], "max_depth": [5, 10, None]}
+grid = GridSearchCV(RandomForestClassifier(), param_grid, cv=5)
 grid.fit(X_train, y_train)</code></pre>
-<h4>Best Practices</h4>
-<ul>
-<li>Start with random forests — they work well with minimal tuning</li>
-<li>Use <code>max_depth</code> to control overfitting</li>
-<li>Check feature importances to understand your model</li>
-<li>For interpretability, use single decision trees with visualization</li>
-</ul>`,
+<h4>Key Takeaways</h4>
+<blockquote>Random forests combine many trees trained on random subsets of data and features, reducing overfitting. They provide a strong baseline for tabular data problems.</blockquote>`,
 
 "Principal Component Analysis (PCA)":
-`<h3>Principal Component Analysis (PCA)</h3>
-<p>PCA is a dimensionality reduction technique that transforms high-dimensional data into a lower-dimensional space while preserving as much variance as possible.</p>
-<h4>How PCA Works</h4>
-<ol>
-<li>Standardize the data (zero mean, unit variance)</li>
-<li>Compute the covariance matrix</li>
-<li>Find eigenvalues and eigenvectors</li>
-<li>Sort eigenvectors by decreasing eigenvalues</li>
-<li>Project data onto top-k eigenvectors</li>
-</ol>
+`<h3>Understanding Principal Component Analysis (PCA)</h3>
+<p>PCA reduces dimensionality by projecting data onto directions of maximum variance, enabling visualization, noise reduction, and improved model performance.</p>
+<h4>Mathematical Foundation</h4>
+<pre><code>"""
+Steps in PCA:
+1. Standardize the data
+2. Compute covariance matrix
+3. Eigendecomposition
+4. Select top k components
+5. Project data
+"""</code></pre>
+<h4>Scikit-Learn Implementation</h4>
 <pre><code>from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-pca = PCA(n_components=2)
-X_reduced = pca.fit_transform(X_scaled)
-
-print(f"Explained variance: {pca.explained_variance_ratio_}")
-print(f"Total: {sum(pca.explained_variance_ratio_):.2%}")</code></pre>
-<h4>Choosing Number of Components</h4>
+pca = PCA(n_components=0.95)
+X_pca = pca.fit_transform(X_scaled)
+print(f"Variance captured: {pca.explained_variance_ratio_.sum():.2%}")</code></pre>
+<h4>Choosing Components</h4>
 <pre><code>pca_full = PCA()
 pca_full.fit(X_scaled)
-cumulative_var = np.cumsum(pca_full.explained_variance_ratio_)
-n_components_95 = np.argmax(cumulative_var >= 0.95) + 1</code></pre>
-<h4>Applications</h4>
-<ul>
-<li><strong>Data visualization:</strong> Reduce to 2D/3D for plotting</li>
-<li><strong>Noise reduction:</strong> Remove low-variance components</li>
-<li><strong>Feature extraction:</strong> Create uncorrelated features</li>
-<li><strong>Speed up training:</strong> Fewer features = faster models</li>
-</ul>
-<h4>Limitations</h4>
-<ul>
-<li>PCA finds linear projections only — use t-SNE or UMAP for non-linear data</li>
-<li>Principal components may be hard to interpret</li>
-<li>Sensitive to feature scaling — always standardize first</li>
-</ul>`,
+cumsum = np.cumsum(pca_full.explained_variance_ratio_)
+n_components_95 = np.argmax(cumsum >= 0.95) + 1</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>PCA reduces dimensionality by projecting data onto directions of maximum variance. Always standardize data before applying PCA. Use scree plots to choose component count.</blockquote>`,
 
 "Training with Backpropagation":
-`<h3>Training Neural Networks with Backpropagation</h3>
-<p>Backpropagation is the algorithm that trains neural networks by computing how much each weight contributed to the error and adjusting it accordingly.</p>
-<h4>The Training Loop</h4>
-<ol>
-<li><strong>Forward pass:</strong> Input flows through the network to produce a prediction</li>
-<li><strong>Compute loss:</strong> Compare prediction to the true label</li>
-<li><strong>Backward pass:</strong> Compute gradients of loss with respect to each weight</li>
-<li><strong>Update weights:</strong> Adjust weights in the direction that reduces loss</li>
-</ol>
+`<h3>Understanding Backpropagation in Neural Networks</h3>
+<p>Backpropagation computes gradients of the loss function with respect to each weight using the chain rule, enabling neural networks to learn from data.</p>
+<h4>Training Loop</h4>
+<pre><code>"""
+1. Forward Pass: Input flows through layers
+2. Loss Calculation: Compare prediction to label
+3. Backward Pass: Compute gradients
+4. Weight Update: Adjust weights
+"""</code></pre>
+<h4>PyTorch Implementation</h4>
 <pre><code>import torch
 import torch.nn as nn
 
-class Net(nn.Module):
-  def __init__(self):
-    super().__init__()
-    self.layers = nn.Sequential(
-      nn.Linear(784, 128),
-      nn.ReLU(),
-      nn.Linear(128, 64),
-      nn.ReLU(),
-      nn.Linear(64, 10)
-    )
+class SimpleNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.network = nn.Sequential(
+            nn.Linear(784, 256), nn.ReLU(),
+            nn.Linear(256, 10)
+        )
 
-  def forward(self, x):
-    return self.layers(x)
+    def forward(self, x):
+        return self.network(x)
 
-model = Net()
+model = SimpleNet()
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
+# Training
 for epoch in range(10):
-  for X_batch, y_batch in train_loader:
-    predictions = model(X_batch)
-    loss = criterion(predictions, y_batch)
-    optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()</code></pre>
-<h4>Gradient Descent Variants</h4>
-<pre><code>SGD(lr=0.01)                    # Basic with momentum
-Adam(lr=0.001)                  # Adaptive learning rate
-AdamW(lr=0.001, weight_decay=0.01)</code></pre>
-<h4>Common Loss Functions</h4>
-<pre><code>nn.CrossEntropyLoss()  # Multi-class classification
-nn.BCELoss()           # Binary classification
-nn.MSELoss()           # Regression</code></pre>
-<h4>Handling Overfitting</h4>
+    for X_batch, y_batch in dataloader:
+        outputs = model(X_batch)
+        loss = criterion(outputs, y_batch)
+        optimizer.zero_grad()
+        loss.backward()  # Backpropagation
+        optimizer.step()</code></pre>
+<h4>Optimization Algorithms</h4>
+<pre><code># SGD with momentum
+optimizer_sgd = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+
+# Adam (adaptive learning rates)
+optimizer_adam = optim.Adam(model.parameters(), lr=0.001)
+
+# Learning rate scheduler
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer_adam)</code></pre>
+<h4>Common Challenges</h4>
 <ul>
-<li><strong>Dropout:</strong> Randomly zero neurons during training (0.2-0.5 rate)</li>
-<li><strong>Weight decay:</strong> L2 regularization penalizes large weights</li>
-<li><strong>Early stopping:</strong> Stop when validation loss stops improving</li>
-<li><strong>Data augmentation:</strong> Increase effective training set size</li>
-</ul>`,
+<li><strong>Vanishing Gradients:</strong> Solutions: ReLU, batch normalization, skip connections</li>
+<li><strong>Exploding Gradients:</strong> Solutions: gradient clipping, proper initialization</li>
+</ul>
+<h4>Key Takeaways</h4>
+<blockquote>Backpropagation computes gradients efficiently using the chain rule. Modern frameworks handle this automatically. Understanding the math helps debug training issues.</blockquote>`,
 
 "Keyword Research Methods":
-`<h3>Keyword Research Methods for SEO</h3>
-<p>Keyword research is the foundation of SEO and content marketing. It involves finding the terms and phrases your target audience uses when searching online.</p>
+`<h3>Comprehensive Keyword Research for SEO</h3>
+<p>Keyword research discovers the terms your audience uses when searching. It drives content strategy, SEO, and helps you create content that matches user intent.</p>
 <h4>Search Intent Types</h4>
 <ul>
-<li><strong>Informational:</strong> "how to make coffee" — user wants to learn</li>
-<li><strong>Navigational:</strong> "starbucks near me" — user wants a specific site</li>
-<li><strong>Commercial:</strong> "best coffee makers 2024" — user is researching</li>
-<li><strong>Transactional:</strong> "buy coffee maker online" — user is ready to buy</li>
+<li><strong>Informational:</strong> "how to train a puppy" - user wants to learn</li>
+<li><strong>Navigational:</strong> "Facebook login" - user wants a specific site</li>
+<li><strong>Commercial:</strong> "best laptops 2024" - researching before purchase</li>
+<li><strong>Transactional:</strong> "buy iPhone 15" - ready to buy</li>
 </ul>
-<h4>Google Research Tools</h4>
-<pre><code># Google Autocomplete
-Type your keyword and note suggestions
-
-# People Also Ask (PAA)
-Shows related questions users ask
-
-# Google Related Searches
-Bottom of SERP shows related queries
-
-# Google Trends
-Compare keyword popularity over time</code></pre>
-<h4>Key Metrics</h4>
-<pre><code>Search Volume:  Monthly searches
-Keyword Difficulty (KD):  Competition level (0-100)
-CPC:  Indicates commercial value
-SERP Features:  Featured snippets, knowledge panels</code></pre>
-<h4>Long-Tail vs Short-Tail</h4>
-<ul>
-<li><strong>Short-tail:</strong> "coffee maker" — high volume, high competition</li>
-<li><strong>Long-tail:</strong> "best drip coffee maker under $50" — specific intent, converts better</li>
-</ul>
-<h4>Content Mapping</h4>
-<pre><code>Informational keywords → Blog posts, guides, tutorials
-Commercial keywords   → Comparison pages, reviews
-Transactional keywords → Product pages, pricing pages</code></pre>`,
+<h4>Research Process</h4>
+<pre><code>1. Brainstorm seed keywords
+2. Expand with tools (Ahrefs, SEMrush, Google Keyword Planner)
+3. Analyze metrics (volume, difficulty, CPC)
+4. Prioritize and organize into topic clusters</code></pre>
+<h4>Python Keyword Analysis</h4>
+<pre><code>def analyze_keywords(keywords):
+    results = []
+    for kw in keywords:
+        word_count = len(kw.split())
+        is_question = any(w in kw.lower() for w in ["how","what","why","when","where"])
+        results.append({"keyword": kw, "word_count": word_count, "is_question": is_question})
+    return results</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Focus on user intent over raw search volume. Use topic clusters for content planning and prioritize long-tail keywords for quick wins.</blockquote>`,
 
 "Content Calendar Planning":
-`<h3>Content Calendar Planning</h3>
-<p>A content calendar is a strategic roadmap that plans what content to publish, when, and where.</p>
-<h4>Benefits</h4>
-<ul>
-<li><strong>Consistency:</strong> Maintain a regular publishing schedule</li>
-<li><strong>Strategy alignment:</strong> Content supports campaigns and goals</li>
-<li><strong>Team coordination:</strong> Everyone knows what's happening</li>
-<li><strong>Efficiency:</strong> Batch content creation for productivity</li>
-</ul>
-<h4>Calendar Structure</h4>
-<pre><code>Week | Date    | Topic           | Format    | Channel    | Status
-1    | Jan 8   | Email Marketing | Blog Post | Website    | Draft
-1    | Jan 10  | Email Tips      | Thread    | Twitter    | Published
-2    | Jan 15  | Case Study      | Video     | YouTube    | In Review</code></pre>
-<h4>Content Pillars</h4>
-<pre><code>1. Educational Content      (builds trust)
-2. Product Previews         (drives signups)
-3. Success Stories          (social proof)
-4. Industry Trends          (thought leadership)
-5. Platform Updates         (product marketing)</code></pre>
-<h4>The 70-20-10 Rule</h4>
-<pre><code>70% - Proven content types (blog, social)
-20% - Experimenting with new formats
-10% - Innovative, high-risk content</code></pre>
-<h4>Monthly Planning Process</h4>
-<ol>
-<li>Review previous month analytics</li>
-<li>Check upcoming events and holidays</li>
-<li>Brainstorm content ideas</li>
-<li>Assign topics to content pillars</li>
-<li>Set publishing dates and deadlines</li>
-</ol>`,
+`<h3>Creating and Managing a Content Calendar</h3>
+<p>A content calendar maps what you publish, when, and where. It transforms ad-hoc content creation into a systematic, goal-driven process.</p>
+<h4>Calendar Components</h4>
+<pre><code>Essential fields:
+1. Publication Date
+2. Content Type (blog, video, social, email)
+3. Title/Topic
+4. Target Keyword
+5. Search Intent
+6. Funnel Stage (TOFU, MOFU, BOFU)
+7. Status (Idea, Draft, Review, Published)
+8. Owner</code></pre>
+<h4>Content Mix Strategy</h4>
+<pre><code>Educational Content (40%): How-tos, guides, tutorials
+Engaging Content (30%): Case studies, interviews, UGC
+Promotional Content (20%): Product features, testimonials
+Entertaining Content (10%): Humor, interactive content</code></pre>
+<h4>Generate Calendar with Python</h4>
+<pre><code>import pandas as pd
+from datetime import datetime, timedelta
+
+def create_calendar(start_date, weeks):
+    content_types = {"Monday": "Blog", "Tuesday": "Social", "Wednesday": "Video"}
+    calendar = []
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    for week in range(weeks):
+        for day, ctype in content_types.items():
+            calendar.append({"date": start + timedelta(weeks=week), "type": ctype})
+    return pd.DataFrame(calendar)</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Plan 2-4 weeks ahead, maintain a balanced content mix, and track performance metrics regularly. Repurpose content across channels.</blockquote>`,
 
 "Email Campaign Design":
-`<h3>Email Campaign Design</h3>
-<p>Email marketing remains one of the highest-ROI digital channels.</p>
+`<h3>Designing Effective Email Marketing Campaigns</h3>
+<p>Email marketing generates $36 for every $1 spent. Effective campaigns combine compelling design, personalization, strategic timing, and testing.</p>
 <h4>Campaign Types</h4>
 <ul>
-<li><strong>Welcome series:</strong> Onboard new subscribers (3-5 emails)</li>
-<li><strong>Nurture sequences:</strong> Build trust and educate over time</li>
-<li><strong>Promotional:</strong> Drive sales with offers</li>
-<li><strong>Newsletter:</strong> Regular value-driven content</li>
+<li><strong>Welcome Series:</strong> 3-5 emails for new subscribers</li>
+<li><strong>Nurture Campaigns:</strong> Educational content for leads</li>
+<li><strong>Promotional:</strong> Product launches, sales</li>
 <li><strong>Re-engagement:</strong> Win back inactive subscribers</li>
 </ul>
-<h4>Email Structure</h4>
-<pre><code>Subject Line:  6-10 words, curiosity + value
-Preview Text:  40-90 characters
-Header:        Logo + navigation (minimal)
-Hero Image:    Main visual, 600px wide
-Body:          Short paragraphs, 14-16px font
-CTA Button:    High contrast, action-oriented
-Footer:        Unsubscribe, social links</code></pre>
-<h4>Best Practices</h4>
-<pre><code>Mobile-first design (60%+ open on mobile)
-Single, clear CTA per email
-Segment your list for relevance
-A/B test subject lines and CTAs
-Send at optimal times (Tues-Thu, 10am-2pm)
-Clean list regularly</code></pre>
-<h4>Key Metrics</h4>
-<pre><code>Open Rate:     Target 20-25%
-Click Rate:    Target 2.5-4%
-Conversion:    Target 1-5%
-Unsubscribe:   Keep below 0.5%</code></pre>`,
+<h4>Subject Line Formulas</h4>
+<pre><code>1. Curiosity: "The one mistake 90% of marketers make"
+2. Urgency: "Last chance: 40% off ends tonight"
+3. Personalization: "John, your report is ready"
+4. Value: "Free template: 2024 content calendar"
+5. Social Proof: "Join 10,000+ subscribers who..."</code></pre>
+<h4>A/B Testing</h4>
+<pre><code>import numpy as np
+from scipy import stats
+
+def analyze_ab(control_opens, variant_opens, control_sent, variant_sent):
+    control_rate = control_opens / control_sent
+    variant_rate = variant_opens / variant_sent
+    data = np.array([[control_opens, control_sent - control_opens],
+                     [variant_opens, variant_sent - variant_opens]])
+    _, pvalue, _, _ = stats.chi2_contingency(data)
+    return {"lift": (variant_rate - control_rate) / control_rate, "significant": pvalue < 0.05}</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Segment your audience, test one variable at a time, and always monitor deliverability metrics. Welcome series and nurture campaigns are highest ROI.</blockquote>`,
 
 "Generators & Itertools":
-`<h3>Generators and Itertools in Python</h3>
-<p>Generators are functions that yield values one at a time instead of returning a complete list. They are memory-efficient and perfect for processing large datasets.</p>
-<h4>Generator Functions</h4>
-<pre><code># Regular function returns entire list (memory heavy)
-def get_squares_list(n):
-  return [x**2 for x in range(n)]
+`<h3>Python Generators and Itertools</h3>
+<p>Generators produce values on-the-fly without storing them in memory. The itertools module provides fast, memory-efficient tools for working with iterators.</p>
+<h4>Generator Basics</h4>
+<pre><code># Generator function
+def countdown(n):
+    while n > 0:
+        yield n
+        n -= 1
 
-# Generator yields one value at a time (memory efficient)
-def get_squares_gen(n):
-  for x in range(n):
-    yield x**2
+# Generator expression (memory efficient)
+squares = (x**2 for x in range(1000000))
 
-# Using generators
-for square in get_squares_gen(1000000):
-  if square > 100:
-    break  # No need to compute all 1M values!</code></pre>
-<h4>Generator Expressions</h4>
-<pre><code># List comprehension (creates full list)
-squares_list = [x**2 for x in range(1000000)]
-
-# Generator expression (lazy evaluation)
-squares_gen = (x**2 for x in range(1000000))
-
-# Pass directly to functions
-total = sum(x**2 for x in range(1000000))</code></pre>
-<h4>itertools Module</h4>
+# Reading large files
+def read_large_file(path):
+    with open(path) as f:
+        for line in f:
+            yield line.strip()</code></pre>
+<h4>itertools Patterns</h4>
 <pre><code>import itertools
 
-# chain - concatenate iterables
+# Chain iterables
 combined = itertools.chain([1, 2], [3, 4])
 
-# groupby - group consecutive elements
+# Group consecutive elements
 data = [("A", 1), ("A", 2), ("B", 3)]
 for key, group in itertools.groupby(data, key=lambda x: x[0]):
-  print(key, list(group))
+    print(key, list(group))
 
-# combinations and permutations
-items = ["A", "B", "C", "D"]
-combos = list(itertools.combinations(items, 2))
-perms = list(itertools.permutations(items, 3))
-
-# islice - slice iterators
-first_10 = itertools.islice(range(100), 10)</code></pre>
-<h4>Real-World Example</h4>
-<pre><code>import csv
-
-def process_large_csv(filename):
-  with open(filename) as f:
-    reader = csv.DictReader(f)
-    for row in reader:
-      if int(row["sales"]) > 1000:
-        yield row
-
-# Process million-row CSV without loading into memory
-for high_sale in process_large_csv("sales.csv"):
-  send_notification(high_sale)</code></pre>`,
+# Combinatoric iterators
+perms = list(itertools.permutations(["A", "B", "C"], 2))
+combs = list(itertools.combinations(["A", "B", "C"], 2))</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Use generators for memory-efficient processing of large datasets. itertools provides composable building blocks for iterator operations.</blockquote>`,
 
 "Descriptors & Properties":
 `<h3>Python Descriptors and Properties</h3>
-<p>Descriptors are objects that define <code>__get__</code>, <code>__set__</code>, or <code>__delete__</code> methods to customize attribute access. They are the mechanism behind Python's <code>@property</code> decorator.</p>
-<h4>The @property Decorator</h4>
+<p>Descriptors customize attribute access on objects. Properties, built on descriptors, provide getter/setter syntax for clean APIs.</p>
+<h4>Descriptor Protocol</h4>
+<pre><code>class Validator:
+    def __init__(self, min_val=None, max_val=None):
+        self.min_val = min_val
+        self.max_val = max_val
+
+    def __set_name__(self, owner, name):
+        self.name = name
+
+    def __get__(self, obj, objtype=None):
+        if obj is None: return self
+        return getattr(obj, f"_{self.name}", None)
+
+    def __set__(self, obj, value):
+        if self.min_val is not None and value < self.min_val:
+            raise ValueError(f"{self.name} must be >= {self.min_val}")
+        setattr(obj, f"_{self.name}", value)
+
+class Student:
+    age = Validator(min_val=0, max_val=150)</code></pre>
+<h4>Property Decorator</h4>
 <pre><code>class Circle:
-  def __init__(self, radius):
-    self._radius = radius
+    def __init__(self, radius):
+        self._radius = radius
 
-  @property
-  def radius(self):
-    return self._radius
+    @property
+    def radius(self):
+        return self._radius
 
-  @radius.setter
-  def radius(self, value):
-    if value <= 0:
-      raise ValueError("Radius must be positive")
-    self._radius = value
+    @radius.setter
+    def radius(self, value):
+        if value < 0:
+            raise ValueError("Radius cannot be negative")
+        self._radius = value
 
-  @property
-  def area(self):
-    return 3.14159 * self._radius ** 2
-
-c = Circle(5)
-print(c.area)  # 78.53975
-c.radius = -1  # ValueError!</code></pre>
-<h4>Custom Descriptors</h4>
-<pre><code>class Validated:
-  def __init__(self, validator=None):
-    self.validator = validator
-
-  def __set_name__(self, owner, name):
-    self.name = name
-
-  def __get__(self, obj, objtype=None):
-    if obj is None: return self
-    return obj.__dict__.get(self.name)
-
-  def __set__(self, obj, value):
-    if self.validator and not self.validator(value):
-      raise ValueError(f"Invalid value for {self.name}")
-    obj.__dict__[self.name] = value
-
-class User:
-  name = Validated(lambda v: isinstance(v, str) and len(v) > 0)
-  age = Validated(lambda v: isinstance(v, int) and 0 < v < 150)</code></pre>
+    @property
+    def area(self):
+        import math
+        return math.pi * self._radius ** 2</code></pre>
 <h4>Key Takeaways</h4>
-<ul>
-<li><strong>@property</strong> is syntactic sugar for descriptors</li>
-<li>Descriptors enable validation, caching, and computed attributes</li>
-<li>Use descriptors when you need custom attribute behavior across classes</li>
-</ul>`,
+<blockquote>Use @property for simple computed attributes on a single class. Use descriptors when the same behavior applies to multiple classes (validation, caching).</blockquote>`,
 
 "Coroutines & Tasks":
-`<h3>Asyncio: Coroutines and Tasks</h3>
-<p>Python's <code>asyncio</code> library enables concurrent programming using coroutines (async functions) and tasks.</p>
-<h4>Coroutines</h4>
+`<h3>Python Coroutines and Async Tasks</h3>
+<p>Asynchronous programming handles concurrent I/O operations efficiently. Coroutines pause at await expressions, and Tasks schedule them on the event loop.</p>
+<h4>Async/Await Basics</h4>
 <pre><code>import asyncio
 
-async def fetch_data(url):
-  print(f"Starting fetch from {url}")
-  await asyncio.sleep(2)  # Simulate network delay
-  return {"data": "response"}
+async def fetch_data(url, delay):
+    await asyncio.sleep(delay)
+    return f"Data from {url}"
 
-result = asyncio.run(fetch_data("https://api.example.com"))</code></pre>
-<h4>Running Multiple Coroutines</h4>
-<pre><code>async def main():
-  results = await asyncio.gather(
-    fetch_data("https://api1.com"),
-    fetch_data("https://api2.com"),
-    fetch_data("https://api3.com")
-  )
-  return results  # ~2 seconds total, not 6</code></pre>
-<h4>Tasks</h4>
-<pre><code>async def main():
-  task1 = asyncio.create_task(fetch_data("url1"))
-  task2 = asyncio.create_task(fetch_data("url2"))
-  result1 = await task1
-  result2 = await task2</code></pre>
-<h4>Error Handling</h4>
-<pre><code>async def main():
-  try:
-    result = await asyncio.wait_for(
-      fetch_data("slow-api.com"),
-      timeout=5.0
+async def main():
+    results = await asyncio.gather(
+        fetch_data("api/users", 2),
+        fetch_data("api/posts", 1),
+        fetch_data("api/comments", 3)
     )
-  except asyncio.TimeoutError:
-    print("Request timed out!")</code></pre>`,
+    print(results)
+
+asyncio.run(main())</code></pre>
+<h4>Task Groups (Python 3.11+)</h4>
+<pre><code>async def main():
+    async with asyncio.TaskGroup() as tg:
+        task1 = tg.create_task(process("X", 2))
+        task2 = tg.create_task(process("Y", 1))
+    print(task1.result(), task2.result())</code></pre>
+<h4>Async Iteration</h4>
+<pre><code>async def async_range(start, stop):
+    for i in range(start, stop):
+        await asyncio.sleep(0.1)
+        yield i
+
+async for num in async_range(0, 5):
+    print(num)</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Coroutines pause at await, allowing other tasks to run. Tasks schedule coroutines on the event loop for concurrent execution. Use gather for parallel operations.</blockquote>`,
 
 "Observer & Strategy Patterns":
-`<h3>Design Patterns: Observer and Strategy</h3>
-<p>Design patterns are reusable solutions to common software design problems.</p>
+`<h3>Observer and Strategy Design Patterns</h3>
+<p>The Observer pattern defines one-to-many dependencies for automatic notifications. The Strategy pattern makes algorithms interchangeable at runtime.</p>
 <h4>Observer Pattern</h4>
 <pre><code>class EventEmitter:
-  def __init__(self):
-    self.listeners = {}
+    def __init__(self):
+        self.listeners = {}
 
-  def on(self, event, callback):
-    if event not in self.listeners:
-      self.listeners[event] = []
-    self.listeners[event].append(callback)
+    def on(self, event, callback):
+        self.listeners.setdefault(event, []).append(callback)
 
-  def emit(self, event, *args, **kwargs):
-    for callback in self.listeners.get(event, []):
-      callback(*args, **kwargs)
+    def emit(self, event, *args):
+        for callback in self.listeners.get(event, []):
+            callback(*args)
 
-# Usage
 emitter = EventEmitter()
-emitter.on("login", lambda user: print(f"{user} logged in"))
-emitter.on("login", lambda user: send_welcome_email(user))
-emitter.emit("login", "Alice")</code></pre>
+emitter.on("data", lambda d: print(f"Received: {d}"))
+emitter.emit("data", "hello")</code></pre>
 <h4>Strategy Pattern</h4>
-<pre><code>class Sorter:
-  def __init__(self, strategy=None):
-    self._strategy = strategy
+<pre><code>class SortStrategy:
+    def sort(self, data):
+        raise NotImplementedError
 
-  def set_strategy(self, strategy):
-    self._strategy = strategy
+class BubbleSort(SortStrategy):
+    def sort(self, data):
+        return sorted(data)
 
-  def sort(self, data):
-    return self._strategy(data)
+class QuickSort(SortStrategy):
+    def sort(self, data):
+        if len(data) <= 1: return data
+        pivot = data[len(data) // 2]
+        left = [x for x in data if x < pivot]
+        middle = [x for x in data if x == pivot]
+        right = [x for x in data if x > pivot]
+        return self.sort(left) + middle + self.sort(right)
 
-def bubble_sort(arr):
-  return sorted(arr)
-
-def quick_sort(arr):
-  if len(arr) <= 1: return arr
-  pivot = arr[len(arr)//2]
-  left = [x for x in arr if x < pivot]
-  mid = [x for x in arr if x == pivot]
-  right = [x for x in arr if x > pivot]
-  return quick_sort(left) + mid + quick_sort(right)
-
-sorter = Sorter(bubble_sort)
-sorter.set_strategy(quick_sort)</code></pre>
-<h4>When to Use</h4>
-<ul>
-<li><strong>Observer:</strong> Event systems, UI updates, pub/sub, logging</li>
-<li><strong>Strategy:</strong> Multiple algorithms, runtime behavior switching</li>
-</ul>`,
+class Sorter:
+    def __init__(self, strategy):
+        self.strategy = strategy
+    def sort(self, data):
+        return self.strategy.sort(data)</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Observer decouples event producers from consumers. Strategy encapsulates algorithms, making them interchangeable at runtime.</blockquote>`,
 
 "Visual Hierarchy & Layout":
-`<h3>Visual Hierarchy and Layout in UI Design</h3>
-<p>Visual hierarchy is the arrangement of elements to show their order of importance.</p>
-<h4>Principles of Visual Hierarchy</h4>
+`<h3>Visual Hierarchy and Layout Principles</h3>
+<p>Visual hierarchy guides users through content in order of importance. It determines what users see first and how they navigate through information.</p>
+<h4>Principles</h4>
 <ul>
-<li><strong>Size:</strong> Larger elements attract attention first</li>
-<li><strong>Color:</strong> Bright or contrasting colors draw the eye</li>
-<li><strong>Spacing:</strong> White space creates emphasis and focus</li>
-<li><strong>Typography:</strong> Font weight, size, and style create levels</li>
-<li><strong>Position:</strong> Top-left is noticed first (in LTR languages)</li>
-<li><strong>Contrast:</strong> Stands out from surrounding elements</li>
+<li><strong>Size:</strong> Larger elements draw attention first</li>
+<li><strong>Color and Contrast:</strong> High contrast elements stand out</li>
+<li><strong>Typography:</strong> Font weight and spacing create importance levels</li>
+<li><strong>Spacing:</strong> White space groups or separates elements</li>
+<li><strong>Position:</strong> Top-left is seen first in LTR cultures</li>
 </ul>
-<h4>The F-Pattern</h4>
-<pre><code>F-Pattern (text-heavy pages):
-First horizontal scan across top
-Second shorter scan below
-Vertical scan down left side
-
-Z-Pattern (minimal content):
-Logo top-left → CTA top-right
-Diagonal to bottom-left
-Diagonal to bottom-right</code></pre>
-<h4>Grid Systems</h4>
-<pre><code>.grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1rem; }
+<h4>Layout Grids</h4>
+<pre><code>.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
+}
+.col-4 { grid-column: span 4; }
 .col-8 { grid-column: span 8; }
-.col-4 { grid-column: span 4; }</code></pre>
-<h4>White Space</h4>
-<ul>
-<li><strong>Macro whitespace:</strong> Space between major sections (40-80px)</li>
-<li><strong>Micro whitespace:</strong> Space between lines, letters (8-16px)</li>
-<li>More whitespace = more premium, sophisticated feel</li>
-</ul>`,
+
+/* F-pattern for text-heavy pages */
+.f-pattern { max-width: 800px; margin: 0 auto; }
+
+/* Z-pattern for landing pages */
+.z-pattern { display: grid; grid-template-columns: 1fr 1fr; }</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Effective visual hierarchy guides users naturally through your design. Use size, contrast, and spacing to create clear importance levels.</blockquote>`,
 
 "Low-Fidelity Wireframing":
 `<h3>Low-Fidelity Wireframing</h3>
-<p>Low-fidelity wireframes are simple, rough sketches that outline the structure and layout of a page.</p>
-<h4>Why Start with Lo-Fi?</h4>
+<p>Low-fidelity wireframes are simple sketches focusing on layout, content placement, and user flow rather than visual design. They are fast to create and easy to change.</p>
+<h4>Benefits</h4>
 <ul>
-<li><strong>Speed:</strong> Create layouts in minutes, not hours</li>
-<li><strong>Focus:</strong> Concentrate on structure, not colors</li>
-<li><strong>Iteration:</strong> Easy to change and experiment</li>
-<li><strong>Communication:</strong> Quickly share ideas with stakeholders</li>
-<li><strong>Low cost:</strong> Just pen and paper</li>
+<li><strong>Speed:</strong> Create in minutes, not hours</li>
+<li><strong>Focus:</strong> Concentrate on structure, not aesthetics</li>
+<li><strong>Collaboration:</strong> Easy for non-designers to understand</li>
+<li><strong>Iteration:</strong> Cheap to discard and redo</li>
 </ul>
-<h4>Lo-Fi Elements</h4>
-<pre><code>Boxes with X     = Image placeholders
-Lines of text    = Text content
-Buttons          = Interactive elements
-Arrows           = User flow direction
-Annotations      = Functionality notes</code></pre>
-<h4>Tools</h4>
-<ul>
-<li><strong>Paper:</strong> Fastest, most flexible</li>
-<li><strong>Balsamiq:</strong> Deliberately low-fi digital tool</li>
-<li><strong>Excalidraw:</strong> Hand-drawn style wireframes</li>
-</ul>
-<h4>Best Practices</h4>
-<ol>
-<li>Start with user flows before wireframing pages</li>
-<li>Use placeholders for images</li>
-<li>Label interactive elements</li>
-<li>Include annotations</li>
-<li>Create multiple variations before deciding</li>
-</ol>`,
+<h4>Wireframe Symbols</h4>
+<pre><code>Common wireframe symbols:
+- Box with X = Image placeholder
+- Wavy lines = Text content
+- Box with label = Button
+- Rectangle = Content block
+- Circles = Navigation items
+- Lines with arrows = User flow</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Start with low-fi wireframes to validate layout and flow before investing in visual design. They save time and encourage iteration.</blockquote>`,
 
 "Design System Components":
-`<h3>Design System Components</h3>
-<p>A design system is a collection of reusable components, guided by clear standards, that can be assembled to build any number of applications.</p>
-<h4>Core Component Categories</h4>
-<pre><code>1. Primitives:    Button, Input, Checkbox, Radio, Switch, Select
-2. Layout:        Container, Grid, Stack, Divider
-3. Navigation:    Navbar, Tabs, Breadcrumb, Pagination
-4. Data Display:  Table, Card, List, Stat, Chart
-5. Feedback:      Alert, Toast, Modal, Progress, Spinner</code></pre>
-<h4>Design Tokens</h4>
-<pre><code>:root {
-  --color-primary: #2563eb;
-  --color-secondary: #64748b;
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --radius-sm: 4px;
-  --radius-md: 8px;
-}</code></pre>
-<h4>Best Practices</h4>
+`<h3>Building Design System Components</h3>
+<p>A design system is a collection of reusable components, guided by clear standards, that build a unified product experience.</p>
+<h4>Core Components</h4>
 <ul>
-<li>Build from primitives up (Button, ButtonGroup, Toolbar)</li>
-<li>Document every component with usage examples</li>
-<li>Ensure accessibility (ARIA labels, keyboard navigation)</li>
-<li>Use consistent naming: ComponentName + size + variant</li>
-</ul>`,
+<li><strong>Buttons:</strong> Primary, secondary, ghost, danger variants</li>
+<li><strong>Forms:</strong> Inputs, selects, checkboxes, radio buttons</li>
+<li><strong>Cards:</strong> Content containers with consistent styling</li>
+<li><strong>Navigation:</strong> Headers, sidebars, tabs, breadcrumbs</li>
+<li><strong>Feedback:</strong> Alerts, toasts, modals, loading indicators</li>
+</ul>
+<h4>Token System</h4>
+<pre><code>:root {
+  --color-primary: #3b82f6;
+  --color-secondary: #6b7280;
+  --color-success: #10b981;
+  --color-error: #ef4444;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-4: 1rem;
+  --space-8: 2rem;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+}</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Design systems ensure consistency and speed up development. Start with design tokens, then build reusable components with clear documentation.</blockquote>`,
 
 "Common Attack Vectors":
-`<h3>Common Attack Vectors in Cybersecurity</h3>
-<p>Understanding how attackers target systems is the first step in building effective defenses.</p>
-<h4>Social Engineering</h4>
-<pre><code>1. Phishing - Fake emails requesting credentials
-   - Spear phishing: Targeted attacks on individuals
-   - Whaling: Targeting executives
-   - Smishing: SMS-based phishing
+`<h3>Understanding Common Cyber Attack Vectors</h3>
+<p>An attack vector is a method or pathway used by hackers to gain unauthorized access. Understanding these vectors is the first step to defending against them.</p>
+<h4>Major Attack Categories</h4>
+<ul>
+<li><strong>Phishing:</strong> Deceptive emails tricking users into revealing credentials</li>
+<li><strong>Social Engineering:</strong> Manipulating people into breaking security</li>
+<li><strong>Malware:</strong> Viruses, trojans, ransomware, and spyware</li>
+<li><strong>SQL Injection:</strong> Inserting malicious SQL into application queries</li>
+<li><strong>XSS:</strong> Injecting malicious scripts into web pages</li>
+<li><strong>DDoS:</strong> Overwhelming systems with traffic</li>
+</ul>
+<h4>SQL Injection Example</h4>
+<pre><code>-- Vulnerable query
+SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "';
 
-2. Pretexting - Fabricated scenarios
-   - IT support call, vendor invoice
+-- Attack: username = ' OR 1=1 --
+-- Resulting query:
+SELECT * FROM users WHERE username = '' OR 1=1 --' AND password = '';
 
-3. Baiting - Infected USB drives in public places</code></pre>
-<h4>Network Attacks</h4>
-<pre><code>1. Man-in-the-Middle (MITM)
-   Prevention: Use HTTPS, VPNs, certificate pinning
-
-2. Denial of Service (DDoS)
-   Prevention: Rate limiting, CDN, traffic filtering
-
-3. DNS Spoofing
-   Prevention: DNSSEC, DNS over HTTPS</code></pre>
-<h4>Web Application Attacks</h4>
-<pre><code>1. SQL Injection (SQLi)
-   Prevention: Parameterized queries, ORM
-
-2. Cross-Site Scripting (XSS)
-   Prevention: Input sanitization, CSP
-
-3. CSRF
-   Prevention: CSRF tokens, SameSite cookies</code></pre>`,
+-- Prevention: Use parameterized queries</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>The most common attack vectors exploit human trust and coding mistakes. Defense requires both user education and secure coding practices like input validation and parameterized queries.</blockquote>`,
 
 "VPNs & Encryption Protocols":
 `<h3>VPNs and Encryption Protocols</h3>
-<p>VPNs create secure, encrypted tunnels between your device and a remote server.</p>
-<h4>How VPNs Work</h4>
-<pre><code>Without VPN:
-  Your Device -> ISP -> Website (visible)
-
-With VPN:
-  Your Device -> [Encrypted Tunnel] -> VPN Server -> Website</code></pre>
+<p>VPNs create encrypted tunnels for data transmission. Understanding encryption protocols helps you choose the right security level.</p>
 <h4>VPN Protocols</h4>
-<pre><code>Protocol       | Speed  | Security | Use Case
-WireGuard      | Fast   | High     | Modern default
-OpenVPN        | Medium | High     | Most compatible
-IKEv2/IPSec    | Fast   | High     | Mobile devices</code></pre>
-<h4>Use Cases</h4>
-<ul>
-<li><strong>Remote work:</strong> Secure access to company resources</li>
-<li><strong>Public WiFi:</strong> Protect data on untrusted networks</li>
-<li><strong>Privacy:</strong> Prevent ISP tracking</li>
-</ul>`,
+<pre><code>Protocol    | Speed  | Security | Use Case
+------------|--------|----------|------------------
+OpenVPN     | Medium | High     | General purpose
+WireGuard   | Fast   | High     | Modern alternative
+IKEv2/IPSec | Fast   | High     | Mobile devices
+L2TP/IPSec  | Medium | Medium   | Legacy systems
+PPTP        | Fast   | Low      | Avoid (obsolete)</code></pre>
+<h4>Encryption Algorithms</h4>
+<pre><code>Common algorithms:
+- AES-256: Symmetric encryption (data in transit)
+- RSA-2048+: Asymmetric encryption (key exchange)
+- SHA-256: Hashing for data integrity
+- Diffie-Hellman: Key exchange protocol</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Choose VPN protocols based on speed and security needs. WireGuard is the modern choice for most use cases. Avoid PPTP due to known vulnerabilities.</blockquote>`,
 
 "Hashing & Digital Signatures":
 `<h3>Hashing and Digital Signatures</h3>
-<p>Hashing ensures data integrity while digital signatures provide authentication and non-repudiation.</p>
-<h4>Hash Functions</h4>
+<p>Hashing creates fixed-size fingerprints of data. Digital signatures prove authenticity and integrity of messages.</p>
+<h4>Hashing in Python</h4>
 <pre><code>import hashlib
+import bcrypt
 
-data = b"Hello, World!"
-digest = hashlib.sha256(data).hexdigest()
-# dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f
+# SHA-256
+message = "Hello, World!"
+hash_obj = hashlib.sha256(message.encode())
+print(hash_obj.hexdigest())
 
-# Avalanche effect
-digest2 = hashlib.sha256(b"Hello, World.").hexdigest()
-# Completely different hash!</code></pre>
-<h4>Password Hashing</h4>
-<pre><code>import bcrypt
+# Password hashing with bcrypt
+password = "user_password".encode()
+hashed = bcrypt.hashpw(password, bcrypt.gensalt())
 
-password = b"my_secret_password"
-hashed = bcrypt.hashpw(password, bcrypt.gensalt(rounds=12))
+# Verify
 if bcrypt.checkpw(password, hashed):
-  print("Password matches!")
-# NEVER use MD5/SHA for passwords!</code></pre>
+    print("Password matches")</code></pre>
 <h4>Digital Signatures</h4>
-<pre><code>from cryptography.hazmat.primitives.asymmetric import rsa, padding
-from cryptography.hazmat.primitives import hashes
+<pre><code>from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
 
 private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 public_key = private_key.public_key()
 
-message = b"Transfer $1000 to Alice"
-signature = private_key.sign(message, padding.PSS(...), hashes.SHA256())
-public_key.verify(signature, message, padding.PSS(...), hashes.SHA256())</code></pre>
+# Sign
+signature = private_key.sign(message, padding.PKCS1v15(), hashes.SHA256())
+
+# Verify
+public_key.verify(signature, message, padding.PKCS1v15(), hashes.SHA256())</code></pre>
 <h4>Key Takeaways</h4>
-<ul>
-<li>Use SHA-256 or SHA-3 for integrity checks</li>
-<li>Use bcrypt/scrypt/Argon2 for password hashing</li>
-<li>Never roll your own cryptography</li>
-</ul>`,
+<blockquote>Hashing verifies data integrity. Digital signatures provide authentication and non-repudiation. Always use bcrypt for password hashing.</blockquote>`,
 
 "Vulnerability Scanning with Nmap":
 `<h3>Vulnerability Scanning with Nmap</h3>
-<p>Nmap is the industry-standard tool for network discovery and security auditing.</p>
-<h4>Basic Scanning</h4>
-<pre><code>nmap 192.168.1.1           # Quick scan
-nmap -p 80,443,22 target   # Specific ports
-nmap -p- target             # All 65535 ports
-nmap -A target              # Aggressive (OS, version, scripts)
-nmap 192.168.1.0/24         # Scan subnet</code></pre>
-<h4>Scan Types</h4>
-<pre><code>nmap -sS target     # SYN scan (stealthy)
-nmap -sT target     # TCP connect scan
-nmap -sV target     # Service version detection
-nmap -O target      # OS detection</code></pre>
-<h4>NSE Scripts</h4>
-<pre><code>nmap --script vuln target
-nmap --script ssl-enum-ciphers -p 443 example.com
-nmap --script http-security-headers -p 80 example.com</code></pre>`,
+<p>Nmap is a network scanning tool used to discover hosts, services, and vulnerabilities on a network.</p>
+<h4>Basic Nmap Commands</h4>
+<pre><code># Scan a target
+nmap 192.168.1.1
+
+# Service detection
+nmap -sV 192.168.1.1
+
+# OS detection
+nmap -O 192.168.1.1
+
+# Scan entire subnet
+nmap 192.168.1.0/24
+
+# Stealth scan
+nmap -sS 192.168.1.1
+
+# Vulnerability scan
+nmap --script vuln 192.168.1.1</code></pre>
+<h4>Common Ports</h4>
+<pre><code>21 - FTP (often insecure)
+22 - SSH (check for weak credentials)
+80 - HTTP
+443 - HTTPS
+3306 - MySQL
+5432 - PostgreSQL</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Nmap helps identify network vulnerabilities before attackers do. Regular scanning combined with patch management forms a strong security posture.</blockquote>`,
 
 "S3 Bucket Management":
 `<h3>AWS S3 Bucket Management</h3>
-<p>Amazon S3 provides scalable object storage. Understanding bucket management is essential for cloud computing.</p>
-<h4>Basic Operations</h4>
+<p>Amazon S3 is an object storage service offering industry-leading scalability, data availability, and security.</p>
+<h4>Creating and Configuring Buckets</h4>
 <pre><code>import boto3
 
-s3 = boto3.client("s3")
-s3.create_bucket(Bucket="my-bucket")
-s3.upload_file("local.txt", "my-bucket", "remote.txt")
-s3.download_file("my-bucket", "remote.txt", "downloaded.txt")
+s3 = boto3.client('s3')
 
-response = s3.list_objects_v2(Bucket="my-bucket")
-for obj in response.get("Contents", []):
-  print(f"{obj['Key']} ({obj['Size']} bytes)")</code></pre>
-<h4>Best Practices</h4>
-<ul>
-<li>Enable versioning for data protection</li>
-<li>Use lifecycle policies to manage costs</li>
-<li>Enable access logging for auditing</li>
-<li>Use server-side encryption (SSE-S3, SSE-KMS)</li>
-<li>Block public access by default</li>
-</ul>`,
+# Create bucket
+s3.create_bucket(Bucket='my-bucket',
+    CreateBucketConfiguration={'LocationConstraint': 'us-west-2'})
+
+# Upload file
+s3.upload_file('local-file.txt', 'my-bucket', 'remote-file.txt')
+
+# List objects
+response = s3.list_objects_v2(Bucket='my-bucket')</code></pre>
+<h4>Security Configuration</h4>
+<pre><code># Enable versioning
+s3.put_bucket_versioning(Bucket='my-bucket',
+    VersioningConfiguration={'Status': 'Enabled'})
+
+# Enable encryption
+s3.put_bucket_encryption(Bucket='my-bucket',
+    ServerSideEncryptionConfiguration={
+        'Rules': [{'ApplyServerSideEncryptionByDefault': {'SSEAlgorithm': 'aws:kms'}}]
+    })</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Secure S3 buckets by enabling encryption, versioning, and proper bucket policies. Never leave buckets publicly accessible unless explicitly required.</blockquote>`,
 
 "RDS & DynamoDB":
 `<h3>AWS RDS and DynamoDB</h3>
-<p>AWS offers both relational (RDS) and NoSQL (DynamoDB) database services.</p>
-<h4>RDS</h4>
+<p>RDS provides managed relational databases. DynamoDB offers fully managed NoSQL key-value and document databases.</p>
+<h4>RDS Setup</h4>
 <pre><code>import boto3
-rds = boto3.client("rds")
 
+rds = boto3.client('rds')
 rds.create_db_instance(
-  DBInstanceIdentifier="my-db",
-  DBInstanceClass="db.t3.micro",
-  Engine="mysql",
-  MasterUsername="admin",
-  MasterUserPassword="secure_password",
-  AllocatedStorage=20
+    DBInstanceIdentifier='my-db',
+    DBInstanceClass='db.t3.micro',
+    Engine='postgresql',
+    MasterUsername='admin',
+    MasterUserPassword='secure_password',
+    AllocatedStorage=20
 )</code></pre>
-<h4>DynamoDB</h4>
-<pre><code>import boto3
-dynamodb = boto3.resource("dynamodb")
-table = dynamodb.Table("Users")
+<h4>DynamoDB Basics</h4>
+<pre><code>dynamodb = boto3.resource('dynamodb')
+table = dynamodb.create_table(
+    TableName='Users',
+    KeySchema=[{'AttributeName': 'user_id', 'KeyType': 'HASH'}],
+    AttributeDefinitions=[{'AttributeName': 'user_id', 'AttributeType': 'S'}],
+    BillingMode='PAY_PER_REQUEST'
+)
 
-table.put_item(Item={"user_id": "123", "name": "Alice"})
-response = table.get_item(Key={"user_id": "123"})</code></pre>
-<h4>RDS vs DynamoDB</h4>
-<pre><code>Feature      | RDS              | DynamoDB
-Model        | Relational (SQL) | Key-Value
-Scaling      | Vertical         | Horizontal
-Best for     | Complex queries  | Simple lookups</code></pre>`,
+# Put item
+table.put_item(Item={'user_id': '123', 'name': 'Alice'})
+
+# Get item
+response = table.get_item(Key={'user_id': '123'})</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>RDS is ideal for structured data with complex queries. DynamoDB excels at high-throughput, low-latency key-value lookups.</blockquote>`,
 
 "CI/CD with CodePipeline":
 `<h3>CI/CD with AWS CodePipeline</h3>
-<p>Continuous Integration and Continuous Deployment automate the build, test, and deployment process.</p>
+<p>CodePipeline automates the build, test, and deploy phases of your release process.</p>
 <h4>Pipeline Stages</h4>
-<pre><code>1. Source     -> Code is pulled from repository
-2. Build     -> Code is compiled and tested
-3. Deploy    -> Application is deployed</code></pre>
-<h4>buildspec.yml</h4>
+<pre><code>1. Source: GitHub/CodeCommit triggers pipeline
+2. Build: CodeBuild compiles and tests code
+3. Deploy: CodeDeploy/ECS/Lambda deploys to environment
+
+Typical flow:
+Developer pushes code -> Source stage triggers
+-> Build stage runs tests
+-> Deploy stage pushes to staging
+-> Manual approval
+-> Deploy to production</code></pre>
+<h4>CodeBuild Build Spec</h4>
 <pre><code>version: 0.2
 phases:
   install:
@@ -1156,52 +956,45 @@ phases:
 artifacts:
   files:
     - '**/*'</code></pre>
-<h4>Best Practices</h4>
-<ul>
-<li>Keep pipelines fast (under 10 minutes)</li>
-<li>Run tests in parallel</li>
-<li>Use automated rollbacks on failure</li>
-<li>Implement feature flags for safe deployments</li>
-</ul>`,
+<h4>Key Takeaways</h4>
+<blockquote>Automate your entire release pipeline from code commit to production. Include automated testing and manual approval gates for critical stages.</blockquote>`,
 
 "Consensus Mechanisms":
-`<h3>Consensus Mechanisms in Blockchain</h3>
-<p>Consensus mechanisms allow distributed nodes to agree on the state of the blockchain without a central authority.</p>
-<h4>Proof of Work (PoW)</h4>
-<pre><code>def mine_block(block_data, difficulty):
-  nonce = 0
-  while True:
-    hash_result = sha256(f"{block_data}{nonce}")
-    if hash_result.startswith("0" * difficulty):
-      return nonce  # Found valid nonce!
-    nonce += 1</code></pre>
-<h4>Proof of Stake (PoS)</h4>
-<pre><code># Validators stake tokens as collateral
-# Higher stake = higher chance of being selected
-# Dishonesty = lose staked tokens (slashing)
+`<h3>Blockchain Consensus Mechanisms</h3>
+<p>Consensus mechanisms ensure all nodes in a blockchain network agree on the state of the ledger without a central authority.</p>
+<h4>Major Algorithms</h4>
+<pre><code>Proof of Work (PoW):
+  - Miners solve complex puzzles
+  - High energy consumption
+  - Used by Bitcoin
 
-# Ethereum PoS:
-# - 32 ETH minimum to become validator
-# - ~99.95% less energy than PoW</code></pre>
-<h4>Comparison</h4>
-<pre><code>Mechanism | Speed    | Energy  | Decentralization
-PoW       | Slow     | High    | High
-PoS       | Medium   | Low     | Medium-High
-DPoS      | Fast     | Low     | Medium</code></pre>`,
+Proof of Stake (PoS):
+  - Validators stake tokens
+  - Energy efficient
+  - Used by Ethereum 2.0
+
+Delegated PoS (DPoS):
+  - Token holders vote for delegates
+  - Faster block times
+
+Byzantine Fault Tolerance (BFT):
+  - Tolerates up to 1/3 faulty nodes</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Consensus mechanisms balance security, decentralization, and scalability. PoW offers maximum security but uses energy. PoS provides efficiency with good security.</blockquote>`,
 
 "ERC-20 Token Standard":
-`<h3>ERC-20 Token Standard</h3>
-<p>ERC-20 is the technical standard for fungible tokens on Ethereum.</p>
+`<h3>Understanding ERC-20 Token Standard</h3>
+<p>ERC-20 is the standard interface for fungible tokens on Ethereum, enabling tokens to be traded and integrated with dApps.</p>
 <h4>ERC-20 Interface</h4>
 <pre><code>// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract MyToken is ERC20 {
-  constructor(uint256 initialSupply) ERC20("MyToken", "MTK") {
-    _mint(msg.sender, initialSupply * 10**decimals());
-  }
+    constructor() ERC20("MyToken", "MTK") {
+        _mint(msg.sender, 1000000 * 10**18);
+    }
 }</code></pre>
 <h4>Required Functions</h4>
 <pre><code>function totalSupply() external view returns (uint256);
@@ -1209,206 +1002,233 @@ function balanceOf(address account) external view returns (uint256);
 function transfer(address to, uint256 amount) external returns (bool);
 function allowance(address owner, address spender) external view returns (uint256);
 function approve(address spender, uint256 amount) external returns (bool);
-function transferFrom(address from, address to, uint256 amount) external returns (bool);</code></pre>`,
+function transferFrom(address from, address to, uint256 amount) external returns (bool);</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>ERC-20 provides a standard interface for fungible tokens. Use OpenZeppelin implementations for security. Always audit smart contracts before deployment.</blockquote>`,
 
 "Yield Farming & Liquidity Pools":
 `<h3>Yield Farming and Liquidity Pools</h3>
-<p>Yield farming involves providing liquidity to DeFi protocols in exchange for rewards.</p>
-<h4>How Liquidity Pools Work</h4>
-<pre><code># Constant product AMM: x * y = k
-# Pool: 100 ETH + 200,000 USDC
-# k = 100 * 200000 = 20,000,000
+<p>Yield farming involves providing liquidity to DeFi protocols for rewards. Liquidity pools are smart contracts holding token pairs for decentralized trading.</p>
+<h4>AMM Formula</h4>
+<pre><code>x * y = k
 
-# Swap 1 ETH for USDC:
-# (100 + 1) * (200000 - new_usdc) = 20,000,000
-# new_usdc = 198,019.80
-# User receives: 1,980.20 USDC</code></pre>
-<h4>Risks</h4>
-<ul>
-<li><strong>Impermanent Loss:</strong> Price divergence reduces value vs holding</li>
-<li><strong>Smart contract risk:</strong> Bugs or exploits</li>
-<li><strong>Rug pulls:</strong> Developers abandon project with funds</li>
-<li><strong>Gas fees:</strong> Ethereum transactions can be expensive</li>
-</ul>`,
+Where:
+x = Token A reserve
+y = Token B reserve
+k = Constant product
+
+Example:
+Pool has 100 ETH and 200,000 USDC
+k = 100 * 200,000 = 20,000,000
+
+Buy 10 ETH:
+New ETH = 90
+New USDC = 20,000,000 / 90 = 222,222.22
+Cost = 22,222.22 USDC for 10 ETH</code></pre>
+<h4>Impermanent Loss</h4>
+<pre><code>Initial: 10 ETH ($2000) + 20,000 USDC
+After 2x ETH price change:
+Pool value = $42,426
+If held = $60,000
+Impermanent Loss = 29.3%</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Yield farming offers high returns but carries risks including impermanent loss and smart contract vulnerabilities. Always research protocols thoroughly.</blockquote>`,
 
 "Core Components & Styling":
 `<h3>React Native Core Components and Styling</h3>
-<p>React Native provides core components that map to native platform UI elements.</p>
+<p>React Native provides core components that map to native platform UI elements. Styling uses a subset of CSS with Flexbox layout.</p>
 <h4>Core Components</h4>
-<pre><code>import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+<pre><code>import React from 'react';
+import { View, Text, Image, ScrollView, FlatList } from 'react-native';
 
 function App() {
   return (
-    &lt;View style={styles.container}&gt;
-      &lt;Text style={styles.title}&gt;Hello World&lt;/Text&gt;
-      &lt;TouchableOpacity style={styles.button}&gt;
-        &lt;Text style={styles.buttonText}&gt;Press Me&lt;/Text&gt;
-      &lt;/TouchableOpacity&gt;
-    &lt;/View&gt;
+    &lt;ScrollView&gt;
+      &lt;View style={styles.container}&gt;
+        &lt;Text style={styles.title}&gt;Hello React Native&lt;/Text&gt;
+        &lt;Image source={{ uri: 'https://example.com/img.png' }} style={styles.image} /&gt;
+        &lt;FlatList
+          data={[{id: '1', name: 'Item 1'}]}
+          keyExtractor={item => item.id}
+          renderItem={({item}) => &lt;Text&gt;{item.name}&lt;/Text&gt;}
+        /&gt;
+      &lt;/View&gt;
+    &lt;/ScrollView&gt;
   );
 }</code></pre>
-<h4>Stylesheet</h4>
-<pre><code>const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5f5f5" },
-  title: { fontSize: 20, fontWeight: "bold" },
-  button: { backgroundColor: "#2563eb", padding: 14, borderRadius: 8 },
-  buttonText: { color: "white", fontWeight: "600" },
-});</code></pre>
-<h4>Flexbox Layout</h4>
-<pre><code>// flexDirection defaults to "column" (not "row")
-row: { flexDirection: "row", justifyContent: "space-between" },
-center: { flex: 1, justifyContent: "center", alignItems: "center" },</code></pre>`,
+<h4>Key Takeaways</h4>
+<blockquote>Use FlatList for long lists (virtualized) and ScrollView for small content. Styling uses Flexbox by default.</blockquote>`,
 
 "State Management with Context & Zustand":
-`<h3>State Management with Context API and Zustand</h3>
-<p>Managing state across multiple components requires a strategy.</p>
-<h4>Context API</h4>
-<pre><code>import { createContext, useContext, useState } from "react";
+`<h3>State Management with Context and Zustand</h3>
+<p>For state shared across many components, React Context or Zustand provide cleaner alternatives to prop drilling.</p>
+<h4>React Context</h4>
+<pre><code>import { createContext, useContext, useState } from 'react';
 
-const AuthContext = createContext(null);
+const ThemeContext = createContext();
 
-function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const login = (credentials) => setUser({ id: 1, name: "Alice" });
-  const logout = () => setUser(null);
-
+function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
   return (
-    &lt;AuthContext.Provider value={{ user, login, logout }}&gt;
+    &lt;ThemeContext.Provider value={{ theme, toggleTheme: () => setTheme(t => t === 'light' ? 'dark' : 'light') }}&gt;
       {children}
-    &lt;/AuthContext.Provider&gt;
+    &lt;/ThemeContext.Provider&gt;
   );
 }</code></pre>
-<h4>Zustand</h4>
-<pre><code>import { create } from "zustand";
+<h4>Zustand Store</h4>
+<pre><code>import { create } from 'zustand';
 
 const useStore = create((set) => ({
   count: 0,
-  user: null,
-  increment: () => set((state) => ({ count: state.count + 1 })),
-  setUser: (user) => set({ user }),
+  todos: [],
+  increment: () => set(state => ({ count: state.count + 1 })),
+  addTodo: (text) => set(state => ({
+    todos: [...state.todos, { id: Date.now(), text, done: false }]
+  }))
 }));
 
 function Counter() {
-  const count = useStore((state) => state.count);
-  const increment = useStore((state) => state.increment);
-  return &lt;button onClick={increment}&gt;Count: {count}&lt;/button&gt;;
+  const count = useStore(state => state.count);
+  const increment = useStore(state => state.increment);
+  return &lt;button onClick={increment}&gt;{count}&lt;/button&gt;;
 }</code></pre>
-<h4>Context vs Zustand</h4>
-<pre><code>Feature          | Context API      | Zustand
-Bundle size      | 0 KB             | ~1 KB
-Re-renders       | All consumers    | Only subscribed
-DevTools         | Limited          | Full support</code></pre>`,
+<h4>Key Takeaways</h4>
+<blockquote>Use Context for simple global state like themes. Zustand is lightweight and avoids Context performance issues.</blockquote>`,
 
 "Camera, Location & Permissions":
-`<h3>Camera, Location, and Permissions</h3>
-<p>React Native provides access to device hardware but requires explicit permission handling.</p>
+`<h3>Camera, Location, and Permissions in React Native</h3>
+<p>React Native provides access to device hardware through libraries. Permissions must be requested before accessing sensitive data.</p>
 <h4>Camera Access</h4>
-<pre><code>import { CameraView, useCameraPermissions } from "expo-camera";
+<pre><code>import { Camera } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 
-function CameraScreen() {
-  const [permission, requestPermission] = useCameraPermissions();
-  if (!permission.granted) {
-    return &lt;Button title="Grant Permission" onPress={requestPermission} /&gt;;
+const [hasPermission, setHasPermission] = useState(null);
+
+useEffect(() => {
+  (async () => {
+    const { status } = await Camera.requestCameraPermissionsAsync();
+    setHasPermission(status === 'granted');
+  })();
+}, []);
+
+const takePicture = async () => {
+  if (cameraRef.current) {
+    const photo = await cameraRef.current.takePictureAsync();
+    setImage(photo.uri);
   }
-  return (
-    &lt;CameraView style={{ flex: 1 }} facing="back"&gt;
-      &lt;Button title="Take Photo" onPress={takePicture} /&gt;
-    &lt;/CameraView&gt;
-  );
-}</code></pre>
+};</code></pre>
 <h4>Location Access</h4>
-<pre><code>import * as Location from "expo-location";
+<pre><code>import * as Location from 'expo-location';
 
-async function getCurrentLocation() {
-  const { status } = await Location.requestForegroundPermissionsAsync();
-  if (status !== "granted") { alert("Permission required"); return; }
-  const location = await Location.getCurrentPositionAsync();
-  console.log(location.coords.latitude, location.coords.longitude);
-}</code></pre>`,
+useEffect(() => {
+  (async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status === 'granted') {
+      const loc = await Location.getCurrentPositionAsync({});
+      setLocation(loc);
+    }
+  })();
+}, []);</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Always request permissions at runtime and handle denial gracefully. Use expo-camera and expo-location for cross-platform hardware access.</blockquote>`,
 
 "App Store Submission Guide":
 `<h3>App Store Submission Guide</h3>
-<p>Getting your app into the App Store and Google Play requires following specific guidelines.</p>
+<p>Submitting an app to the App Store or Google Play requires meeting specific guidelines and preparing proper metadata.</p>
 <h4>Pre-Submission Checklist</h4>
-<pre><code>Technical:
-[ ] App icon (1024x1024 iOS, 512x512 Android)
-[ ] Screenshots for all device sizes
-[ ] App description and keywords
-[ ] Privacy policy URL
-[ ] Age rating completed
+<pre><code>App Store Requirements:
+1. App icon (1024x1024 PNG)
+2. Screenshots for all required device sizes
+3. App description and keywords
+4. Privacy policy URL
+5. Support URL
+6. Category selection
+7. Age rating questionnaire
 
-Testing:
-[ ] Tested on physical devices
-[ ] No crashes or critical bugs
-[ ] Network error handling works</code></pre>
+Build Commands:
+# iOS
+eas build --platform ios
+eas submit --platform ios
+
+# Android
+eas build --platform android
+eas submit --platform android</code></pre>
 <h4>Common Rejection Reasons</h4>
-<ul>
-<li>Broken links or non-functional features</li>
-<li>Insufficient metadata</li>
-<li>Missing privacy policy</li>
-<li>Using private APIs</li>
-<li>Poor UI/UX</li>
-<li>App crashes</li>
-</ul>`,
+<pre><code>- Crashes or bugs
+- Incomplete metadata
+- Misleading description
+- Privacy policy missing
+- Poor UI/UX design
+- Broken links
+- Placeholder content</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Test thoroughly before submission. Follow platform guidelines carefully. Prepare all metadata and screenshots in advance.</blockquote>`,
 
 "Pivot Tables & Data Summarization":
-`<h3>Pivot Tables and Data Summarization</h3>
-<p>Pivot tables are one of the most powerful features in Excel for analyzing and summarizing large datasets.</p>
-<h4>Creating a Pivot Table</h4>
-<pre><code>1. Select your data range (including headers)
-2. Insert > PivotTable
-3. Choose placement (new or existing sheet)
-4. Drag fields to Row/Column/Value areas
+`<h3>Pivot Tables and Data Summarization in Excel</h3>
+<p>Pivot tables transform raw data into meaningful summaries, enabling quick analysis of large datasets without complex formulas.</p>
+<h4>Creating Pivot Tables</h4>
+<pre><code>import pandas as pd
 
-Example: Sales Data
-- Rows: Product Category
-- Columns: Month
-- Values: Sum of Revenue</code></pre>
+df = pd.read_csv('sales.csv')
+
+pivot = pd.pivot_table(
+    df,
+    values='Revenue',
+    index='Region',
+    columns='Product',
+    aggfunc='sum',
+    fill_value=0,
+    margins=True,
+    margins_name='Total'
+)
+print(pivot)</code></pre>
 <h4>Aggregation Functions</h4>
-<pre><code>SUM      - Total of all values
-COUNT    - Number of items
-AVERAGE  - Mean value
-MAX/MIN  - Highest/Lowest
-% OF     - Percentage of grand total</code></pre>
-<h4>Tips</h4>
-<ul>
-<li>Use Slicers for visual filtering</li>
-<li>Calculated Fields for custom formulas</li>
-<li>Refresh data when source changes</li>
-<li>Use PivotCharts for visualization</li>
-</ul>`,
+<pre><code>Common aggregations:
+- SUM: Total of all values
+- COUNT: Number of entries
+- AVERAGE: Mean value
+- MAX/MIN: Highest/lowest values
+- STDEV: Standard deviation
+
+# Multiple aggregations
+pivot = pd.pivot_table(df, values='Revenue', index='Region',
+    aggfunc=['sum', 'mean', 'count'])</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Pivot tables are powerful for data exploration. They let you slice data by multiple dimensions and quickly identify trends.</blockquote>`,
 
 "JOIN Operations":
 `<h3>SQL JOIN Operations</h3>
-<p>JOINs combine rows from two or more tables based on a related column.</p>
+<p>JOINs combine rows from two or more tables based on related columns, enabling you to query data across multiple tables.</p>
 <h4>Types of JOINs</h4>
 <pre><code>-- INNER JOIN: Only matching rows
-SELECT o.id, c.name
-FROM orders o
-INNER JOIN customers c ON o.customer_id = c.id;
+SELECT c.name, o.total
+FROM customers c
+INNER JOIN orders o ON c.id = o.customer_id;
 
 -- LEFT JOIN: All rows from left table
-SELECT c.name, o.id
+SELECT c.name, o.total
 FROM customers c
 LEFT JOIN orders o ON c.id = o.customer_id;
 
 -- FULL OUTER JOIN: All rows from both
-SELECT c.name, o.id
+SELECT c.name, o.total
 FROM customers c
-FULL OUTER JOIN orders o ON c.id = o.customer_id;</code></pre>
-<h4>Multi-table JOIN</h4>
+FULL OUTER JOIN orders o ON c.id = o.customer_id;
+
+-- CROSS JOIN: Cartesian product
+SELECT c.name, p.product_name
+FROM customers c
+CROSS JOIN products p;</code></pre>
+<h4>Multi-table JOINs</h4>
 <pre><code>SELECT o.id, c.name, p.product_name, oi.quantity
 FROM orders o
 JOIN customers c ON o.customer_id = c.id
 JOIN order_items oi ON o.id = oi.order_id
 JOIN products p ON oi.product_id = p.id
 WHERE o.date >= '2024-01-01';</code></pre>
-<h4>Performance Tips</h4>
-<ul>
-<li>Always index JOIN columns (foreign keys)</li>
-<li>Use INNER JOIN when you only need matching rows</li>
-<li>Avoid SELECT * — specify only needed columns</li>
-</ul>`,
+<h4>Key Takeaways</h4>
+<blockquote>Always index JOIN columns. Use INNER JOIN when you only need matching rows. Avoid SELECT * - specify only needed columns.</blockquote>`,
 
 "Window Functions":
 `<h3>SQL Window Functions</h3>
@@ -1443,8 +1263,514 @@ FROM product_sales;</code></pre>
 <h4>RANK vs ROW_NUMBER</h4>
 <pre><code>-- ROW_NUMBER: Unique sequential (1, 2, 3, 4)
 -- RANK: Gaps for ties (1, 2, 2, 4)
--- DENSE_RANK: No gaps (1, 2, 2, 3)</code></pre>`
-
+-- DENSE_RANK: No gaps (1, 2, 2, 3)</code></pre>
+<h4>Key Takeaways</h4>
+<blockquote>Window functions enable complex analytical queries without subqueries. PARTITION BY divides data into groups. ORDER BY defines processing order within each partition.</blockquote>`
 };
 
-export default enrichedLessons;
+export const lessonQuizzes: Record<string, {
+  title: string;
+  description: string;
+  timeLimit: number;
+  passingScore: number;
+  questions: {
+    content: string;
+    type: string;
+    points: number;
+    explanation: string;
+    difficulty: string;
+    answers: { content: string; isCorrect: boolean; points: number }[];
+  }[];
+}> = {
+
+"Semantic HTML Elements": {
+  title: "Semantic HTML Elements Quiz",
+  description: "Test your knowledge of HTML5 semantic elements.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Which element wraps main navigation?", type: "SINGLE_CHOICE", points: 10, explanation: "nav is for navigation blocks.", difficulty: "easy", answers: [{ content: "<header>", isCorrect: false, points: 0 }, { content: "<nav>", isCorrect: true, points: 10 }, { content: "<section>", isCorrect: false, points: 0 }, { content: "<div>", isCorrect: false, points: 0 }] },
+    { content: "How many <main> elements per page?", type: "SINGLE_CHOICE", points: 10, explanation: "Exactly one main element.", difficulty: "easy", answers: [{ content: "As many as needed", isCorrect: false, points: 0 }, { content: "Exactly one", isCorrect: true, points: 10 }, { content: "Exactly two", isCorrect: false, points: 0 }, { content: "None", isCorrect: false, points: 0 }] },
+    { content: "<article> represents independently distributable content.", type: "TRUE_FALSE", points: 10, explanation: "Articles should make sense independently.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Which element captions a <figure>?", type: "SINGLE_CHOICE", points: 10, explanation: "figcaption provides captions.", difficulty: "medium", answers: [{ content: "<caption>", isCorrect: false, points: 0 }, { content: "<label>", isCorrect: false, points: 0 }, { content: "<figcaption>", isCorrect: true, points: 10 }, { content: "<title>", isCorrect: false, points: 0 }] },
+    { content: "Semantic elements improve SEO.", type: "TRUE_FALSE", points: 10, explanation: "Search engines use semantics for hierarchy.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"ES6+ Features & Arrow Functions": {
+  title: "ES6+ Features Quiz",
+  description: "Test your understanding of modern JavaScript features.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Key difference between arrow and regular functions regarding 'this'?", type: "SINGLE_CHOICE", points: 10, explanation: "Arrow functions lexically bind this.", difficulty: "medium", answers: [{ content: "Arrow has own this", isCorrect: false, points: 0 }, { content: "Arrow inherits this from enclosing scope", isCorrect: true, points: 10 }, { content: "No difference", isCorrect: false, points: 0 }, { content: "Arrow uses global this", isCorrect: false, points: 0 }] },
+    { content: "Which syntax creates a template literal?", type: "SINGLE_CHOICE", points: 10, explanation: "Backticks with interpolation.", difficulty: "easy", answers: [{ content: "Single quotes", isCorrect: false, points: 0 }, { content: "Double quotes", isCorrect: false, points: 0 }, { content: "Backticks", isCorrect: true, points: 10 }, { content: "Parentheses", isCorrect: false, points: 0 }] },
+    { content: "Spread operator expands iterables into individual elements.", type: "TRUE_FALSE", points: 10, explanation: "Spread expands arrays/objects.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Optional chaining returns undefined for null properties.", type: "TRUE_FALSE", points: 10, explanation: "Safely returns undefined instead of errors.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Difference between || and ?? operators?", type: "SINGLE_CHOICE", points: 10, explanation: "|| falls back on falsy, ?? only on null/undefined.", difficulty: "hard", answers: [{ content: "Identical", isCorrect: false, points: 0 }, { content: "|| checks null/undefined only", isCorrect: false, points: 0 }, { content: "?? checks falsy values", isCorrect: false, points: 0 }, { content: "|| falls back on falsy, ?? only on null/undefined", isCorrect: true, points: 10 }] }
+  ]
+},
+
+"State & Props Management": {
+  title: "State & Props Quiz",
+  description: "Test your understanding of React state and props.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Which statement about props is correct?", type: "SINGLE_CHOICE", points: 10, explanation: "Props are read-only from parent to child.", difficulty: "easy", answers: [{ content: "Props can be modified by children", isCorrect: false, points: 0 }, { content: "Props flow child to parent", isCorrect: false, points: 0 }, { content: "Props are read-only from parent to child", isCorrect: true, points: 10 }, { content: "Props only work with classes", isCorrect: false, points: 0 }] },
+    { content: "Why must state updates be immutable?", type: "SINGLE_CHOICE", points: 10, explanation: "React detects changes by reference comparison.", difficulty: "medium", answers: [{ content: "Performance only", isCorrect: false, points: 0 }, { content: "React detects by reference comparison", isCorrect: true, points: 10 }, { content: "Style preference", isCorrect: false, points: 0 }, { content: "JavaScript requirement", isCorrect: false, points: 0 }] },
+    { content: "useReducer is for complex state with multiple sub-values.", type: "TRUE_FALSE", points: 10, explanation: "useReducer handles complex state transitions.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Lifting state up moves it to the closest common ancestor.", type: "TRUE_FALSE", points: 10, explanation: "Shared state lives in the parent component.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "The children prop receives content between JSX tags.", type: "TRUE_FALSE", points: 10, explanation: "Special prop for nested content.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"RESTful API Design": {
+  title: "RESTful API Design Quiz",
+  description: "Evaluate your knowledge of REST API design.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Which status code for successful creation?", type: "SINGLE_CHOICE", points: 10, explanation: "201 Created on POST.", difficulty: "easy", answers: [{ content: "200 OK", isCorrect: false, points: 0 }, { content: "201 Created", isCorrect: true, points: 10 }, { content: "204 No Content", isCorrect: false, points: 0 }, { content: "301 Redirect", isCorrect: false, points: 0 }] },
+    { content: "REST APIs should use plural nouns.", type: "TRUE_FALSE", points: 10, explanation: "Convention uses /users, /products.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Which method updates only specific fields?", type: "SINGLE_CHOICE", points: 10, explanation: "PATCH for partial updates.", difficulty: "medium", answers: [{ content: "GET", isCorrect: false, points: 0 }, { content: "POST", isCorrect: false, points: 0 }, { content: "PUT", isCorrect: false, points: 0 }, { content: "PATCH", isCorrect: true, points: 10 }] },
+    { content: "Why version APIs?", type: "SINGLE_CHOICE", points: 10, explanation: "Allow breaking changes without disrupting clients.", difficulty: "medium", answers: [{ content: "Aesthetics", isCorrect: false, points: 0 }, { content: "Breaking changes without disruption", isCorrect: true, points: 10 }, { content: "Required by HTTP", isCorrect: false, points: 0 }, { content: "Security only", isCorrect: false, points: 0 }] },
+    { content: "Content-Type indicates body format.", type: "TRUE_FALSE", points: 10, explanation: "Specifies media type like application/json.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Linear Algebra for ML": {
+  title: "Linear Algebra Quiz",
+  description: "Test your understanding of linear algebra in ML.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Dot product of [1,2,3] and [4,5,6]?", type: "SINGLE_CHOICE", points: 10, explanation: "1*4+2*5+3*6=32.", difficulty: "easy", answers: [{ content: "32", isCorrect: true, points: 10 }, { content: "[4,10,18]", isCorrect: false, points: 0 }, { content: "15", isCorrect: false, points: 0 }, { content: "21", isCorrect: false, points: 0 }] },
+    { content: "PCA stands for Principal Component Analysis.", type: "TRUE_FALSE", points: 10, explanation: "Reduces dimensionality via variance.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Identity matrix property?", type: "SINGLE_CHOICE", points: 10, explanation: "A*I=A preserves original.", difficulty: "medium", answers: [{ content: "Returns zero", isCorrect: false, points: 0 }, { content: "Returns original matrix", isCorrect: true, points: 10 }, { content: "Returns transpose", isCorrect: false, points: 0 }, { content: "Returns inverse", isCorrect: false, points: 0 }] },
+    { content: "Eigenvalues represent variance captured.", type: "TRUE_FALSE", points: 10, explanation: "Indicate variance along eigenvectors.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "SVD used in recommendations for?", type: "SINGLE_CHOICE", points: 10, explanation: "Matrix factorization to predict ratings.", difficulty: "hard", answers: [{ content: "Image recognition", isCorrect: false, points: 0 }, { content: "Matrix factorization for ratings", isCorrect: true, points: 10 }, { content: "Text classification", isCorrect: false, points: 0 }, { content: "Time series", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Decision Trees & Random Forests": {
+  title: "Decision Trees Quiz",
+  description: "Assess your knowledge of tree-based algorithms.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Splitting criterion for classification?", type: "SINGLE_CHOICE", points: 10, explanation: "Gini or information gain.", difficulty: "easy", answers: [{ content: "MSE", isCorrect: false, points: 0 }, { content: "Gini/Information Gain", isCorrect: true, points: 10 }, { content: "R-squared", isCorrect: false, points: 0 }, { content: "Cosine", isCorrect: false, points: 0 }] },
+    { content: "Random forests reduce overfitting by?", type: "SINGLE_CHOICE", points: 10, explanation: "Averaging many trees on random subsets.", difficulty: "medium", answers: [{ content: "Deeper trees", isCorrect: false, points: 0 }, { content: "Averaging trees on random subsets", isCorrect: true, points: 10 }, { content: "One deep tree", isCorrect: false, points: 0 }, { content: "Removing features", isCorrect: false, points: 0 }] },
+    { content: "Random forests are more interpretable than single trees.", type: "TRUE_FALSE", points: 10, explanation: "Single trees are easier to interpret.", difficulty: "medium", answers: [{ content: "True", isCorrect: false, points: 0 }, { content: "False", isCorrect: true, points: 10 }] },
+    { content: "What does feature_importances_ measure?", type: "SINGLE_CHOICE", points: 10, explanation: "Contribution to reducing impurity.", difficulty: "medium", answers: [{ content: "Features to remove", isCorrect: false, points: 0 }, { content: "Feature contribution to predictions", isCorrect: true, points: 10 }, { content: "Correlation", isCorrect: false, points: 0 }, { content: "Optimal tree count", isCorrect: false, points: 0 }] },
+    { content: "Bagging trains on bootstrap samples.", type: "TRUE_FALSE", points: 10, explanation: "Random sampling with replacement.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Principal Component Analysis (PCA)": {
+  title: "PCA Quiz",
+  description: "Test your understanding of PCA.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "What do before applying PCA?", type: "SINGLE_CHOICE", points: 10, explanation: "Standardize data first.", difficulty: "easy", answers: [{ content: "Normalize [0,1]", isCorrect: false, points: 0 }, { content: "Standardize to zero mean/unit variance", isCorrect: true, points: 10 }, { content: "Remove outliers", isCorrect: false, points: 0 }, { content: "No preprocessing", isCorrect: false, points: 0 }] },
+    { content: "Scree plot helps determine?", type: "SINGLE_CHOICE", points: 10, explanation: "How many components to keep.", difficulty: "medium", answers: [{ content: "Best algorithm", isCorrect: false, points: 0 }, { content: "How many components to keep", isCorrect: true, points: 10 }, { content: "Learning rate", isCorrect: false, points: 0 }, { content: "Linear separability", isCorrect: false, points: 0 }] },
+    { content: "PCA captures nonlinear relationships.", type: "TRUE_FALSE", points: 10, explanation: "PCA only captures linear relationships.", difficulty: "medium", answers: [{ content: "True", isCorrect: false, points: 0 }, { content: "False", isCorrect: true, points: 10 }] },
+    { content: "Output shape after PCA with n_components=2?", type: "SINGLE_CHOICE", points: 10, explanation: "(n_samples, 2).", difficulty: "easy", answers: [{ content: "(2, n_features)", isCorrect: false, points: 0 }, { content: "(n_samples, 2)", isCorrect: true, points: 10 }, { content: "(n_features, 2)", isCorrect: false, points: 0 }, { content: "(2, 2)", isCorrect: false, points: 0 }] },
+    { content: "PCA helps noise reduction by?", type: "SINGLE_CHOICE", points: 10, explanation: "Projecting and reconstructing removes noise.", difficulty: "hard", answers: [{ content: "Adding noise", isCorrect: false, points: 0 }, { content: "Projecting onto components and reconstructing", isCorrect: true, points: 10 }, { content: "Removing first component", isCorrect: false, points: 0 }, { content: "Increasing dimensions", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Training with Backpropagation": {
+  title: "Backpropagation Quiz",
+  description: "Evaluate your understanding of neural network training.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Backpropagation relies on?", type: "SINGLE_CHOICE", points: 10, explanation: "Chain rule of calculus.", difficulty: "easy", answers: [{ content: "Pythagorean theorem", isCorrect: false, points: 0 }, { content: "Chain rule", isCorrect: true, points: 10 }, { content: "Bayes theorem", isCorrect: false, points: 0 }, { content: "Fourier transform", isCorrect: false, points: 0 }] },
+    { content: "Forward pass produces?", type: "SINGLE_CHOICE", points: 10, explanation: "Input flows to prediction.", difficulty: "easy", answers: [{ content: "Gradients", isCorrect: false, points: 0 }, { content: "Weight updates", isCorrect: false, points: 0 }, { content: "Prediction", isCorrect: true, points: 10 }, { content: "Loss minimization", isCorrect: false, points: 0 }] },
+    { content: "Vanishing gradients slow early layer learning.", type: "TRUE_FALSE", points: 10, explanation: "Gradients shrink through deep layers.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "loss.backward() computes gradients.", type: "TRUE_FALSE", points: 10, explanation: "Triggers backpropagation via chain rule.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Adam optimizer combines?", type: "SINGLE_CHOICE", points: 10, explanation: "Momentum with adaptive learning rates.", difficulty: "medium", answers: [{ content: "SGD", isCorrect: false, points: 0 }, { content: "Momentum + adaptive learning rates", isCorrect: true, points: 10 }, { content: "AdaGrad", isCorrect: false, points: 0 }, { content: "BatchNorm", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Keyword Research Methods": {
+  title: "Keyword Research Quiz",
+  description: "Test your knowledge of SEO keyword research.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Which intent means ready to purchase?", type: "SINGLE_CHOICE", points: 10, explanation: "Transactional intent.", difficulty: "easy", answers: [{ content: "Informational", isCorrect: false, points: 0 }, { content: "Navigational", isCorrect: false, points: 0 }, { content: "Commercial", isCorrect: false, points: 0 }, { content: "Transactional", isCorrect: true, points: 10 }] },
+    { content: "Long-tail keywords have higher conversion rates.", type: "TRUE_FALSE", points: 10, explanation: "More specific = higher intent.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "What is a topic cluster?", type: "SINGLE_CHOICE", points: 10, explanation: "Pillar page + cluster pages.", difficulty: "medium", answers: [{ content: "Single blog post", isCorrect: false, points: 0 }, { content: "Pillar page linked to cluster pages", isCorrect: true, points: 10 }, { content: "Competitor list", isCorrect: false, points: 0 }, { content: "High-volume keyword", isCorrect: false, points: 0 }] },
+    { content: "Prioritize user intent over volume.", type: "TRUE_FALSE", points: 10, explanation: "Intent drives conversions.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Analyze competitors to find?", type: "SINGLE_CHOICE", points: 10, explanation: "Keyword gaps and opportunities.", difficulty: "medium", answers: [{ content: "Copy content", isCorrect: false, points: 0 }, { content: "Gaps and opportunities", isCorrect: true, points: 10 }, { content: "Block SEO", isCorrect: false, points: 0 }, { content: "No value", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Content Calendar Planning": {
+  title: "Content Calendar Quiz",
+  description: "Test your understanding of content planning.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Primary benefit of a content calendar?", type: "SINGLE_CHOICE", points: 10, explanation: "Consistent publishing and alignment.", difficulty: "easy", answers: [{ content: "Eliminates creativity", isCorrect: false, points: 0 }, { content: "Consistent publishing and alignment", isCorrect: true, points: 10 }, { content: "Guarantees rankings", isCorrect: false, points: 0 }, { content: "Replaces analytics", isCorrect: false, points: 0 }] },
+    { content: "TOFU means Top of Funnel.", type: "TRUE_FALSE", points: 10, explanation: "Focused on awareness.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "How far ahead to plan?", type: "SINGLE_CHOICE", points: 10, explanation: "2-4 weeks.", difficulty: "medium", answers: [{ content: "1 day", isCorrect: false, points: 0 }, { content: "2-4 weeks", isCorrect: true, points: 10 }, { content: "6 months", isCorrect: false, points: 0 }, { content: "1 year", isCorrect: false, points: 0 }] },
+    { content: "Repurposing content is wasteful.", type: "TRUE_FALSE", points: 10, explanation: "Maximizes content value.", difficulty: "easy", answers: [{ content: "True", isCorrect: false, points: 0 }, { content: "False", isCorrect: true, points: 10 }] },
+    { content: "Educational content percentage?", type: "SINGLE_CHOICE", points: 10, explanation: "40% builds authority.", difficulty: "medium", answers: [{ content: "10%", isCorrect: false, points: 0 }, { content: "40%", isCorrect: true, points: 10 }, { content: "70%", isCorrect: false, points: 0 }, { content: "100%", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Email Campaign Design": {
+  title: "Email Campaign Quiz",
+  description: "Test your knowledge of email marketing.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Email marketing average ROI?", type: "SINGLE_CHOICE", points: 10, explanation: "$36 per $1 spent.", difficulty: "easy", answers: [{ content: "$5 per $1", isCorrect: false, points: 0 }, { content: "$36 per $1", isCorrect: true, points: 10 }, { content: "$100 per $1", isCorrect: false, points: 0 }, { content: "$10 per $1", isCorrect: false, points: 0 }] },
+    { content: "Welcome series emails?", type: "SINGLE_CHOICE", points: 10, explanation: "3-5 emails over 1-2 weeks.", difficulty: "medium", answers: [{ content: "1 email", isCorrect: false, points: 0 }, { content: "3-5 emails", isCorrect: true, points: 10 }, { content: "10-15 emails", isCorrect: false, points: 0 }, { content: "20+ emails", isCorrect: false, points: 0 }] },
+    { content: "A/B test multiple variables simultaneously.", type: "TRUE_FALSE", points: 10, explanation: "Test ONE variable at a time.", difficulty: "medium", answers: [{ content: "True", isCorrect: false, points: 0 }, { content: "False", isCorrect: true, points: 10 }] },
+    { content: "CTOR measures?", type: "SINGLE_CHOICE", points: 10, explanation: "Click-to-Open Rate.", difficulty: "medium", answers: [{ content: "Click-Through Open Rate", isCorrect: false, points: 0 }, { content: "Click-to-Open Rate", isCorrect: true, points: 10 }, { content: "Conversion Ratio", isCorrect: false, points: 0 }, { content: "Customer Total Rate", isCorrect: false, points: 0 }] },
+    { content: "SPF/DKIM/DMARC verify sender identity.", type: "TRUE_FALSE", points: 10, explanation: "Authentication protocols.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Generators & Itertools": {
+  title: "Generators & Itertools Quiz",
+  description: "Test your understanding of Python generators.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Keyword for generator functions?", type: "SINGLE_CHOICE", points: 10, explanation: "yield creates generators.", difficulty: "easy", answers: [{ content: "return", isCorrect: false, points: 0 }, { content: "yield", isCorrect: true, points: 10 }, { content: "async", isCorrect: false, points: 0 }, { content: "await", isCorrect: false, points: 0 }] },
+    { content: "Generators are single-use.", type: "TRUE_FALSE", points: 10, explanation: "Exhausted after one iteration.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "itertools.groupby does?", type: "SINGLE_CHOICE", points: 10, explanation: "Groups consecutive elements with same key.", difficulty: "medium", answers: [{ content: "Groups all matching", isCorrect: false, points: 0 }, { content: "Groups consecutive with same key", isCorrect: true, points: 10 }, { content: "Removes duplicates", isCorrect: false, points: 0 }, { content: "Sorts elements", isCorrect: false, points: 0 }] },
+    { content: "Generator advantage over list comprehension?", type: "SINGLE_CHOICE", points: 10, explanation: "Minimal memory usage.", difficulty: "medium", answers: [{ content: "Faster", isCorrect: false, points: 0 }, { content: "Much less memory", isCorrect: true, points: 10 }, { content: "More operations", isCorrect: false, points: 0 }, { content: "Multiple iterations", isCorrect: false, points: 0 }] },
+    { content: "itertools.chain concatenates iterables.", type: "TRUE_FALSE", points: 10, explanation: "Combines multiple iterables.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Descriptors & Properties": {
+  title: "Descriptors Quiz",
+  description: "Test your knowledge of Python descriptors.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Which methods define a descriptor?", type: "SINGLE_CHOICE", points: 10, explanation: "__get__, __set__, __delete__.", difficulty: "medium", answers: [{ content: "__init__ and __str__", isCorrect: false, points: 0 }, { content: "__get__, __set__, __delete__", isCorrect: true, points: 10 }, { content: "__getattr__ and __setattr__", isCorrect: false, points: 0 }, { content: "__call__ and __iter__", isCorrect: false, points: 0 }] },
+    { content: "Properties are built on descriptors.", type: "TRUE_FALSE", points: 10, explanation: "@property is descriptor syntactic sugar.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "__set_name__ provides?", type: "SINGLE_CHOICE", points: 10, explanation: "Attribute name to the descriptor.", difficulty: "hard", answers: [{ content: "Sets value", isCorrect: false, points: 0 }, { content: "Attribute name", isCorrect: true, points: 10 }, { content: "Deletes attr", isCorrect: false, points: 0 }, { content: "Creates instance", isCorrect: false, points: 0 }] },
+    { content: "Use descriptors when same behavior applies to multiple classes.", type: "TRUE_FALSE", points: 10, explanation: "Reusable behavior across classes.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Class-level access to descriptor returns?", type: "SINGLE_CHOICE", points: 10, explanation: "__get__ receives None, returns descriptor.", difficulty: "hard", answers: [{ content: "AttributeError", isCorrect: false, points: 0 }, { content: "Descriptor itself", isCorrect: true, points: 10 }, { content: "Default value", isCorrect: false, points: 0 }, { content: "New instance", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Coroutines & Tasks": {
+  title: "Coroutines & Tasks Quiz",
+  description: "Test your understanding of async Python.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Keyword for async functions?", type: "SINGLE_CHOICE", points: 10, explanation: "async def defines coroutines.", difficulty: "easy", answers: [{ content: "def", isCorrect: false, points: 0 }, { content: "async def", isCorrect: true, points: 10 }, { content: "coroutine", isCorrect: false, points: 0 }, { content: "yield", isCorrect: false, points: 0 }] },
+    { content: "await suspends coroutine and yields to event loop.", type: "TRUE_FALSE", points: 10, explanation: "Yields control while waiting.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "asyncio.gather runs concurrently.", type: "TRUE_FALSE", points: 10, explanation: "Schedules multiple coroutines.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Task vs coroutine?", type: "SINGLE_CHOICE", points: 10, explanation: "Task wraps and schedules coroutine.", difficulty: "medium", answers: [{ content: "Same thing", isCorrect: false, points: 0 }, { content: "Task wraps coroutine on event loop", isCorrect: true, points: 10 }, { content: "Task runs synchronously", isCorrect: false, points: 0 }, { content: "Coroutine requires threading", isCorrect: false, points: 0 }] },
+    { content: "TaskGroup introduced in Python?", type: "SINGLE_CHOICE", points: 10, explanation: "Python 3.11.", difficulty: "hard", answers: [{ content: "Python 3.6", isCorrect: false, points: 0 }, { content: "Python 3.8", isCorrect: false, points: 0 }, { content: "Python 3.11", isCorrect: true, points: 10 }, { content: "Python 2.7", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Observer & Strategy Patterns": {
+  title: "Design Patterns Quiz",
+  description: "Test your understanding of Observer and Strategy.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Observer pattern solves?", type: "SINGLE_CHOICE", points: 10, explanation: "One-to-many dependencies.", difficulty: "easy", answers: [{ content: "Object creation", isCorrect: false, points: 0 }, { content: "One-to-many notifications", isCorrect: true, points: 10 }, { content: "Algorithm encapsulation", isCorrect: false, points: 0 }, { content: "Dynamic responsibilities", isCorrect: false, points: 0 }] },
+    { content: "Strategy allows runtime algorithm changes.", type: "TRUE_FALSE", points: 10, explanation: "Encapsulates interchangeable algorithms.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Listeners in Observer?", type: "SINGLE_CHOICE", points: 10, explanation: "Register to receive notifications.", difficulty: "medium", answers: [{ content: "Send notifications", isCorrect: false, points: 0 }, { content: "Register to receive notifications", isCorrect: true, points: 10 }, { content: "Filter notifications", isCorrect: false, points: 0 }, { content: "Store notifications", isCorrect: false, points: 0 }] },
+    { content: "Use Strategy when many algorithms and frequent additions.", type: "TRUE_FALSE", points: 10, explanation: "Avoids large if/else chains.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Observer downside?", type: "SINGLE_CHOICE", points: 10, explanation: "Memory leaks and cascade updates.", difficulty: "hard", answers: [{ content: "Too simple", isCorrect: false, points: 0 }, { content: "Memory leaks and cascade updates", isCorrect: true, points: 10 }, { content: "Single event only", isCorrect: false, points: 0 }, { content: "Requires threading", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Visual Hierarchy & Layout": {
+  title: "Visual Hierarchy Quiz",
+  description: "Test your knowledge of visual hierarchy.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Which principle makes large elements attention-grabbing?", type: "SINGLE_CHOICE", points: 10, explanation: "Size is primary.", difficulty: "easy", answers: [{ content: "Color", isCorrect: false, points: 0 }, { content: "Size", isCorrect: true, points: 10 }, { content: "Spacing", isCorrect: false, points: 0 }, { content: "Typography", isCorrect: false, points: 0 }] },
+    { content: "F-pattern describes text-heavy page scanning.", type: "TRUE_FALSE", points: 10, explanation: "Horizontal then vertical scan.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "White space purpose?", type: "SINGLE_CHOICE", points: 10, explanation: "Groups related, separates unrelated.", difficulty: "medium", answers: [{ content: "Wastes space", isCorrect: false, points: 0 }, { content: "Groups related, separates unrelated", isCorrect: true, points: 10 }, { content: "Only decorative", isCorrect: false, points: 0 }, { content: "Slows loading", isCorrect: false, points: 0 }] },
+    { content: "LTR users look first at?", type: "SINGLE_CHOICE", points: 10, explanation: "Top-left.", difficulty: "easy", answers: [{ content: "Bottom-right", isCorrect: false, points: 0 }, { content: "Top-left", isCorrect: true, points: 10 }, { content: "Center", isCorrect: false, points: 0 }, { content: "Bottom-left", isCorrect: false, points: 0 }] },
+    { content: "Z-pattern works for visual-heavy pages.", type: "TRUE_FALSE", points: 10, explanation: "Guides eyes diagonally.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Low-Fidelity Wireframing": {
+  title: "Low-Fi Wireframing Quiz",
+  description: "Test your understanding of wireframing.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Primary focus of low-fi wireframes?", type: "SINGLE_CHOICE", points: 10, explanation: "Layout and user flow.", difficulty: "easy", answers: [{ content: "Visual design", isCorrect: false, points: 0 }, { content: "Layout, content, user flow", isCorrect: true, points: 10 }, { content: "Pixel-perfect", isCorrect: false, points: 0 }, { content: "Animations", isCorrect: false, points: 0 }] },
+    { content: "Box with X represents?", type: "SINGLE_CHOICE", points: 10, explanation: "Image placeholder.", difficulty: "easy", answers: [{ content: "Text", isCorrect: false, points: 0 }, { content: "Image placeholder", isCorrect: true, points: 10 }, { content: "Button", isCorrect: false, points: 0 }, { content: "Navigation", isCorrect: false, points: 0 }] },
+    { content: "Low-fi wireframes are expensive.", type: "TRUE_FALSE", points: 10, explanation: "They are cheap and fast.", difficulty: "easy", answers: [{ content: "True", isCorrect: false, points: 0 }, { content: "False", isCorrect: true, points: 10 }] },
+    { content: "Good for collaboration because?", type: "SINGLE_CHOICE", points: 10, explanation: "Simple for non-designers.", difficulty: "medium", answers: [{ content: "More professional", isCorrect: false, points: 0 }, { content: "Simple for non-designers", isCorrect: true, points: 10 }, { content: "Show final colors", isCorrect: false, points: 0 }, { content: "Include animations", isCorrect: false, points: 0 }] },
+    { content: "Move to hi-fi after validation.", type: "TRUE_FALSE", points: 10, explanation: "After layout and flow are validated.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Design System Components": {
+  title: "Design System Quiz",
+  description: "Test your knowledge of design systems.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "What are design tokens?", type: "SINGLE_CHOICE", points: 10, explanation: "Basic visual values.", difficulty: "easy", answers: [{ content: "Code components", isCorrect: false, points: 0 }, { content: "Basic visual values", isCorrect: true, points: 10 }, { content: "Auth tokens", isCorrect: false, points: 0 }, { content: "API tokens", isCorrect: false, points: 0 }] },
+    { content: "NOT a core component?", type: "SINGLE_CHOICE", points: 10, explanation: "Server instances are infrastructure.", difficulty: "easy", answers: [{ content: "Buttons", isCorrect: false, points: 0 }, { content: "Forms", isCorrect: false, points: 0 }, { content: "Server instances", isCorrect: true, points: 10 }, { content: "Navigation", isCorrect: false, points: 0 }] },
+    { content: "Design systems ensure consistency.", type: "TRUE_FALSE", points: 10, explanation: "Reusable components and standards.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Build first?", type: "SINGLE_CHOICE", points: 10, explanation: "Design tokens are foundation.", difficulty: "medium", answers: [{ content: "Complex layouts", isCorrect: false, points: 0 }, { content: "Design tokens", isCorrect: true, points: 10 }, { content: "Marketing pages", isCorrect: false, points: 0 }, { content: "Testing scripts", isCorrect: false, points: 0 }] },
+    { content: "Design systems only benefit designers.", type: "TRUE_FALSE", points: 10, explanation: "Benefit both designers and developers.", difficulty: "medium", answers: [{ content: "True", isCorrect: false, points: 0 }, { content: "False", isCorrect: true, points: 10 }] }
+  ]
+},
+
+"Common Attack Vectors": {
+  title: "Attack Vectors Quiz",
+  description: "Test your knowledge of cybersecurity attacks.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Which attack injects malicious SQL?", type: "SINGLE_CHOICE", points: 10, explanation: "SQL injection.", difficulty: "easy", answers: [{ content: "XSS", isCorrect: false, points: 0 }, { content: "SQL Injection", isCorrect: true, points: 10 }, { content: "DDoS", isCorrect: false, points: 0 }, { content: "Phishing", isCorrect: false, points: 0 }] },
+    { content: "Best defense against SQL injection?", type: "SINGLE_CHOICE", points: 10, explanation: "Parameterized queries.", difficulty: "medium", answers: [{ content: "Input validation only", isCorrect: false, points: 0 }, { content: "Parameterized queries", isCorrect: true, points: 10 }, { content: "Longer passwords", isCorrect: false, points: 0 }, { content: "Encrypt DB", isCorrect: false, points: 0 }] },
+    { content: "XSS injects scripts into web pages.", type: "TRUE_FALSE", points: 10, explanation: "Executes in other users' browsers.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Deceptive email attack?", type: "SINGLE_CHOICE", points: 10, explanation: "Phishing.", difficulty: "easy", answers: [{ content: "Brute force", isCorrect: false, points: 0 }, { content: "Phishing", isCorrect: true, points: 10 }, { content: "Buffer overflow", isCorrect: false, points: 0 }, { content: "MitM", isCorrect: false, points: 0 }] },
+    { content: "textContent prevents XSS.", type: "TRUE_FALSE", points: 10, explanation: "Treats input as plain text.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"VPNs & Encryption Protocols": {
+  title: "VPNs & Encryption Quiz",
+  description: "Test your understanding of VPN protocols.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Modern VPN protocol?", type: "SINGLE_CHOICE", points: 10, explanation: "WireGuard.", difficulty: "easy", answers: [{ content: "PPTP", isCorrect: false, points: 0 }, { content: "L2TP/IPSec", isCorrect: false, points: 0 }, { content: "WireGuard", isCorrect: true, points: 10 }, { content: "WEP", isCorrect: false, points: 0 }] },
+    { content: "AES-256 is symmetric encryption.", type: "TRUE_FALSE", points: 10, explanation: "Standard for VPN tunnels.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Diffie-Hellman purpose?", type: "SINGLE_CHOICE", points: 10, explanation: "Establishes shared secrets.", difficulty: "medium", answers: [{ content: "Encrypting data", isCorrect: false, points: 0 }, { content: "Establishing shared secrets", isCorrect: true, points: 10 }, { content: "Hashing passwords", isCorrect: false, points: 0 }, { content: "Compressing data", isCorrect: false, points: 0 }] },
+    { content: "PPTP is still secure.", type: "TRUE_FALSE", points: 10, explanation: "Has known vulnerabilities.", difficulty: "easy", answers: [{ content: "True", isCorrect: false, points: 0 }, { content: "False", isCorrect: true, points: 10 }] },
+    { content: "Key exchange algorithm?", type: "SINGLE_CHOICE", points: 10, explanation: "RSA/Diffie-Hellman.", difficulty: "medium", answers: [{ content: "AES", isCorrect: false, points: 0 }, { content: "RSA/Diffie-Hellman", isCorrect: true, points: 10 }, { content: "MD5", isCorrect: false, points: 0 }, { content: "Base64", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Hashing & Digital Signatures": {
+  title: "Hashing Quiz",
+  description: "Test your knowledge of hashing and signatures.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Good hash function property?", type: "SINGLE_CHOICE", points: 10, explanation: "Deterministic, uniform, few collisions.", difficulty: "easy", answers: [{ content: "Reversible", isCorrect: false, points: 0 }, { content: "Deterministic with uniform output", isCorrect: true, points: 10 }, { content: "Same output different inputs", isCorrect: false, points: 0 }, { content: "Slow", isCorrect: false, points: 0 }] },
+    { content: "Password hashing library?", type: "SINGLE_CHOICE", points: 10, explanation: "bcrypt with salting.", difficulty: "easy", answers: [{ content: "hashlib", isCorrect: false, points: 0 }, { content: "bcrypt", isCorrect: true, points: 10 }, { content: "md5", isCorrect: false, points: 0 }, { content: "base64", isCorrect: false, points: 0 }] },
+    { content: "Digital signatures provide authentication.", type: "TRUE_FALSE", points: 10, explanation: "Prove sender and prevent denial.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Same key for encrypt/decrypt is?", type: "SINGLE_CHOICE", points: 10, explanation: "Symmetric cryptography.", difficulty: "easy", answers: [{ content: "Asymmetric", isCorrect: false, points: 0 }, { content: "Symmetric", isCorrect: true, points: 10 }, { content: "Hybrid", isCorrect: false, points: 0 }, { content: "Quantum", isCorrect: false, points: 0 }] },
+    { content: "MD5 deprecated because?", type: "SINGLE_CHOICE", points: 10, explanation: "Collision vulnerabilities.", difficulty: "medium", answers: [{ content: "Too slow", isCorrect: false, points: 0 }, { content: "Collision vulnerabilities", isCorrect: true, points: 10 }, { content: "Not standardized", isCorrect: false, points: 0 }, { content: "Too much memory", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Vulnerability Scanning with Nmap": {
+  title: "Nmap Quiz",
+  description: "Test your knowledge of Nmap scanning.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Service version detection flag?", type: "SINGLE_CHOICE", points: 10, explanation: "-sV.", difficulty: "easy", answers: [{ content: "-sS", isCorrect: false, points: 0 }, { content: "-sV", isCorrect: true, points: 10 }, { content: "-O", isCorrect: false, points: 0 }, { content: "-A", isCorrect: false, points: 0 }] },
+    { content: "Port 22 is SSH.", type: "TRUE_FALSE", points: 10, explanation: "Standard SSH port.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "-O flag does?", type: "SINGLE_CHOICE", points: 10, explanation: "OS detection.", difficulty: "medium", answers: [{ content: "Opens ports", isCorrect: false, points: 0 }, { content: "OS detection", isCorrect: true, points: 10 }, { content: "Output to file", isCorrect: false, points: 0 }, { content: "Optimize speed", isCorrect: false, points: 0 }] },
+    { content: "--script vuln runs vulnerability checks.", type: "TRUE_FALSE", points: 10, explanation: "Checks for known vulnerabilities.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "MySQL port?", type: "SINGLE_CHOICE", points: 10, explanation: "3306.", difficulty: "easy", answers: [{ content: "5432", isCorrect: false, points: 0 }, { content: "3306", isCorrect: true, points: 10 }, { content: "1433", isCorrect: false, points: 0 }, { content: "27017", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"S3 Bucket Management": {
+  title: "S3 Bucket Quiz",
+  description: "Test your knowledge of AWS S3.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Protects against accidental deletion?", type: "SINGLE_CHOICE", points: 10, explanation: "Versioning.", difficulty: "easy", answers: [{ content: "Logging", isCorrect: false, points: 0 }, { content: "Versioning", isCorrect: true, points: 10 }, { content: "Transfer acceleration", isCorrect: false, points: 0 }, { content: "Static hosting", isCorrect: false, points: 0 }] },
+    { content: "S3 buckets are private by default.", type: "TRUE_FALSE", points: 10, explanation: "Public access requires explicit config.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "KMS encryption type?", type: "SINGLE_CHOICE", points: 10, explanation: "SSE-KMS.", difficulty: "medium", answers: [{ content: "Client-side", isCorrect: false, points: 0 }, { content: "SSE-KMS", isCorrect: true, points: 10 }, { content: "SSE-C", isCorrect: false, points: 0 }, { content: "SSL only", isCorrect: false, points: 0 }] },
+    { content: "Python S3 library?", type: "SINGLE_CHOICE", points: 10, explanation: "boto3.", difficulty: "easy", answers: [{ content: "requests", isCorrect: false, points: 0 }, { content: "boto3", isCorrect: true, points: 10 }, { content: "flask", isCorrect: false, points: 0 }, { content: "pandas", isCorrect: false, points: 0 }] },
+    { content: "Bucket policies use IAM language.", type: "TRUE_FALSE", points: 10, explanation: "JSON-based IAM policies.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"RDS & DynamoDB": {
+  title: "RDS & DynamoDB Quiz",
+  description: "Test your knowledge of AWS databases.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "RDS is what type of database?", type: "SINGLE_CHOICE", points: 10, explanation: "Managed relational.", difficulty: "easy", answers: [{ content: "NoSQL key-value", isCorrect: false, points: 0 }, { content: "Managed relational", isCorrect: true, points: 10 }, { content: "Document", isCorrect: false, points: 0 }, { content: "Graph", isCorrect: false, points: 0 }] },
+    { content: "DynamoDB uses key-value and document model.", type: "TRUE_FALSE", points: 10, explanation: "Supports both models.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Per-request DynamoDB mode?", type: "SINGLE_CHOICE", points: 10, explanation: "PAY_PER_REQUEST.", difficulty: "medium", answers: [{ content: "Provisioned", isCorrect: false, points: 0 }, { content: "PAY_PER_REQUEST", isCorrect: true, points: 10 }, { content: "Reserved", isCorrect: false, points: 0 }, { content: "On-demand", isCorrect: false, points: 0 }] },
+    { content: "RDS handles backups and patching.", type: "TRUE_FALSE", points: 10, explanation: "Automated maintenance.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Max RDS storage?", type: "SINGLE_CHOICE", points: 10, explanation: "64 TB.", difficulty: "medium", answers: [{ content: "1 TB", isCorrect: false, points: 0 }, { content: "64 TB", isCorrect: true, points: 10 }, { content: "1 PB", isCorrect: false, points: 0 }, { content: "Unlimited", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"CI/CD with CodePipeline": {
+  title: "CI/CD Quiz",
+  description: "Test your understanding of CI/CD pipelines.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "CI stands for?", type: "SINGLE_CHOICE", points: 10, explanation: "Continuous Integration.", difficulty: "easy", answers: [{ content: "Code Integration", isCorrect: false, points: 0 }, { content: "Continuous Integration", isCorrect: true, points: 10 }, { content: "Continuous Improvement", isCorrect: false, points: 0 }, { content: "Central Infrastructure", isCorrect: false, points: 0 }] },
+    { content: "CodeBuild compiles and tests code.", type: "TRUE_FALSE", points: 10, explanation: "Produces build artifacts.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "buildspec.yml defines?", type: "SINGLE_CHOICE", points: 10, explanation: "CodeBuild steps.", difficulty: "medium", answers: [{ content: "Pipeline stages", isCorrect: false, points: 0 }, { content: "CodeBuild steps", isCorrect: true, points: 10 }, { content: "Deploy config", isCorrect: false, points: 0 }, { content: "Test suite", isCorrect: false, points: 0 }] },
+    { content: "Pipeline order?", type: "SINGLE_CHOICE", points: 10, explanation: "Source -> Build -> Test -> Deploy.", difficulty: "medium", answers: [{ content: "Deploy -> Build -> Test -> Source", isCorrect: false, points: 0 }, { content: "Source -> Build -> Test -> Deploy", isCorrect: true, points: 10 }, { content: "Build -> Source -> Deploy -> Test", isCorrect: false, points: 0 }, { content: "Test -> Source -> Build -> Deploy", isCorrect: false, points: 0 }] },
+    { content: "Manual approval before production is recommended.", type: "TRUE_FALSE", points: 10, explanation: "Reduces deployment risk.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Consensus Mechanisms": {
+  title: "Consensus Quiz",
+  description: "Test your understanding of blockchain consensus.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Bitcoin uses?", type: "SINGLE_CHOICE", points: 10, explanation: "Proof of Work.", difficulty: "easy", answers: [{ content: "Proof of Stake", isCorrect: false, points: 0 }, { content: "Proof of Work", isCorrect: true, points: 10 }, { content: "Delegated PoS", isCorrect: false, points: 0 }, { content: "Proof of Authority", isCorrect: false, points: 0 }] },
+    { content: "PoS is more energy efficient than PoW.", type: "TRUE_FALSE", points: 10, explanation: "Validators stake instead of mining.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Byzantine Fault Tolerance?", type: "SINGLE_CHOICE", points: 10, explanation: "Works despite faulty nodes.", difficulty: "medium", answers: [{ content: "Encryption type", isCorrect: false, points: 0 }, { content: "Works despite faulty nodes", isCorrect: true, points: 10 }, { content: "Mining algorithm", isCorrect: false, points: 0 }, { content: "Smart contract", isCorrect: false, points: 0 }] },
+    { content: "Ethereum moved to PoS.", type: "TRUE_FALSE", points: 10, explanation: "The Merge in 2022.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Vote for delegates in?", type: "SINGLE_CHOICE", points: 10, explanation: "Delegated Proof of Stake.", difficulty: "medium", answers: [{ content: "Proof of Work", isCorrect: false, points: 0 }, { content: "Delegated PoS", isCorrect: true, points: 10 }, { content: "Proof of Authority", isCorrect: false, points: 0 }, { content: "Proof of Elapsed Time", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"ERC-20 Token Standard": {
+  title: "ERC-20 Quiz",
+  description: "Test your knowledge of ERC-20 tokens.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "ERC stands for?", type: "SINGLE_CHOICE", points: 10, explanation: "Ethereum Request for Comments.", difficulty: "easy", answers: [{ content: "Ethereum Resource Contract", isCorrect: false, points: 0 }, { content: "Ethereum Request for Comments", isCorrect: true, points: 10 }, { content: "Ethereum Runtime Code", isCorrect: false, points: 0 }, { content: "Ethereum Registry Standard", isCorrect: false, points: 0 }] },
+    { content: "ERC-20 tokens are fungible.", type: "TRUE_FALSE", points: 10, explanation: "Each token is interchangeable.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Total supply function?", type: "SINGLE_CHOICE", points: 10, explanation: "totalSupply().", difficulty: "medium", answers: [{ content: "balanceOf()", isCorrect: false, points: 0 }, { content: "totalSupply()", isCorrect: true, points: 10 }, { content: "transfer()", isCorrect: false, points: 0 }, { content: "approve()", isCorrect: false, points: 0 }] },
+    { content: "Audited ERC-20 library?", type: "SINGLE_CHOICE", points: 10, explanation: "OpenZeppelin.", difficulty: "medium", answers: [{ content: "Web3.js", isCorrect: false, points: 0 }, { content: "OpenZeppelin", isCorrect: true, points: 10 }, { content: "Hardhat", isCorrect: false, points: 0 }, { content: "Truffle", isCorrect: false, points: 0 }] },
+    { content: "approve sets spender allowance.", type: "TRUE_FALSE", points: 10, explanation: "Allows transfer on your behalf.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Yield Farming & Liquidity Pools": {
+  title: "Yield Farming Quiz",
+  description: "Test your understanding of DeFi yield farming.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "x * y = k represents?", type: "SINGLE_CHOICE", points: 10, explanation: "Constant product AMM formula.", difficulty: "medium", answers: [{ content: "Interest calculation", isCorrect: false, points: 0 }, { content: "Constant product formula", isCorrect: true, points: 10 }, { content: "Gas estimation", isCorrect: false, points: 0 }, { content: "Block time", isCorrect: false, points: 0 }] },
+    { content: "Impermanent loss occurs with price changes.", type: "TRUE_FALSE", points: 10, explanation: "Difference between pool and hold.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Major risk besides IL?", type: "SINGLE_CHOICE", points: 10, explanation: "Smart contract vulnerabilities.", difficulty: "medium", answers: [{ content: "Network congestion", isCorrect: false, points: 0 }, { content: "Smart contract vulnerabilities", isCorrect: true, points: 10 }, { content: "No risks", isCorrect: false, points: 0 }, { content: "Only gas fees", isCorrect: false, points: 0 }] },
+    { content: "LPs earn trading fees.", type: "TRUE_FALSE", points: 10, explanation: "Proportional to pool share.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Greater price divergence means?", type: "SINGLE_CHOICE", points: 10, explanation: "Greater impermanent loss.", difficulty: "hard", answers: [{ content: "Loss decreases", isCorrect: false, points: 0 }, { content: "Greater impermanent loss", isCorrect: true, points: 10 }, { content: "No change", isCorrect: false, points: 0 }, { content: "Becomes permanent", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Core Components & Styling": {
+  title: "React Native Components Quiz",
+  description: "Test your knowledge of React Native components.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Best component for long lists?", type: "SINGLE_CHOICE", points: 10, explanation: "FlatList virtualizes.", difficulty: "easy", answers: [{ content: "ScrollView", isCorrect: false, points: 0 }, { content: "FlatList", isCorrect: true, points: 10 }, { content: "View", isCorrect: false, points: 0 }, { content: "Text", isCorrect: false, points: 0 }] },
+    { content: "React Native uses Flexbox by default.", type: "TRUE_FALSE", points: 10, explanation: "Default layout system.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Small scrollable content uses?", type: "SINGLE_CHOICE", points: 10, explanation: "ScrollView.", difficulty: "medium", answers: [{ content: "FlatList", isCorrect: false, points: 0 }, { content: "ScrollView", isCorrect: true, points: 10 }, { content: "SectionList", isCorrect: false, points: 0 }, { content: "VirtualizedList", isCorrect: false, points: 0 }] },
+    { content: "StyleSheet.create optimizes styles.", type: "TRUE_FALSE", points: 10, explanation: "Creates stylesheet IDs.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Image needs explicit dimensions.", type: "TRUE_FALSE", points: 10, explanation: "Unlike web, requires width/height.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"State Management with Context & Zustand": {
+  title: "State Management Quiz",
+  description: "Test your understanding of Context and Zustand.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "When use Context?", type: "SINGLE_CHOICE", points: 10, explanation: "Simple global state like themes.", difficulty: "easy", answers: [{ content: "Complex logic", isCorrect: false, points: 0 }, { content: "Simple global state", isCorrect: true, points: 10 }, { content: "High-frequency updates", isCorrect: false, points: 0 }, { content: "Server state", isCorrect: false, points: 0 }] },
+    { content: "Zustand avoids Context performance issues.", type: "TRUE_FALSE", points: 10, explanation: "Uses selectors.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Provider does?", type: "SINGLE_CHOICE", points: 10, explanation: "Makes value available to descendants.", difficulty: "easy", answers: [{ content: "Creates context", isCorrect: false, points: 0 }, { content: "Makes value available to descendants", isCorrect: true, points: 10 }, { content: "Consumes context", isCorrect: false, points: 0 }, { content: "Optimizes re-renders", isCorrect: false, points: 0 }] },
+    { content: "Zustand needs providers.", type: "TRUE_FALSE", points: 10, explanation: "Stores are standalone.", difficulty: "medium", answers: [{ content: "True", isCorrect: false, points: 0 }, { content: "False", isCorrect: true, points: 10 }] },
+    { content: "Zustand hook?", type: "SINGLE_CHOICE", points: 10, explanation: "useStore with selector.", difficulty: "medium", answers: [{ content: "useContext", isCorrect: false, points: 0 }, { content: "useStore", isCorrect: true, points: 10 }, { content: "useState", isCorrect: false, points: 0 }, { content: "useReducer", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Camera, Location & Permissions": {
+  title: "Camera & Location Quiz",
+  description: "Test your knowledge of React Native hardware access.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "When request permissions?", type: "SINGLE_CHOICE", points: 10, explanation: "At runtime.", difficulty: "easy", answers: [{ content: "Build time", isCorrect: false, points: 0 }, { content: "At runtime", isCorrect: true, points: 10 }, { content: "app.json only", isCorrect: false, points: 0 }, { content: "Never", isCorrect: false, points: 0 }] },
+    { content: "Camera library?", type: "SINGLE_CHOICE", points: 10, explanation: "expo-camera.", difficulty: "easy", answers: [{ content: "react-native-camera", isCorrect: false, points: 0 }, { content: "expo-camera", isCorrect: true, points: 10 }, { content: "expo-media", isCorrect: false, points: 0 }, { content: "expo-capture", isCorrect: false, points: 0 }] },
+    { content: "Handle denial gracefully.", type: "TRUE_FALSE", points: 10, explanation: "Provide fallback UI.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Get current location function?", type: "SINGLE_CHOICE", points: 10, explanation: "getCurrentPositionAsync.", difficulty: "medium", answers: [{ content: "getLocation()", isCorrect: false, points: 0 }, { content: "getCurrentPositionAsync()", isCorrect: true, points: 10 }, { content: "fetchLocation()", isCorrect: false, points: 0 }, { content: "readGPS()", isCorrect: false, points: 0 }] },
+    { content: "ImagePicker accesses gallery.", type: "TRUE_FALSE", points: 10, explanation: "expo-image-picker provides gallery.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"App Store Submission Guide": {
+  title: "App Store Submission Quiz",
+  description: "Test your knowledge of app store submission.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Required app icon size?", type: "SINGLE_CHOICE", points: 10, explanation: "1024x1024 PNG.", difficulty: "easy", answers: [{ content: "512x512", isCorrect: false, points: 0 }, { content: "1024x1024", isCorrect: true, points: 10 }, { content: "2048x2048", isCorrect: false, points: 0 }, { content: "256x256", isCorrect: false, points: 0 }] },
+    { content: "Privacy policy is required.", type: "TRUE_FALSE", points: 10, explanation: "Both stores require it.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Expo build tool?", type: "SINGLE_CHOICE", points: 10, explanation: "eas build.", difficulty: "medium", answers: [{ content: "npm run build", isCorrect: false, points: 0 }, { content: "eas build", isCorrect: true, points: 10 }, { content: "expo build", isCorrect: false, points: 0 }, { content: "react-native build", isCorrect: false, points: 0 }] },
+    { content: "Common rejection reason?", type: "SINGLE_CHOICE", points: 10, explanation: "Crashes or bugs.", difficulty: "medium", answers: [{ content: "Good UI", isCorrect: false, points: 0 }, { content: "Crashes or bugs", isCorrect: true, points: 10 }, { content: "Fast performance", isCorrect: false, points: 0 }, { content: "Clear description", isCorrect: false, points: 0 }] },
+    { content: "Test before submission.", type: "TRUE_FALSE", points: 10, explanation: "Thorough testing prevents rejections.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Pivot Tables & Data Summarization": {
+  title: "Pivot Tables Quiz",
+  description: "Test your knowledge of pivot tables.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Pivot tables transform raw data into?", type: "SINGLE_CHOICE", points: 10, explanation: "Meaningful summaries.", difficulty: "easy", answers: [{ content: "Raw data", isCorrect: false, points: 0 }, { content: "Meaningful summaries", isCorrect: true, points: 10 }, { content: "Charts only", isCorrect: false, points: 0 }, { content: "SQL queries", isCorrect: false, points: 0 }] },
+    { content: "pd.pivot_table is a pandas function.", type: "TRUE_FALSE", points: 10, explanation: "Creates pivot tables in Python.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "aggfunc parameter specifies?", type: "SINGLE_CHOICE", points: 10, explanation: "Aggregation function.", difficulty: "medium", answers: [{ content: "Column name", isCorrect: false, points: 0 }, { content: "Aggregation function", isCorrect: true, points: 10 }, { content: "Filter condition", isCorrect: false, points: 0 }, { content: "Sort order", isCorrect: false, points: 0 }] },
+    { content: "fill_value handles missing data.", type: "TRUE_FALSE", points: 10, explanation: "Replaces NaN with specified value.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "Margins parameter adds?", type: "SINGLE_CHOICE", points: 10, explanation: "Row and column totals.", difficulty: "medium", answers: [{ content: "Filters", isCorrect: false, points: 0 }, { content: "Row and column totals", isCorrect: true, points: 10 }, { content: "Sorting", isCorrect: false, points: 0 }, { content: "Charts", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"JOIN Operations": {
+  title: "SQL JOIN Quiz",
+  description: "Test your knowledge of SQL JOINs.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "INNER JOIN returns?", type: "SINGLE_CHOICE", points: 10, explanation: "Only matching rows.", difficulty: "easy", answers: [{ content: "All rows from both", isCorrect: false, points: 0 }, { content: "Only matching rows", isCorrect: true, points: 10 }, { content: "All from left only", isCorrect: false, points: 0 }, { content: "All from right only", isCorrect: false, points: 0 }] },
+    { content: "LEFT JOIN includes all left table rows.", type: "TRUE_FALSE", points: 10, explanation: "Plus matching right rows.", difficulty: "easy", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "CROSS JOIN produces?", type: "SINGLE_CHOICE", points: 10, explanation: "Cartesian product.", difficulty: "medium", answers: [{ content: "Matching rows only", isCorrect: false, points: 0 }, { content: "Cartesian product", isCorrect: true, points: 10 }, { content: "Unique combinations", isCorrect: false, points: 0 }, { content: "Empty result", isCorrect: false, points: 0 }] },
+    { content: "Always index JOIN columns.", type: "TRUE_FALSE", points: 10, explanation: "Improves query performance.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "FULL OUTER JOIN returns?", type: "SINGLE_CHOICE", points: 10, explanation: "All rows from both tables.", difficulty: "medium", answers: [{ content: "Matching only", isCorrect: false, points: 0 }, { content: "All rows from both", isCorrect: true, points: 10 }, { content: "Left table only", isCorrect: false, points: 0 }, { content: "Right table only", isCorrect: false, points: 0 }] }
+  ]
+},
+
+"Window Functions": {
+  title: "Window Functions Quiz",
+  description: "Test your knowledge of SQL window functions.",
+  timeLimit: 300,
+  passingScore: 70,
+  questions: [
+    { content: "Window functions collapse rows?", type: "TRUE_FALSE", points: 10, explanation: "No, they preserve rows.", difficulty: "easy", answers: [{ content: "True", isCorrect: false, points: 0 }, { content: "False", isCorrect: true, points: 10 }] },
+    { content: "PARTITION BY does?", type: "SINGLE_CHOICE", points: 10, explanation: "Divides data into groups.", difficulty: "easy", answers: [{ content: "Sorts data", isCorrect: false, points: 0 }, { content: "Divides into groups", isCorrect: true, points: 10 }, { content: "Filters rows", isCorrect: false, points: 0 }, { content: "Aggregates data", isCorrect: false, points: 0 }] },
+    { content: "ROW_NUMBER gives unique sequential numbers.", type: "TRUE_FALSE", points: 10, explanation: "1, 2, 3, 4 with no gaps.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] },
+    { content: "RANK vs DENSE_RANK difference?", type: "SINGLE_CHOICE", points: 10, explanation: "RANK has gaps, DENSE_RANK does not.", difficulty: "hard", answers: [{ content: "No difference", isCorrect: false, points: 0 }, { content: "RANK gaps, DENSE_RANK no gaps", isCorrect: true, points: 10 }, { content: "DENSE_RANK is faster", isCorrect: false, points: 0 }, { content: "RANK is for strings", isCorrect: false, points: 0 }] },
+    { content: "LAG accesses previous row data.", type: "TRUE_FALSE", points: 10, explanation: "Gets value from preceding row.", difficulty: "medium", answers: [{ content: "True", isCorrect: true, points: 10 }, { content: "False", isCorrect: false, points: 0 }] }
+  ]
+}
+
+};

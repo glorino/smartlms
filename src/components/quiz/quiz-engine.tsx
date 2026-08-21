@@ -167,6 +167,7 @@ function mapQuestionToOptions(question: AppQuestion) {
   return question.answers.map((a) => ({
     id: a.id,
     text: a.content,
+    imageUrl: a.imageUrl,
   }));
 }
 
@@ -317,6 +318,14 @@ export default function QuizEngine({
               <p className="text-lg font-medium text-gray-900 dark:text-white">
                 {dbQuestion.content}
               </p>
+              {dbQuestion.imageUrl && (
+                <img
+                  src={dbQuestion.imageUrl}
+                  alt={`Question ${currentQuestionIndex + 1} image`}
+                  className="mt-3 max-w-full rounded-lg object-contain"
+                  style={{ maxHeight: 320 }}
+                />
+              )}
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {dbQuestion.points} point{dbQuestion.points !== 1 ? "s" : ""}
               </p>
@@ -355,6 +364,13 @@ export default function QuizEngine({
                       {isSelected && <div className="h-2 w-2 rounded-full bg-white" />}
                     </div>
                     <span className="text-gray-700 dark:text-gray-300">{option.text}</span>
+                    {option.imageUrl && (
+                      <img
+                        src={option.imageUrl}
+                        alt={`Option ${option.text}`}
+                        className="ml-auto max-h-16 rounded object-contain"
+                      />
+                    )}
                     {isSubmitted && option.id === correctAnswer && (
                       <Check className="ml-auto h-5 w-5 text-emerald-500" />
                     )}
@@ -373,6 +389,7 @@ export default function QuizEngine({
                 const isSelected = answers[dbQuestion.id] === value;
                 const correctVal = dbQuestion.answers.find((a) => a.isCorrect);
                 const correctText = correctVal ? correctVal.content.toLowerCase() : "";
+                const tfOption = mappedOptions.find((o) => o.text.toLowerCase() === value);
                 return (
                   <button
                     key={value}
@@ -398,6 +415,13 @@ export default function QuizEngine({
                     <span className="font-medium text-gray-700 dark:text-gray-300 capitalize">
                       {value}
                     </span>
+                    {tfOption?.imageUrl && (
+                      <img
+                        src={tfOption.imageUrl}
+                        alt={`${value} option`}
+                        className="max-h-12 rounded object-contain"
+                      />
+                    )}
                   </button>
                 );
               })}
@@ -424,6 +448,13 @@ export default function QuizEngine({
                     <span className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-700/50 dark:text-gray-300">
                       {option.text}
                     </span>
+                    {option.imageUrl && (
+                      <img
+                        src={option.imageUrl}
+                        alt={`Match option ${option.text}`}
+                        className="max-h-12 rounded object-contain"
+                      />
+                    )}
                     <ChevronRight className="h-4 w-4 text-gray-400" />
                     <select
                       value={selectedMatch || ""}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { sendEmail, certificateIssued } from "@/lib/email";
 
 export async function GET() {
   try {
@@ -119,6 +120,14 @@ export async function POST(request: Request) {
         },
       },
     });
+
+    if (certificate.user?.email) {
+      sendEmail({
+        to: certificate.user.email,
+        subject: `Certificate Issued: ${course.title}`,
+        html: certificateIssued(certificate.user, certificate.course),
+      }).catch(() => {});
+    }
 
     return NextResponse.json({ certificate }, { status: 201 });
   } catch (error) {

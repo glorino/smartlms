@@ -29,6 +29,7 @@ import {
   ClipboardCheck,
   BookMarked,
   Calendar,
+  Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +47,7 @@ const commonItems = [
   { href: "/courses", label: "Browse Courses", icon: Search },
   { href: "/dashboard/quizzes", label: "Quizzes", icon: FileCheck },
   { href: "/dashboard/certificates", label: "Certificates", icon: Award },
+  { href: "/dashboard/achievements", label: "Achievements", icon: Trophy },
   { href: "/dashboard/messages", label: "Messages", icon: MessageSquare },
   { href: "/live-classes", label: "Live Classes", icon: Video },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell },

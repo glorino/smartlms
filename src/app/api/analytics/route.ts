@@ -221,6 +221,79 @@ export async function GET(request: Request) {
       dailyActiveUsers: activeUsers,
     };
 
+    // Payment stats
+    const allPurchases = await prisma.purchase.findMany({
+      where: isInstructor ? { course: { instructorId: userId } } : {},
+      select: { status: true, amount: true, createdAt: true },
+    });
+    const totalPayments = allPurchases.length;
+    const completedPayments = allPurchases.filter((p) => p.status === "COMPLETED").length;
+    const failedPayments = allPurchases.filter((p) => p.status === "FAILED").length;
+    const refundedPayments = allPurchases.filter((p) => p.status === "REFUNDED").length;
+    const paymentSuccessRate = totalPayments > 0 ? Math.round((completedPayments / totalPayments) * 100) : 0;
+    const refundRate = totalPayments > 0 ? Math.round((refundedPayments / totalPayments) * 100) : 0;
+
+    // Course start rate (enrollments where student has completed at least 1 lesson)
+    const enrollmentsWithProgress = await prisma.enrollment.findMany({
+      where: isInstructor ? { course: { instructorId: userId } } : {},
+      select: {
+        id: true,
+        progress: true,
+      },
+    });
+    const courseStartRate = enrollmentsWithProgress.length > 0
+      ? Math.round((enrollmentsWithProgress.filter((e) => e.progress > 0).length / enrollmentsWithProgress.length) * 100)
+      : 0;
+
+    // Revenue by instructor (admin only)
+    let revenueByInstructor: { instructorId: string; instructorName: string; revenue: number }[] = [];
+    if (isAdmin) {
+      const instructorRevenues = await prisma.purchase.groupBy({
+        by: ["courseId"],
+        where: { status: "COMPLETED" },
+        _sum: { amount: true },
+      });
+      const courseMap = new Map<string, { instructorId: string; instructorName: string }>();
+      const coursesWithInstructors = await prisma.course.findMany({
+        select: { id: true, instructorId: true, instructor: { select: { name: true } } },
+      });
+      for (const c of coursesWithInstructors) {
+        courseMap.set(c.id, { instructorId: c.instructorId, instructorName: c.instructor.name || "Unknown" });
+      }
+      const revByInstructor = new Map<string, { name: string; revenue: number }>();
+      for (const ir of instructorRevenues) {
+        if (!ir.courseId) continue;
+        const info = courseMap.get(ir.courseId);
+        if (info) {
+          const existing = revByInstructor.get(info.instructorId) || { name: info.instructorName, revenue: 0 };
+          existing.revenue += ir._sum.amount || 0;
+          revByInstructor.set(info.instructorId, existing);
+        }
+      }
+      revenueByInstructor = [...revByInstructor.entries()].map(([id, data]) => ({
+        instructorId: id,
+        instructorName: data.name,
+        revenue: Math.round(data.revenue),
+      })).sort((a, b) => b.revenue - a.revenue);
+    }
+
+    // Category distribution (admin only)
+    let categoryDistribution: { category: string; count: number }[] = [];
+    if (isAdmin) {
+      const catCourses = await prisma.course.groupBy({
+        by: ["category"],
+        _count: { id: true },
+        where: { category: { not: null } },
+      });
+      categoryDistribution = catCourses.map((c) => ({
+        category: c.category || "Uncategorized",
+        count: c._count.id,
+      })).sort((a, b) => b.count - a.count);
+    }
+
+    // Geographic distribution (from user bios/locations — simplified: group by country if available)
+    // Since we don't have a country field, we'll derive from ActivityLog IP or return a placeholder
+
     return NextResponse.json({
       totalStudents,
       totalCourses,
@@ -238,6 +311,17 @@ export async function GET(request: Request) {
       topCourses,
       recentActivity,
       engagementMetrics,
+      paymentStats: {
+        totalPayments,
+        completedPayments,
+        failedPayments,
+        refundedPayments,
+        paymentSuccessRate,
+        refundRate,
+      },
+      courseStartRate,
+      revenueByInstructor,
+      categoryDistribution,
     });
   } catch (error) {
     return NextResponse.json(

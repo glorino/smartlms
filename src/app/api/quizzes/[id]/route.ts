@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { awardAchievement } from "@/lib/achievements";
+import { sendEmail, quizResult } from "@/lib/email";
 
 export async function GET(
   request: Request,
@@ -189,6 +191,23 @@ export async function POST(
           type: "QUIZ",
         },
       });
+    }
+
+    if (scorePercentage === 100) {
+      await awardAchievement(userId, "quiz_master", prisma);
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, email: true },
+    });
+
+    if (user?.email) {
+      sendEmail({
+        to: user.email,
+        subject: `Quiz Results: ${quiz.title}`,
+        html: quizResult(user, quiz, scorePercentage, passed),
+      }).catch(() => {});
     }
 
     return NextResponse.json({
