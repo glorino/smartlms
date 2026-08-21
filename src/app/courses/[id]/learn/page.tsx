@@ -142,6 +142,26 @@ export default function CourseLearnPage() {
 
   useEffect(() => {
     if (!course) return;
+    async function loadProgress() {
+      try {
+        const res = await fetch(`/api/progress?courseId=${courseId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const completed = new Set<string>();
+          for (const p of data.progress || []) {
+            if (p.completed) {
+              completed.add(p.lessonId);
+            }
+          }
+          setCompletedLessons(completed);
+        }
+      } catch {}
+    }
+    loadProgress();
+  }, [course, courseId]);
+
+  useEffect(() => {
+    if (!course) return;
     async function loadQuizAttempts() {
       try {
         const passed = new Set<string>();
