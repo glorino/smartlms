@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import toast from "react-hot-toast";
 import {
   Video,
@@ -11,17 +10,14 @@ import {
   Users,
   Play,
   Square,
-  ArrowLeft,
   ExternalLink,
-  CheckCircle2,
-  XCircle,
+  X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Spinner } from "@/components/ui/spinner";
 
 interface LiveClass {
@@ -38,48 +34,64 @@ interface LiveClass {
   platform?: string;
 }
 
-interface Recording {
+interface CourseOption {
   id: string;
   title: string;
-  course: string;
-  date: string;
-  duration: string;
-  views: number;
 }
+
+const platforms = [
+  { value: "ZOOM", label: "Zoom" },
+  { value: "GOOGLE_MEET", label: "Google Meet" },
+  { value: "JITSI", label: "Jitsi" },
+  { value: "YOUTUBE_LIVE", label: "YouTube Live" },
+  { value: "MICROSOFT_TEAMS", label: "Microsoft Teams" },
+  { value: "CUSTOM", label: "Other (Custom URL)" },
+];
 
 export default function LiveClassesPage() {
   const [classes, setClasses] = useState<LiveClass[]>([]);
+  const [courses, setCourses] = useState<CourseOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newCourseId, setNewCourseId] = useState("");
-  newCourseId; // suppress unused warning
+  const [newPlatform, setNewPlatform] = useState("GOOGLE_MEET");
+  const [newMeetingUrl, setNewMeetingUrl] = useState("");
   const [newDate, setNewDate] = useState("");
   const [newTime, setNewTime] = useState("");
   const [newDuration, setNewDuration] = useState("60");
 
   useEffect(() => {
-    async function fetchClasses() {
+    async function fetchData() {
       try {
-        const res = await fetch("/api/live-classes");
-        if (res.ok) {
-          const data = await res.json();
+        const [classesRes, coursesRes] = await Promise.all([
+          fetch("/api/live-classes"),
+          fetch("/api/courses?allStatus=true&limit=100"),
+        ]);
+        if (classesRes.ok) {
+          const data = await classesRes.json();
           const now = new Date();
-          const mapped: LiveClass[] = (data.classes || []).map((c: any) => ({
-            id: c.id,
-            title: c.title,
-            description: c.description || "",
-            course: c.course?.title || "",
-            courseId: c.courseId,
-            scheduledAt: c.scheduledAt,
-            duration: `${c.duration} min`,
-            attendees: c._count?.attendees || 0,
-            status: new Date(c.scheduledAt) < now ? "completed" : "upcoming",
-            meetingUrl: c.meetingUrl,
-            platform: c.platform,
-          }));
-          setClasses(mapped);
+          setClasses(
+            (data.classes || []).map((c: any) => ({
+              id: c.id,
+              title: c.title,
+              description: c.description || "",
+              course: c.course?.title || "",
+              courseId: c.courseId,
+              scheduledAt: c.scheduledAt,
+              duration: `${c.duration} min`,
+              attendees: c._count?.attendees || 0,
+              status: (new Date(c.scheduledAt) < now ? "completed" : "upcoming") as "completed" | "upcoming",
+              meetingUrl: c.meetingUrl,
+              platform: c.platform,
+            }))
+          );
+        }
+        if (coursesRes.ok) {
+          const data = await coursesRes.json();
+          setCourses(data.courses || []);
         }
       } catch {
         setClasses([]);
@@ -87,53 +99,71 @@ export default function LiveClassesPage() {
         setLoading(false);
       }
     }
-    fetchClasses();
+    fetchData();
   }, []);
 
+  const resetForm = () => {
+    setNewTitle("");
+    setNewDescription("");
+    setNewCourseId("");
+    setNewPlatform("GOOGLE_MEET");
+    setNewMeetingUrl("");
+    setNewDate("");
+    setNewTime("");
+    setNewDuration("60");
+  };
+
   const handleSchedule = async () => {
-    if (newTitle && newDate && newTime) {
-      try {
-        const scheduledAt = new Date(`${newDate}T${newTime}`).toISOString();
-        const res = await fetch("/api/live-classes", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: newTitle,
-            description: newDescription,
-            courseId: newCourseId || undefined,
-            scheduledAt,
-            duration: Number(newDuration),
-          }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setClasses((prev) => [
-            {
-              id: data.liveClass.id,
-              title: data.liveClass.title,
-              description: data.liveClass.description || "",
-              course: data.liveClass.course?.title || "",
-              courseId: data.liveClass.courseId,
-              scheduledAt: data.liveClass.scheduledAt,
-              duration: `${data.liveClass.duration} min`,
-              attendees: 0,
-              status: "upcoming",
-              meetingUrl: data.liveClass.meetingUrl,
-              platform: data.liveClass.platform,
-            },
-            ...prev,
-          ]);
-        }
-      } catch {
-        // handle error
+    if (!newTitle || !newDate || !newTime || !newCourseId) {
+      toast.error("Title, course, date and time are required");
+      return;
+    }
+    setSaving(true);
+    try {
+      const scheduledAt = new Date(`${newDate}T${newTime}`).toISOString();
+      const res = await fetch("/api/live-classes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newTitle,
+          description: newDescription,
+          courseId: newCourseId,
+          platform: newPlatform,
+          meetingUrl: newMeetingUrl || undefined,
+          scheduledAt,
+          duration: Number(newDuration),
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const lc = data.liveClass;
+        setClasses((prev) => [
+          {
+            id: lc.id,
+            title: lc.title,
+            description: lc.description || "",
+            course: lc.course?.title || "",
+            courseId: lc.courseId,
+            scheduledAt: lc.scheduledAt,
+            duration: `${lc.duration} min`,
+            attendees: 0,
+            status: "upcoming",
+            meetingUrl: lc.meetingUrl,
+            platform: lc.platform,
+          },
+          ...prev,
+        ]);
+        setShowForm(false);
+        resetForm();
+        toast.success("Live class scheduled!");
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to schedule class");
       }
-      setShowForm(false);
-      setNewTitle("");
-      setNewDescription("");
-      setNewCourseId("");
-      setNewDate("");
-      setNewTime("");
-      setNewDuration("60");
+    } catch {
+      toast.error("Failed to schedule class");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -151,12 +181,12 @@ export default function LiveClassesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Live Classes</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Live Classes</h1>
           <p className="mt-1 text-gray-600">Schedule and manage your live sessions</p>
         </div>
-        <Button className="gap-2" onClick={() => setShowForm(!showForm)}>
-          {showForm ? <ArrowLeft className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {showForm ? "Back to Classes" : "Schedule New Class"}
+        <Button className="gap-2" onClick={() => { setShowForm(!showForm); if (showForm) resetForm(); }}>
+          {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+          {showForm ? "Cancel" : "Schedule New Class"}
         </Button>
       </div>
 
@@ -180,13 +210,40 @@ export default function LiveClassesPage() {
               onChange={(e) => setNewDescription(e.target.value)}
               className="min-h-[80px]"
             />
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Course</label>
+                <select
+                  value={newCourseId}
+                  onChange={(e) => setNewCourseId(e.target.value)}
+                  className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="">Select a course</option>
+                  {courses.map((c) => (
+                    <option key={c.id} value={c.id}>{c.title}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Platform</label>
+                <select
+                  value={newPlatform}
+                  onChange={(e) => setNewPlatform(e.target.value)}
+                  className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  {platforms.map((p) => (
+                    <option key={p.value} value={p.value}>{p.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
             <Input
-              label="Course ID"
-              placeholder="Enter course ID"
-              value={newCourseId}
-              onChange={(e) => setNewCourseId(e.target.value)}
+              label="Meeting URL"
+              placeholder="https://meet.google.com/xxx-xxxx-xxx"
+              value={newMeetingUrl}
+              onChange={(e) => setNewMeetingUrl(e.target.value)}
             />
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <Input
                 label="Date"
                 type="date"
@@ -207,166 +264,128 @@ export default function LiveClassesPage() {
               />
             </div>
             <div className="flex gap-3">
-              <Button className="gap-2" onClick={handleSchedule}>
-                <Calendar className="h-4 w-4" />
+              <Button className="gap-2" onClick={handleSchedule} disabled={saving}>
+                {saving ? <Spinner size="sm" /> : <Calendar className="h-4 w-4" />}
                 Schedule Class
               </Button>
-              <Button variant="outline" onClick={() => setShowForm(false)}>
+              <Button variant="outline" onClick={() => { setShowForm(false); resetForm(); }}>
                 Cancel
               </Button>
             </div>
           </CardContent>
         </Card>
       ) : (
-        <Tabs defaultValue="upcoming">
-          <TabsList>
-            <TabsTrigger value="upcoming">
-              Upcoming & Live
-              <span className="ml-1.5 rounded-full bg-gray-200 px-1.5 py-0.5 text-xs">
-                {upcomingClasses.length}
-              </span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="upcoming">
-            <div className="mt-4 space-y-4">
-              {upcomingClasses.length === 0 ? (
-                <Card>
-                  <CardContent className="flex flex-col items-center justify-center py-16">
-                    <Video className="h-12 w-12 text-gray-400" />
-                    <h3 className="mt-4 text-lg font-medium text-gray-900">No live classes scheduled</h3>
-                    <p className="mt-1 text-sm text-gray-500">Schedule a new live class to get started</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                upcomingClasses.map((cls) => (
-                  <Card key={cls.id} className={cls.status === "live" ? "border-green-200 bg-green-50/30" : ""}>
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex gap-4">
-                          <div
-                            className={`rounded-xl p-3 ${
-                              cls.status === "live"
-                                ? "bg-green-500"
-                                : "bg-blue-500"
-                            }`}
-                          >
-                            <Video className="h-6 w-6 text-white" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-gray-900">{cls.title}</h3>
-                              {cls.status === "live" && (
-                                <Badge variant="success" className="animate-pulse">
-                                  LIVE
-                                </Badge>
-                              )}
-                              {cls.status === "upcoming" && (
-                                <Badge variant="default">Upcoming</Badge>
-                              )}
-                            </div>
-                            <p className="mt-1 text-sm text-gray-500">{cls.description}</p>
-                            <p className="mt-1 text-xs text-gray-400">{cls.course}</p>
-                            <div className="mt-3 flex items-center gap-4 text-sm text-gray-500">
-                              <span className="flex items-center gap-1">
-                                <Calendar className="h-3.5 w-3.5" />
-                                {new Date(cls.scheduledAt).toLocaleDateString("en-US", {
-                                  weekday: "short",
-                                  month: "short",
-                                  day: "numeric",
-                                })}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3.5 w-3.5" />
-                                {new Date(cls.scheduledAt).toLocaleTimeString("en-US", {
-                                  hour: "numeric",
-                                  minute: "2-digit",
-                                })}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Users className="h-3.5 w-3.5" />
-                                {cls.attendees} registered
-                              </span>
-                            </div>
-                          </div>
+        <div className="space-y-4">
+          {upcomingClasses.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <Video className="h-12 w-12 text-gray-400" />
+                <h3 className="mt-4 text-lg font-medium text-gray-900">No live classes scheduled</h3>
+                <p className="mt-1 text-sm text-gray-500">Schedule a new live class to get started</p>
+                <Button className="mt-4 gap-2" onClick={() => setShowForm(true)}>
+                  <Plus className="h-4 w-4" />
+                  Schedule Class
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            upcomingClasses.map((cls) => (
+              <Card key={cls.id} className={cls.status === "live" ? "border-green-200 bg-green-50/30" : ""}>
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex gap-4">
+                      <div className={`rounded-xl p-3 ${cls.status === "live" ? "bg-green-500" : "bg-blue-500"}`}>
+                        <Video className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-gray-900">{cls.title}</h3>
+                          {cls.status === "live" && <Badge variant="success" className="animate-pulse">LIVE</Badge>}
+                          {cls.status === "upcoming" && <Badge variant="default">Upcoming</Badge>}
+                          {cls.platform && <Badge variant="outline">{cls.platform.replace("_", " ")}</Badge>}
                         </div>
-                        <div className="flex gap-2">
-                          {cls.status === "live" ? (
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              className="gap-2"
-                              onClick={async () => {
-                                try {
-                                  const res = await fetch(`/api/live-classes/${cls.id}`, {
-                                    method: "PATCH",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ status: "completed" }),
-                                  });
-                                  if (res.ok) {
-                                    setClasses((prev) =>
-                                      prev.map((c) =>
-                                        c.id === cls.id ? { ...c, status: "completed" as const } : c
-                                      )
-                                    );
-                                    toast.success("Class ended successfully");
-                                  } else {
-                                    toast.error("Failed to end class");
-                                  }
-                                } catch {
-                                  toast.error("Failed to end class");
-                                }
-                              }}
-                            >
-                              <Square className="h-4 w-4" />
-                              End Class
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              className="gap-2"
-                              onClick={() => {
-                                if (cls.meetingUrl) {
-                                  window.open(cls.meetingUrl, "_blank");
-                                  toast.success("Opening meeting link");
-                                } else {
-                                  toast.error("No meeting URL available");
-                                }
-                              }}
-                            >
-                              <Play className="h-4 w-4" />
-                              Start Class
-                            </Button>
-                          )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-2"
-                            onClick={async () => {
-                              if (cls.meetingUrl) {
-                                try {
-                                  await navigator.clipboard.writeText(cls.meetingUrl);
-                                  toast.success("Link copied to clipboard");
-                                } catch {
-                                  toast.error("Failed to copy link");
-                                }
-                              } else {
-                                toast.error("No meeting URL available");
-                              }
-                            }}
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                            Copy Link
-                          </Button>
+                        <p className="mt-1 text-sm text-gray-500">{cls.description}</p>
+                        <p className="mt-1 text-xs text-gray-400">{cls.course}</p>
+                        <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {new Date(cls.scheduledAt).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3.5 w-3.5" />
+                            {new Date(cls.scheduledAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Users className="h-3.5 w-3.5" />
+                            {cls.attendees} registered
+                          </span>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
+                    </div>
+                    <div className="flex gap-2">
+                      {cls.status === "live" ? (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="gap-2"
+                          onClick={async () => {
+                            try {
+                              const res = await fetch(`/api/live-classes/${cls.id}`, {
+                                method: "PATCH",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ status: "completed" }),
+                              });
+                              if (res.ok) {
+                                setClasses((prev) =>
+                                  prev.map((c) => (c.id === cls.id ? { ...c, status: "completed" as const } : c))
+                                );
+                                toast.success("Class ended successfully");
+                              }
+                            } catch {
+                              toast.error("Failed to end class");
+                            }
+                          }}
+                        >
+                          <Square className="h-4 w-4" /> End Class
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          className="gap-2"
+                          onClick={() => {
+                            if (cls.meetingUrl) {
+                              window.open(cls.meetingUrl, "_blank");
+                              toast.success("Opening meeting link");
+                            } else {
+                              toast.error("No meeting URL available");
+                            }
+                          }}
+                        >
+                          <Play className="h-4 w-4" /> Start Class
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={async () => {
+                          if (cls.meetingUrl) {
+                            await navigator.clipboard.writeText(cls.meetingUrl);
+                            toast.success("Link copied to clipboard");
+                          } else {
+                            toast.error("No meeting URL available");
+                          }
+                        }}
+                      >
+                        <ExternalLink className="h-4 w-4" /> Copy Link
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
       )}
     </div>
   );
