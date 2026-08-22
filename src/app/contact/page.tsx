@@ -1,12 +1,44 @@
 "use client";
 
 import { useState } from "react";
-import { Send, Mail, Phone, MapPin, MessageSquare } from "lucide-react";
+import { Send, Mail, Phone, MapPin, MessageSquare, Loader2 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
+import toast from "react-hot-toast";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSending(true);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, subject, message }),
+      });
+      if (res.ok) {
+        setSubmitted(true);
+        setName("");
+        setEmail("");
+        setSubject("");
+        setMessage("");
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to send message");
+      }
+    } catch {
+      toast.error("Failed to send message");
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <>
@@ -61,13 +93,7 @@ export default function ContactPage() {
                     </button>
                   </div>
                 ) : (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      setSubmitted(true);
-                    }}
-                    className="space-y-6"
-                  >
+                  <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid gap-6 sm:grid-cols-2">
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
@@ -76,6 +102,8 @@ export default function ContactPage() {
                         <input
                           type="text"
                           required
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
                           className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                           placeholder="Your name"
                         />
@@ -87,6 +115,8 @@ export default function ContactPage() {
                         <input
                           type="email"
                           required
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
                           className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                           placeholder="you@example.com"
                         />
@@ -99,6 +129,8 @@ export default function ContactPage() {
                       <input
                         type="text"
                         required
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
                         className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                         placeholder="How can we help?"
                       />
@@ -110,16 +142,19 @@ export default function ContactPage() {
                       <textarea
                         rows={5}
                         required
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
                         className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                         placeholder="Tell us more..."
                       />
                     </div>
                     <button
                       type="submit"
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-700 hover:shadow-xl"
+                      disabled={sending}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-700 hover:shadow-xl disabled:opacity-50"
                     >
-                      <MessageSquare className="h-4 w-4" />
-                      Send Message
+                      {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
+                      {sending ? "Sending..." : "Send Message"}
                     </button>
                   </form>
                 )}

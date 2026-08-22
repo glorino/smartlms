@@ -28,6 +28,7 @@ import Footer from "@/components/layout/footer";
 import EnrollButton from "./enroll-button";
 import BookmarkButton from "./bookmark-button";
 import ShareButton from "./share-button";
+import ReviewForm from "./review-form";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
@@ -124,6 +125,7 @@ export default async function CourseDetailPage({
   const userId = session?.user?.id;
 
   let isBookmarked = false;
+  let isEnrolled = false;
   if (userId && course.id) {
     try {
       const bookmark = await prisma.bookmark.findUnique({
@@ -138,6 +140,20 @@ export default async function CourseDetailPage({
       isBookmarked = !!bookmark;
     } catch {
       isBookmarked = false;
+    }
+    try {
+      const enrollment = await prisma.enrollment.findUnique({
+        where: {
+          userId_courseId: {
+            userId,
+            courseId: course.id,
+          },
+        },
+        select: { id: true },
+      });
+      isEnrolled = !!enrollment;
+    } catch {
+      isEnrolled = false;
     }
   }
 
@@ -570,9 +586,15 @@ export default async function CourseDetailPage({
                             </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                  </div>
+                )}
+              </div>
+
+              <ReviewForm
+                courseId={course.id}
+                isEnrolled={isEnrolled}
+                onReviewSubmitted={() => {}}
+              />
+            </div>
                 </div>
               )}
 

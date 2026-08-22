@@ -95,7 +95,7 @@ export function enrollmentConfirmation(
       </p>
     </div>
     <p style="text-align:center;margin:0 0 24px;">
-      <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/courses/${course.slug}"
+      <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/courses/${course.slug}"
          style="background-color:#4f46e5;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:600;display:inline-block;font-size:15px;">
         Start Learning
       </a>
@@ -180,7 +180,7 @@ export function certificateIssued(
       </p>
     </div>
     <p style="text-align:center;margin:0 0 24px;">
-      <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/certificate"
+      <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/certificate"
          style="background-color:#f59e0b;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:600;display:inline-block;font-size:15px;">
         View Certificate
       </a>

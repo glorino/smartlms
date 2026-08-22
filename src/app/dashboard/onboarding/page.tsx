@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import {
@@ -21,10 +21,20 @@ import {
   BarChart3,
   Sparkles,
   PartyPopper,
+  Palette,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+
+const themeColors = [
+  { name: "Indigo", value: "indigo", gradient: "from-indigo-600 via-purple-600 to-pink-500", btn: "bg-indigo-500", ring: "ring-indigo-500", text: "text-indigo-600", bg: "bg-indigo-50", hover: "hover:bg-indigo-100", hex: "#6366f1" },
+  { name: "Blue", value: "blue", gradient: "from-blue-600 via-blue-500 to-cyan-500", btn: "bg-blue-500", ring: "ring-blue-500", text: "text-blue-600", bg: "bg-blue-50", hover: "hover:bg-blue-100", hex: "#3b82f6" },
+  { name: "Emerald", value: "emerald", gradient: "from-emerald-600 via-green-500 to-teal-500", btn: "bg-emerald-500", ring: "ring-emerald-500", text: "text-emerald-600", bg: "bg-emerald-50", hover: "hover:bg-emerald-100", hex: "#10b981" },
+  { name: "Rose", value: "rose", gradient: "from-rose-600 via-pink-500 to-red-500", btn: "bg-rose-500", ring: "ring-rose-500", text: "text-rose-600", bg: "bg-rose-50", hover: "hover:bg-rose-100", hex: "#f43f5e" },
+  { name: "Amber", value: "amber", gradient: "from-amber-600 via-orange-500 to-yellow-500", btn: "bg-amber-500", ring: "ring-amber-500", text: "text-amber-600", bg: "bg-amber-50", hover: "hover:bg-amber-100", hex: "#f59e0b" },
+  { name: "Purple", value: "purple", gradient: "from-purple-600 via-violet-500 to-indigo-500", btn: "bg-purple-500", ring: "ring-purple-500", text: "text-purple-600", bg: "bg-purple-50", hover: "hover:bg-purple-100", hex: "#a855f7" },
+];
 
 interface Step {
   id: number;
@@ -170,6 +180,21 @@ export default function OnboardingPage() {
   const role = (user as any)?.role || "STUDENT";
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [showWelcome, setShowWelcome] = useState(true);
+  const [selectedColor, setSelectedColor] = useState("indigo");
+
+  const theme = themeColors.find((c) => c.value === selectedColor) || themeColors[0];
+
+  useEffect(() => {
+    const saved = localStorage.getItem("onboarding-theme");
+    if (saved && themeColors.find((c) => c.value === saved)) {
+      setSelectedColor(saved);
+    }
+  }, []);
+
+  const handleColorChange = (color: string) => {
+    setSelectedColor(color);
+    localStorage.setItem("onboarding-theme", color);
+  };
 
   const steps = role === "ADMIN" ? adminSteps : role === "INSTRUCTOR" ? instructorSteps : studentSteps;
   const roleLabel = role === "ADMIN" ? "Admin" : role === "INSTRUCTOR" ? "Instructor" : "Student";
@@ -190,7 +215,7 @@ export default function OnboardingPage() {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
         <Card className="w-full max-w-2xl overflow-hidden">
-          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-12 text-center text-white relative overflow-hidden">
+          <div className={`bg-gradient-to-r ${theme.gradient} p-12 text-center text-white relative overflow-hidden`}>
             <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10" />
             <div className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-white/10" />
             <div className="relative z-10">
@@ -198,7 +223,7 @@ export default function OnboardingPage() {
               <h1 className="mt-4 text-3xl font-bold">
                 Welcome to SmartLMS, {user?.name || "there"}!
               </h1>
-              <p className="mt-4 text-lg text-indigo-100">
+              <p className="mt-4 text-lg text-white/80">
                 {role === "ADMIN"
                   ? "You have full control of the platform. Here\u2019s how to get started."
                   : role === "INSTRUCTOR"
@@ -208,7 +233,8 @@ export default function OnboardingPage() {
               <Badge className="mt-4" variant="outline">{roleLabel}</Badge>
               <button
                 onClick={() => setShowWelcome(false)}
-                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3 font-semibold text-indigo-600 shadow-lg transition-all hover:bg-indigo-50 hover:shadow-xl"
+                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3 font-semibold shadow-lg transition-all hover:bg-white/90 hover:shadow-xl"
+                style={{ color: theme.hex }}
               >
                 Get Started
                 <ArrowRight className="h-5 w-5" />
@@ -216,24 +242,49 @@ export default function OnboardingPage() {
             </div>
           </div>
           <CardContent className="p-8">
-            <div className="grid grid-cols-3 gap-6 text-center">
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Palette className="h-4 w-4 text-gray-400" />
+                <p className="text-sm font-medium text-gray-500">Choose your theme color</p>
+              </div>
+              <div className="flex items-center gap-3">
+                {themeColors.map((color) => (
+                  <button
+                    key={color.value}
+                    onClick={() => handleColorChange(color.value)}
+                    className={`relative h-10 w-10 rounded-full transition-all ${
+                      selectedColor === color.value
+                        ? `ring-2 ring-offset-2 ${color.ring} scale-110`
+                        : "hover:scale-105"
+                    }`}
+                    style={{ backgroundColor: color.hex }}
+                    title={color.name}
+                  >
+                    {selectedColor === color.value && (
+                      <CheckCircle2 className="h-5 w-5 text-white absolute inset-0 m-auto drop-shadow-md" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
               <div className="space-y-2">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-                  <span className="text-2xl font-bold text-blue-600">{steps.length}</span>
+                <div className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${theme.bg}`}>
+                  <span className={`text-2xl font-bold ${theme.text}`}>{steps.length}</span>
                 </div>
                 <p className="text-sm font-medium text-gray-900">Quick Steps</p>
                 <p className="text-xs text-gray-500">Tailored for you</p>
               </div>
               <div className="space-y-2">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+                <div className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${theme.bg}`}>
+                  <CheckCircle2 className={`h-6 w-6 ${theme.text}`} />
                 </div>
                 <p className="text-sm font-medium text-gray-900">Track Progress</p>
                 <p className="text-xs text-gray-500">Mark steps complete</p>
               </div>
               <div className="space-y-2">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-purple-100">
-                  <Sparkles className="h-6 w-6 text-purple-600" />
+                <div className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${theme.bg}`}>
+                  <Sparkles className={`h-6 w-6 ${theme.text}`} />
                 </div>
                 <p className="text-sm font-medium text-gray-900">Get Started</p>
                 <p className="text-xs text-gray-500">Begin {role === "INSTRUCTOR" ? "teaching" : role === "ADMIN" ? "managing" : "learning"}</p>
@@ -269,7 +320,7 @@ export default function OnboardingPage() {
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-3xl font-bold text-indigo-600">{Math.round(progressPercent)}%</p>
+                <p className={`text-3xl font-bold ${theme.text}`}>{Math.round(progressPercent)}%</p>
               </div>
             </div>
             <Progress value={progressPercent} className="h-3" color="default" />
@@ -293,7 +344,7 @@ export default function OnboardingPage() {
                     key={step.id}
                     onClick={() => toggleStep(step.id)}
                     className={`flex items-center gap-3 rounded-lg p-2 text-left transition-all ${
-                      isCompleted ? "bg-green-50 text-green-700" : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                      isCompleted ? "bg-green-50 text-green-700" : `${theme.bg} ${theme.text} hover:${theme.hover}`
                     }`}
                   >
                     {isCompleted ? (
@@ -344,7 +395,9 @@ export default function OnboardingPage() {
                     <div className="mt-3 flex items-center gap-3">
                       <Link
                         href={step.href}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 shadow-sm"
+                        className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors shadow-sm ${
+                          isCompleted ? "bg-green-600 hover:bg-green-700" : `${theme.btn} hover:opacity-90`
+                        }`}
                       >
                         <StepIcon className="h-4 w-4" />
                         {isCompleted ? "Review" : "Go to Step"}

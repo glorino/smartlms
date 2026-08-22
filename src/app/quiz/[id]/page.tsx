@@ -361,7 +361,7 @@ export default function QuizPage() {
                 </span>
               </div>
 
-              <div className="mt-8 grid grid-cols-3 gap-4">
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="rounded-xl bg-gray-50 p-4">
                   <p className="text-3xl font-bold text-gray-900">
                     {percentage}%

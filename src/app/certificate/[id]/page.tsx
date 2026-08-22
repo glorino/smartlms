@@ -4,7 +4,7 @@ import CertificateView from "./certificate-view";
 async function getCertificate(id: string) {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || "http://localhost:3000"}/api/certificates/${id}`,
+      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/certificates/${id}`,
       { cache: "no-store" }
     );
     if (!res.ok) return null;

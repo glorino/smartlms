@@ -78,6 +78,7 @@ export default function InstructorQuizzesPage() {
   const [filterCourse, setFilterCourse] = useState("all");
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingQuizId, setEditingQuizId] = useState<string | null>(null);
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
@@ -128,6 +129,122 @@ export default function InstructorQuizzesPage() {
     setFormMaxAttempts("3");
     setFormDifficulty("MEDIUM");
     setFormQuestions([{ ...defaultQuestion }]);
+    setEditingQuizId(null);
+  };
+
+  const handleEdit = async (quiz: Quiz) => {
+    setEditingQuizId(quiz.id);
+    setFormTitle(quiz.title);
+    setFormDescription(quiz.description || "");
+    setFormCourseId(quiz.courseId);
+    setFormTimeLimit(quiz.timeLimit?.toString() || "30");
+    setFormPassingScore(quiz.passingScore?.toString() || "60");
+    setFormMaxAttempts(quiz.maxAttempts?.toString() || "3");
+    setFormDifficulty(quiz.difficulty || "MEDIUM");
+    setShowForm(true);
+
+    try {
+      const res = await fetch(`/api/quizzes/${quiz.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        const quizData = data.quiz;
+        if (quizData.questions && quizData.questions.length > 0) {
+          setFormQuestions(
+            quizData.questions.map((q: any) => ({
+              content: q.content,
+              type: q.type || "SINGLE_CHOICE",
+              points: q.points || 1,
+              explanation: q.explanation || "",
+              imageUrl: q.imageUrl || "",
+              answers:
+                q.answers && q.answers.length > 0
+                  ? q.answers.map((a: any) => ({
+                      content: a.content,
+                      isCorrect: a.isCorrect,
+                      imageUrl: a.imageUrl || "",
+                    }))
+                  : [
+                      { content: "", isCorrect: true, imageUrl: "" },
+                      { content: "", isCorrect: false, imageUrl: "" },
+                    ],
+            }))
+          );
+        }
+      }
+    } catch {
+      toast.error("Failed to load quiz data");
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleUpdate = async () => {
+    if (!formTitle || !formCourseId) {
+      toast.error("Title and course are required");
+      return;
+    }
+
+    const validQuestions = formQuestions.filter((q) => q.content.trim());
+    if (validQuestions.length === 0) {
+      toast.error("Add at least one question");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/quizzes/${editingQuizId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: formTitle,
+          description: formDescription,
+          courseId: formCourseId,
+          timeLimit: Number(formTimeLimit) || null,
+          passingScore: Number(formPassingScore) || 60,
+          maxAttempts: Number(formMaxAttempts) || null,
+          difficulty: formDifficulty,
+          points: validQuestions.reduce((sum, q) => sum + q.points, 0),
+          questions: validQuestions.map((q, i) => ({
+            ...q,
+            order: i,
+            answers: q.answers.filter((a) => a.content.trim()),
+          })),
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setQuizzes(
+          quizzes.map((q) =>
+            q.id === editingQuizId
+              ? {
+                  ...q,
+                  title: data.quiz.title,
+                  description: data.quiz.description || "",
+                  timeLimit: data.quiz.timeLimit,
+                  passingScore: data.quiz.passingScore,
+                  maxAttempts: data.quiz.maxAttempts,
+                  difficulty: data.quiz.difficulty,
+                  points: data.quiz.points,
+                  courseId: data.quiz.courseId,
+                  courseName: courses.find((c) => c.id === data.quiz.courseId)?.title || q.courseName,
+                  totalQuestions: data.quiz.questions?.length || 0,
+                }
+              : q
+          )
+        );
+        setShowForm(false);
+        resetForm();
+        toast.success("Quiz updated successfully!");
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to update quiz");
+      }
+    } catch {
+      toast.error("Failed to update quiz");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const addQuestion = () => {
@@ -284,8 +401,8 @@ export default function InstructorQuizzesPage() {
       {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>Create New Quiz</CardTitle>
-            <CardDescription>Add questions and configure quiz settings</CardDescription>
+            <CardTitle>{editingQuizId ? "Edit Quiz" : "Create New Quiz"}</CardTitle>
+            <CardDescription>{editingQuizId ? "Update questions and quiz settings" : "Add questions and configure quiz settings"}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -446,9 +563,9 @@ export default function InstructorQuizzesPage() {
             </div>
 
             <div className="flex gap-3">
-              <Button className="gap-2" onClick={handleCreate} disabled={saving}>
+              <Button className="gap-2" onClick={editingQuizId ? handleUpdate : handleCreate} disabled={saving}>
                 {saving ? <Spinner size="sm" /> : <FileCheck className="h-4 w-4" />}
-                Create Quiz
+                {editingQuizId ? "Update Quiz" : "Create Quiz"}
               </Button>
               <Button variant="outline" onClick={() => { setShowForm(false); resetForm(); }}>
                 Cancel
@@ -537,6 +654,15 @@ export default function InstructorQuizzesPage() {
                         <Eye className="h-4 w-4" />
                       </Button>
                     </Link>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Edit"
+                      onClick={() => handleEdit(quiz)}
+                      className="text-indigo-500 hover:text-indigo-700"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"

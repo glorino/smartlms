@@ -40,26 +40,6 @@ interface ErrorLog {
   timestamp: string;
 }
 
-const fallbackHealth: HealthStatus = {
-  apiResponseTime: 124,
-  databaseStatus: "healthy",
-  storageUsed: 67,
-  storageTotal: 100,
-  uptime: 99.98,
-  cpuUsage: 34,
-  memoryUsage: 58,
-  errorCount: 3,
-  lastChecked: new Date().toISOString(),
-};
-
-const fallbackErrors: ErrorLog[] = [
-  { id: "1", level: "error", message: "Failed to send email notification", source: "email-service", timestamp: "2 minutes ago" },
-  { id: "2", level: "warning", message: "High memory usage detected", source: "system", timestamp: "15 minutes ago" },
-  { id: "3", level: "error", message: "Payment webhook timeout", source: "payment-service", timestamp: "1 hour ago" },
-  { id: "4", level: "info", message: "Database backup completed", source: "database", timestamp: "3 hours ago" },
-  { id: "5", level: "warning", message: "Rate limit exceeded for API", source: "api-gateway", timestamp: "5 hours ago" },
-];
-
 const services = [
   { name: "API Server", status: "healthy", latency: "124ms", icon: Server },
   { name: "Database (PostgreSQL)", status: "healthy", latency: "12ms", icon: Database },
@@ -70,21 +50,25 @@ const services = [
 ];
 
 export default function AdminHealthPage() {
-  const [health, setHealth] = useState<HealthStatus>(fallbackHealth);
-  const [errors, setErrors] = useState<ErrorLog[]>(fallbackErrors);
+  const [health, setHealth] = useState<HealthStatus | null>(null);
+  const [errors, setErrors] = useState<ErrorLog[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const fetchHealth = async () => {
     setRefreshing(true);
+    setFetchError(null);
     try {
       const res = await fetch("/api/admin/health");
       if (res.ok) {
         const data = await res.json();
         setHealth(data.health || data);
-        setErrors(data.errors || fallbackErrors);
+        setErrors(data.errors || []);
+      } else {
+        setFetchError("Unable to fetch health data");
       }
     } catch {
-      // Use fallback
+      setFetchError("Unable to fetch health data");
     } finally {
       setRefreshing(false);
     }
@@ -142,219 +126,234 @@ export default function AdminHealthPage() {
       </div>
 
       {/* Health Overview Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">API Response</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">{health.apiResponseTime}ms</p>
-                <p className="mt-1 text-xs text-emerald-600 font-medium">Good</p>
+      {fetchError && !health ? (
+        <div className="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-gray-50 py-16 text-center">
+          <AlertTriangle className="mb-4 h-10 w-10 text-red-500" />
+          <p className="text-lg font-medium text-gray-900">{fetchError}</p>
+          <Button onClick={fetchHealth} disabled={refreshing} variant="outline" className="mt-4">
+            <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+            Retry
+          </Button>
+        </div>
+      ) : health ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">API Response</p>
+                  <p className="mt-1 text-3xl font-bold text-gray-900">{health.apiResponseTime}ms</p>
+                  <p className="mt-1 text-xs text-emerald-600 font-medium">Good</p>
+                </div>
+                <div className="rounded-xl bg-blue-500 p-3">
+                  <Activity className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <div className="rounded-xl bg-blue-500 p-3">
-                <Activity className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Uptime</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">{health.uptime}%</p>
-                <p className="mt-1 text-xs text-emerald-600 font-medium">Excellent</p>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Uptime</p>
+                  <p className="mt-1 text-3xl font-bold text-gray-900">{health.uptime}%</p>
+                  <p className="mt-1 text-xs text-emerald-600 font-medium">Excellent</p>
+                </div>
+                <div className="rounded-xl bg-emerald-500 p-3">
+                  <CheckCircle2 className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <div className="rounded-xl bg-emerald-500 p-3">
-                <CheckCircle2 className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">CPU Usage</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">{health.cpuUsage}%</p>
-                <p className="mt-1 text-xs text-emerald-600 font-medium">Normal</p>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">CPU Usage</p>
+                  <p className="mt-1 text-3xl font-bold text-gray-900">{health.cpuUsage}%</p>
+                  <p className="mt-1 text-xs text-emerald-600 font-medium">Normal</p>
+                </div>
+                <div className="rounded-xl bg-purple-500 p-3">
+                  <Cpu className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <div className="rounded-xl bg-purple-500 p-3">
-                <Cpu className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Memory</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">{health.memoryUsage}%</p>
-                <p className="mt-1 text-xs text-emerald-600 font-medium">Normal</p>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Memory</p>
+                  <p className="mt-1 text-3xl font-bold text-gray-900">{health.memoryUsage}%</p>
+                  <p className="mt-1 text-xs text-emerald-600 font-medium">Normal</p>
+                </div>
+                <div className="rounded-xl bg-orange-500 p-3">
+                  <MemoryStick className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <div className="rounded-xl bg-orange-500 p-3">
-                <MemoryStick className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
 
       {/* Services Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Server className="h-5 w-5" />
-            Services Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {services.map((service) => (
-              <div key={service.name} className="flex items-center justify-between rounded-xl border border-gray-100 p-4">
-                <div className="flex items-center gap-4">
-                  <div className="rounded-lg bg-gray-100 p-2.5">
-                    <service.icon className="h-5 w-5 text-gray-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{service.name}</p>
-                    <p className="text-sm text-gray-500">Latency: {service.latency}</p>
-                  </div>
-                </div>
-                <Badge className={statusColor(service.status)} variant="outline">
-                  {service.status === "healthy" && <CheckCircle2 className="mr-1 h-3 w-3" />}
-                  {service.status === "warning" && <AlertTriangle className="mr-1 h-3 w-3" />}
-                  {service.status === "down" && <XCircle className="mr-1 h-3 w-3" />}
-                  {service.status}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Storage Usage */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <HardDrive className="h-5 w-5" />
-              Storage Usage
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Used</span>
-                <span className="text-sm font-medium text-gray-900">{health.storageUsed}% of {health.storageTotal}GB</span>
-              </div>
-              <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                <div
-                  className={`h-full rounded-full transition-all ${
-                    health.storageUsed > 80 ? "bg-red-500" : health.storageUsed > 60 ? "bg-yellow-500" : "bg-emerald-500"
-                  }`}
-                  style={{ width: `${health.storageUsed}%` }}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-xl border border-gray-100 p-4">
-                <p className="text-sm text-gray-500">Course Files</p>
-                <p className="text-lg font-bold text-gray-900">12.4 GB</p>
-              </div>
-              <div className="rounded-xl border border-gray-100 p-4">
-                <p className="text-sm text-gray-500">User Uploads</p>
-                <p className="text-lg font-bold text-gray-900">8.2 GB</p>
-              </div>
-              <div className="rounded-xl border border-gray-100 p-4">
-                <p className="text-sm text-gray-500">Backups</p>
-                <p className="text-lg font-bold text-gray-900">15.1 GB</p>
-              </div>
-              <div className="rounded-xl border border-gray-100 p-4">
-                <p className="text-sm text-gray-500">Logs</p>
-                <p className="text-lg font-bold text-gray-900">3.3 GB</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Error Logs */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
-              Recent Errors ({health.errorCount})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {errors.map((error) => (
-                <div key={error.id} className="rounded-xl border border-gray-100 p-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-2">
-                      <Badge className={levelColor(error.level)} variant="outline">
-                        {error.level}
-                      </Badge>
+      {health && (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Server className="h-5 w-5" />
+                Services Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {services.map((service) => (
+                  <div key={service.name} className="flex items-center justify-between rounded-xl border border-gray-100 p-4">
+                    <div className="flex items-center gap-4">
+                      <div className="rounded-lg bg-gray-100 p-2.5">
+                        <service.icon className="h-5 w-5 text-gray-600" />
+                      </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{error.message}</p>
-                        <p className="text-xs text-gray-500">{error.source} · {error.timestamp}</p>
+                        <p className="font-medium text-gray-900">{service.name}</p>
+                        <p className="text-sm text-gray-500">Latency: {service.latency}</p>
                       </div>
                     </div>
+                    <Badge className={statusColor(service.status)} variant="outline">
+                      {service.status === "healthy" && <CheckCircle2 className="mr-1 h-3 w-3" />}
+                      {service.status === "warning" && <AlertTriangle className="mr-1 h-3 w-3" />}
+                      {service.status === "down" && <XCircle className="mr-1 h-3 w-3" />}
+                      {service.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Storage Usage */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <HardDrive className="h-5 w-5" />
+                  Storage Usage
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-gray-600">Used</span>
+                    <span className="text-sm font-medium text-gray-900">{health.storageUsed}% of {health.storageTotal}GB</span>
+                  </div>
+                  <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        health.storageUsed > 80 ? "bg-red-500" : health.storageUsed > 60 ? "bg-yellow-500" : "bg-emerald-500"
+                      }`}
+                      style={{ width: `${health.storageUsed}%` }}
+                    />
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-xl border border-gray-100 p-4">
+                    <p className="text-sm text-gray-500">Course Files</p>
+                    <p className="text-lg font-bold text-gray-900">12.4 GB</p>
+                  </div>
+                  <div className="rounded-xl border border-gray-100 p-4">
+                    <p className="text-sm text-gray-500">User Uploads</p>
+                    <p className="text-lg font-bold text-gray-900">8.2 GB</p>
+                  </div>
+                  <div className="rounded-xl border border-gray-100 p-4">
+                    <p className="text-sm text-gray-500">Backups</p>
+                    <p className="text-lg font-bold text-gray-900">15.1 GB</p>
+                  </div>
+                  <div className="rounded-xl border border-gray-100 p-4">
+                    <p className="text-sm text-gray-500">Logs</p>
+                    <p className="text-lg font-bold text-gray-900">3.3 GB</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* Uptime Monitor */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Uptime Monitor (Last 30 Days)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-0.5">
-            {Array.from({ length: 30 }).map((_, i) => {
-              const isDown = i === 12 || i === 23;
-              return (
-                <div
-                  key={i}
-                  className={`h-8 flex-1 rounded-sm ${
-                    isDown ? "bg-red-400" : "bg-emerald-400"
-                  }`}
-                  title={`Day ${i + 1}: ${isDown ? "Degraded" : "Operational"}`}
-                />
-              );
-            })}
+            {/* Error Logs */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5" />
+                  Recent Errors ({health.errorCount})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {errors.map((error) => (
+                    <div key={error.id} className="rounded-xl border border-gray-100 p-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-2">
+                          <Badge className={levelColor(error.level)} variant="outline">
+                            {error.level}
+                          </Badge>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{error.message}</p>
+                            <p className="text-xs text-gray-500">{error.source} · {error.timestamp}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
-            <span>30 days ago</span>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1.5">
-                <div className="h-3 w-3 rounded-sm bg-emerald-400" />
-                <span>Operational</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="h-3 w-3 rounded-sm bg-red-400" />
-                <span>Degraded</span>
-              </div>
-            </div>
-            <span>Today</span>
-          </div>
-        </CardContent>
-      </Card>
 
-      <p className="text-xs text-gray-400 text-right">
-        Last checked: {new Date(health.lastChecked).toLocaleString()}
-      </p>
+          {/* Uptime Monitor */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Uptime Monitor (Last 30 Days)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-0.5">
+                {Array.from({ length: 30 }).map((_, i) => {
+                  const isDown = i === 12 || i === 23;
+                  return (
+                    <div
+                      key={i}
+                      className={`h-8 flex-1 rounded-sm ${
+                        isDown ? "bg-red-400" : "bg-emerald-400"
+                      }`}
+                      title={`Day ${i + 1}: ${isDown ? "Degraded" : "Operational"}`}
+                    />
+                  );
+                })}
+              </div>
+              <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
+                <span>30 days ago</span>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-3 w-3 rounded-sm bg-emerald-400" />
+                    <span>Operational</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-3 w-3 rounded-sm bg-red-400" />
+                    <span>Degraded</span>
+                  </div>
+                </div>
+                <span>Today</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <p className="text-xs text-gray-400 text-right">
+            Last checked: {new Date(health.lastChecked).toLocaleString()}
+          </p>
+        </>
+      )}
     </div>
   );
 }

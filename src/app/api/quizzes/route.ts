@@ -6,8 +6,19 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get("courseId");
+    const session = await auth();
 
-    const where: any = { isPublished: true };
+    const where: any = {};
+
+    if (session?.user?.id && ((session.user as any).role === "INSTRUCTOR" || (session.user as any).role === "ADMIN")) {
+      where.OR = [
+        { isPublished: true },
+        { course: { instructorId: session.user.id } },
+      ];
+    } else {
+      where.isPublished = true;
+    }
+
     if (courseId) {
       where.courseId = courseId;
     }
@@ -24,14 +35,24 @@ export async function GET(request: Request) {
         difficulty: true,
         points: true,
         courseId: true,
-        course: { select: { title: true } },
+        isPublished: true,
+        course: { select: { title: true, instructorId: true } },
         _count: { select: { questions: true } },
       },
       orderBy: { createdAt: "desc" },
     });
 
     const mapped = quizzes.map((q) => ({
-      ...q,
+      id: q.id,
+      title: q.title,
+      description: q.description,
+      timeLimit: q.timeLimit,
+      passingScore: q.passingScore,
+      maxAttempts: q.maxAttempts,
+      difficulty: q.difficulty,
+      points: q.points,
+      courseId: q.courseId,
+      isPublished: q.isPublished,
       totalQuestions: q._count.questions,
       courseName: q.course?.title || "Unknown Course",
     }));

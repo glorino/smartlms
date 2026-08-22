@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import toast from "react-hot-toast";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import {
@@ -459,12 +460,15 @@ export default function CommunityPage() {
                             <Heart className={`h-3.5 w-3.5 ${post.liked ? "fill-red-500" : ""}`} />
                             {post.likes}
                           </button>
-                          <button className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-gray-500 hover:bg-gray-100">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); toast("Replies coming soon!", { icon: "\uD83D\uDCAC" }); }}
+                            className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-gray-500 hover:bg-gray-100"
+                          >
                             <MessageSquare className="h-3.5 w-3.5" />
                             {post.replies}
                           </button>
                           <button
-                            onClick={(e) => { e.stopPropagation(); }}
+                            onClick={(e) => { e.stopPropagation(); if (!isLoggedIn) return; navigator.clipboard.writeText(window.location.href); toast.success("Link copied to clipboard"); }}
                             className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-gray-500 hover:bg-gray-100"
                           >
                             <Share2 className="h-3.5 w-3.5" />
@@ -560,7 +564,7 @@ export default function CommunityPage() {
                 <p className="mt-3 text-sm text-gray-500">{selectedMember.bio}</p>
               </div>
 
-              <div className="mt-6 grid grid-cols-3 gap-4 rounded-xl bg-gray-50 p-4">
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 rounded-xl bg-gray-50 p-4">
                 <div className="text-center">
                   <div className="flex items-center justify-center">
                     <BookMarked className="h-5 w-5 text-indigo-500" />
@@ -692,7 +696,7 @@ export default function CommunityPage() {
                   {selectedDiscussion.dislikes}
                 </button>
                 <button
-                  onClick={() => { if (!isLoggedIn) return; }}
+                  onClick={() => { if (!isLoggedIn) return; toast.success("Discussion reposted!"); }}
                   className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${!isLoggedIn ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-100"}`}
                   title={!isLoggedIn ? "Login to repost" : ""}
                 >
@@ -700,7 +704,7 @@ export default function CommunityPage() {
                   Repost
                 </button>
                 <button
-                  onClick={() => { if (!isLoggedIn) return; }}
+                  onClick={() => { if (!isLoggedIn) return; navigator.clipboard.writeText(window.location.href); toast.success("Link copied to clipboard"); }}
                   className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${!isLoggedIn ? "text-gray-300 cursor-not-allowed" : "text-gray-500 hover:bg-gray-100"}`}
                   title={!isLoggedIn ? "Login to share" : ""}
                 >

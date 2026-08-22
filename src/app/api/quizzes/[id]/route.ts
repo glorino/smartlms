@@ -75,6 +75,143 @@ export async function GET(
   }
 }
 
+export async function PUT(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await context.params;
+    const body = await request.json();
+    const {
+      title,
+      description,
+      courseId,
+      timeLimit,
+      passingScore,
+      maxAttempts,
+      difficulty,
+      points,
+      questions,
+    } = body;
+
+    const existing = await prisma.quiz.findUnique({
+      where: { id },
+      select: { id: true, difficulty: true, course: { select: { instructorId: true } } },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
+    }
+
+    if ((session.user as any).role !== "ADMIN" && existing.course?.instructorId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      if (questions && Array.isArray(questions)) {
+        await tx.answer.deleteMany({
+          where: { question: { quizId: id } },
+        });
+        await tx.question.deleteMany({
+          where: { quizId: id },
+        });
+      }
+
+      const quiz = await tx.quiz.update({
+        where: { id },
+        data: {
+          ...(title !== undefined && { title }),
+          ...(description !== undefined && { description }),
+          ...(courseId !== undefined && { courseId }),
+          ...(timeLimit !== undefined && { timeLimit }),
+          ...(passingScore !== undefined && { passingScore }),
+          ...(maxAttempts !== undefined && { maxAttempts }),
+          ...(difficulty !== undefined && { difficulty }),
+          ...(points !== undefined && { points }),
+          ...(questions &&
+            Array.isArray(questions) && {
+              questions: {
+                create: questions.map((q: any, i: number) => ({
+                  content: q.content,
+                  type: q.type || "SINGLE_CHOICE",
+                  points: q.points || 1,
+                  explanation: q.explanation || "",
+                  imageUrl: q.imageUrl || "",
+                  order: q.order ?? i,
+                  difficulty: q.difficulty || existing.difficulty,
+                  answers: {
+                    create: (q.answers || [])
+                      .filter((a: any) => a.content?.trim())
+                      .map((a: any, j: number) => ({
+                        content: a.content,
+                        isCorrect: a.isCorrect || false,
+                        imageUrl: a.imageUrl || "",
+                        order: a.order ?? j,
+                      })),
+                  },
+                })),
+              },
+            }),
+        },
+        include: {
+          questions: {
+            include: { answers: true },
+            orderBy: { order: "asc" },
+          },
+        },
+      });
+
+      return quiz;
+    });
+
+    return NextResponse.json({ quiz: updated });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await context.params;
+
+    const existing = await prisma.quiz.findUnique({
+      where: { id },
+      select: { id: true, course: { select: { instructorId: true } } },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
+    }
+
+    if ((session.user as any).role !== "ADMIN" && existing.course?.instructorId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    await prisma.quiz.delete({ where: { id } });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> }
