@@ -551,6 +551,14 @@ export default function CourseLearnPage() {
                       </button>
                     </div>
                   )
+                ) : currentLesson.content ? (
+                  <div className="min-h-[50vh] bg-gray-900">
+                    <div className="lesson-content mx-auto max-w-4xl px-6 py-10 sm:px-8 lg:px-12">
+                      <div
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentLesson.content) }}
+                      />
+                    </div>
+                  </div>
                 ) : (
                   <div className="flex h-full items-center justify-center">
                     <div className="text-center">
