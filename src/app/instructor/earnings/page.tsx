@@ -72,7 +72,13 @@ export default function InstructorEarningsPage() {
           <p className="mt-1 text-gray-600">Track your revenue and payouts</p>
         </div>
         <Button variant="outline" className="gap-2" onClick={() => {
-          const csv = ["Month,Amount", ...monthlyData.map(m => `${m.month},${m.amount}`)].join("\n");
+          const escapeCSV = (value: string) => {
+            if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+              return `"${value.replace(/"/g, '""')}"`;
+            }
+            return value;
+          };
+          const csv = ["Month,Amount", ...monthlyData.map(m => `${escapeCSV(m.month)},${escapeCSV(String(m.amount))}`)].join("\n");
           const blob = new Blob([csv], { type: "text/csv" });
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a"); a.href = url; a.download = "earnings-report.csv";

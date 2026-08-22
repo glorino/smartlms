@@ -2,7 +2,14 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
-export async function GET() {
+function escapeCSVField(value: string): string {
+  if (value.includes(",") || value.includes('"') || value.includes("\n") || value.includes("\r")) {
+    return '"' + value.replace(/"/g, '""') + '"';
+  }
+  return value;
+}
+
+export async function GET(request: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -16,6 +23,10 @@ export async function GET() {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const format = searchParams.get("format");
+    const assignmentId = searchParams.get("assignmentId");
+
     const instructorCourses = await prisma.course.findMany({
       where: { instructorId: userId },
       select: { id: true },
@@ -23,12 +34,18 @@ export async function GET() {
 
     const courseIds = instructorCourses.map((c) => c.id);
 
+    const assignmentWhere: any = {
+      OR: [
+        { courseId: { in: courseIds } },
+      ],
+    };
+
+    if (assignmentId) {
+      assignmentWhere.id = assignmentId;
+    }
+
     const assignments = await prisma.assignment.findMany({
-      where: {
-        OR: [
-          { courseId: { in: courseIds } },
-        ],
-      },
+      where: assignmentWhere,
       include: {
         user: { select: { id: true, name: true, email: true, avatar: true } },
       },
@@ -50,6 +67,30 @@ export async function GET() {
         content: a.content,
         status: a.status === "GRADED" ? "graded" : "pending",
       }));
+
+    if (format === "csv") {
+      const header = "Assignment Title,Student Name,Student Email,Submission Content,Submitted At,Grade,Feedback";
+      const rows = submissions.map((s) => {
+        return [
+          escapeCSVField(s.assignmentTitle),
+          escapeCSVField(s.studentName),
+          escapeCSVField(s.studentEmail),
+          escapeCSVField(s.content || ""),
+          escapeCSVField(s.submittedAt),
+          escapeCSVField(s.score !== null ? String(s.score) : ""),
+          escapeCSVField(s.feedback || ""),
+        ].join(",");
+      });
+      const csv = [header, ...rows].join("\r\n");
+
+      return new NextResponse(csv, {
+        status: 200,
+        headers: {
+          "Content-Type": "text/csv",
+          "Content-Disposition": 'attachment; filename="submissions.csv"',
+        },
+      });
+    }
 
     const stats = {
       totalSubmissions: submissions.length,

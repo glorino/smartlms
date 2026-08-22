@@ -32,6 +32,15 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { exportToCSV, exportToPDF, type Column } from "@/lib/export";
 
+function escapeCSV(value: string | number | null | undefined): string {
+  if (value === null || value === undefined) return "";
+  const str = String(value);
+  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
 interface CourseOption {
   id: string;
   title: string;
@@ -210,19 +219,104 @@ export default function AdminAnalyticsPage() {
   }, [selectedCourseId]);
 
   const handleExportAll = () => {
-    const allData = {
-      summary: data,
-      students,
-      engagement,
-      revenueCourses,
-      revenueMonthly,
-    };
-    const content = JSON.stringify(allData, null, 2);
-    const blob = new Blob([content], { type: "application/json" });
+    const lines: string[] = [];
+
+    lines.push("SmartLMS Analytics Report");
+    lines.push(`Generated,${escapeCSV(new Date().toLocaleString())}`);
+    lines.push("");
+
+    lines.push("Section: Summary");
+    lines.push("Metric,Value");
+    lines.push(`Total Students,${escapeCSV(data?.totalStudents)}`);
+    lines.push(`Total Courses,${escapeCSV(data?.totalCourses)}`);
+    lines.push(`Total Revenue,${escapeCSV(data?.totalRevenue)}`);
+    lines.push(`Total Enrollments,${escapeCSV(data?.totalEnrollments)}`);
+    lines.push(`Active Users,${escapeCSV(data?.activeUsers)}`);
+    lines.push(`User Growth (%),${escapeCSV(data?.userGrowth)}`);
+    lines.push(`Enrollment Growth (%),${escapeCSV(data?.enrollmentGrowth)}`);
+    lines.push(`Revenue Growth (%),${escapeCSV(data?.revenueGrowth)}`);
+    lines.push(`Completion Rate (%),${escapeCSV(data?.completionRate)}`);
+    lines.push(`Course Start Rate (%),${escapeCSV(data?.courseStartRate)}`);
+    if (data?.engagementMetrics) {
+      lines.push(`Avg Session Duration,${escapeCSV(data.engagementMetrics.avgSessionDuration)}`);
+      lines.push(`Avg Completion Rate,${escapeCSV(data.engagementMetrics.avgCompletionRate)}`);
+      lines.push(`Daily Active Users,${escapeCSV(data.engagementMetrics.dailyActiveUsers)}`);
+    }
+    if (data?.paymentStats) {
+      lines.push(`Total Payments,${escapeCSV(data.paymentStats.totalPayments)}`);
+      lines.push(`Completed Payments,${escapeCSV(data.paymentStats.completedPayments)}`);
+      lines.push(`Failed Payments,${escapeCSV(data.paymentStats.failedPayments)}`);
+      lines.push(`Refunded Payments,${escapeCSV(data.paymentStats.refundedPayments)}`);
+      lines.push(`Payment Success Rate (%),${escapeCSV(data.paymentStats.paymentSuccessRate)}`);
+      lines.push(`Refund Rate (%),${escapeCSV(data.paymentStats.refundRate)}`);
+    }
+    lines.push("");
+
+    if (data?.topCourses?.length) {
+      lines.push("Section: Top Courses");
+      lines.push("Course,Enrollments");
+      for (const c of data.topCourses) {
+        lines.push(`${escapeCSV(c.title)},${escapeCSV(c._count.enrollments)}`);
+      }
+      lines.push("");
+    }
+
+    if (revenueCourses.length > 0) {
+      lines.push("Section: Revenue by Course");
+      lines.push("Course,Total Sales,Revenue,Avg Revenue Per Student");
+      for (const r of revenueCourses) {
+        lines.push(
+          `${escapeCSV(r.courseName)},${escapeCSV(r.totalSales)},${escapeCSV(Math.round(r.revenue))},${escapeCSV(r.avgRevenuePerStudent)}`
+        );
+      }
+      lines.push("");
+    }
+
+    if (revenueMonthly.length > 0) {
+      lines.push("Section: Monthly Revenue");
+      lines.push("Month,Revenue,Enrollments");
+      for (const m of revenueMonthly) {
+        lines.push(`${escapeCSV(m.month)},${escapeCSV(m.revenue)},${escapeCSV(m.enrollments)}`);
+      }
+      lines.push("");
+    }
+
+    if (engagement) {
+      lines.push("Section: Engagement Metrics");
+      lines.push("Metric,Value");
+      lines.push(`Avg Completion Rate,${escapeCSV(engagement.avgCompletionRate)}%`);
+      lines.push(`Avg Quiz Score,${escapeCSV(engagement.avgQuizScore)}%`);
+      lines.push(`Avg Time Per Lesson,${escapeCSV(engagement.avgTimePerLesson)} min`);
+      lines.push(`Engagement Score,${escapeCSV(engagement.engagementScore)}/100`);
+      lines.push(`Drop-off Rate,${escapeCSV(engagement.dropOffRate)}%`);
+      lines.push("");
+    }
+
+    if (students.length > 0) {
+      lines.push("Section: Students");
+      lines.push("Name,Email,Course,Enrolled Date,Progress,Avg Quiz Score,Status,Last Accessed");
+      for (const s of students) {
+        const enrolled = s.enrolledAt
+          ? new Date(s.enrolledAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+          : "";
+        const accessed =
+          s.lastAccessed && s.lastAccessed !== "Never"
+            ? new Date(s.lastAccessed).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+            : "Never";
+        lines.push(
+          [escapeCSV(s.name), escapeCSV(s.email), escapeCSV(s.courseName), escapeCSV(enrolled),
+            `${escapeCSV(s.progress)}%`, `${escapeCSV(s.avgQuizScore)}%`, escapeCSV(s.status), escapeCSV(accessed)
+          ].join(",")
+        );
+      }
+    }
+
+    const csv = lines.join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `analytics-report-${new Date().toISOString().slice(0, 10)}.json`;
+    link.download = `analytics-report-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

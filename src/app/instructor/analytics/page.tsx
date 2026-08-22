@@ -197,20 +197,70 @@ export default function InstructorAnalyticsPage() {
   }, [selectedCourseId]);
 
   const handleExportAll = () => {
-    const allData = {
-      summary: data,
-      students,
-      engagement,
-      revenueCourses,
-      revenueMonthly,
-      completionByCourse,
+    const escapeCSV = (value: string | number | null | undefined): string => {
+      const str = String(value ?? "");
+      if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
     };
-    const content = JSON.stringify(allData, null, 2);
-    const blob = new Blob([content], { type: "application/json" });
+
+    const rows: string[] = [];
+
+    rows.push("Section,Field,Value");
+    rows.push("");
+
+    rows.push("--- Summary ---");
+    rows.push(`Total Students,${escapeCSV(data?.totalStudents ?? 0)}`);
+    rows.push(`Total Courses,${escapeCSV(data?.totalCourses ?? 0)}`);
+    rows.push(`Total Revenue,${escapeCSV(`₦${(data?.totalRevenue ?? 0).toLocaleString()}`)}`);
+    rows.push(`Total Enrollments,${escapeCSV(data?.totalEnrollments ?? 0)}`);
+    rows.push(`Active Users,${escapeCSV(data?.activeUsers ?? 0)}`);
+    rows.push(`Completion Rate,${escapeCSV(`${Math.round(data?.completionRate ?? 0)}%`)}`);
+    rows.push(`Enrollment Growth,${escapeCSV(`${data?.enrollmentGrowth ?? 0}%`)}`);
+    rows.push(`Revenue Growth,${escapeCSV(`${data?.revenueGrowth ?? 0}%`)}`);
+    rows.push(`Avg Session Duration,${escapeCSV(data?.engagementMetrics?.avgSessionDuration ?? "N/A")}`);
+    rows.push(`Daily Active Users,${escapeCSV(data?.engagementMetrics?.dailyActiveUsers ?? 0)}`);
+
+    if (engagement) {
+      rows.push("");
+      rows.push("--- Engagement Summary ---");
+      rows.push(`Avg Completion Rate,${escapeCSV(`${engagement.avgCompletionRate}%`)}`);
+      rows.push(`Avg Quiz Score,${escapeCSV(`${engagement.avgQuizScore}%`)}`);
+      rows.push(`Avg Time Per Lesson,${escapeCSV(`${engagement.avgTimePerLesson}m`)}`);
+      rows.push(`Engagement Score,${escapeCSV(`${engagement.engagementScore}/100`)}`);
+      rows.push(`Drop-off Rate,${escapeCSV(`${engagement.dropOffRate}%`)}`);
+    }
+
+    rows.push("");
+    rows.push("--- Top Courses ---");
+    rows.push("Course,Students,Rating,Price");
+    (data?.topCourses ?? []).forEach((course) => {
+      rows.push(
+        [
+          escapeCSV(course.title),
+          escapeCSV(course.totalStudents || course._count.enrollments),
+          escapeCSV(course.rating ?? "N/A"),
+          escapeCSV(course.price ? `₦${course.price.toLocaleString()}` : "Free"),
+        ].join(",")
+      );
+    });
+
+    rows.push("");
+    rows.push("--- Monthly Revenue ---");
+    rows.push("Month,Revenue");
+    revenueMonthly.forEach((entry) => {
+      rows.push(
+        [escapeCSV(entry.month), escapeCSV(`₦${Math.round(entry.revenue).toLocaleString()}`)].join(",")
+      );
+    });
+
+    const content = rows.join("\n");
+    const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `instructor-analytics-${new Date().toISOString().slice(0, 10)}.json`;
+    link.download = `instructor-analytics-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

@@ -149,17 +149,24 @@ export default function TrainingPage() {
     }
   }
 
+  function escapeCSV(value: string) {
+    if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+      return `"${value.replace(/"/g, '""')}"`;
+    }
+    return value;
+  }
+
   function exportReport() {
     const headers = ["Title", "Category", "Level", "Status", "Progress", "Enrolled At"];
     const rows = enrollments.map((e) => [
-      e.course.title,
-      e.course.category || "",
-      e.course.level,
-      e.status,
-      `${e.progress}%`,
-      new Date(e.enrolledAt).toLocaleDateString(),
+      escapeCSV(e.course.title),
+      escapeCSV(e.course.category || ""),
+      escapeCSV(e.course.level),
+      escapeCSV(e.status),
+      escapeCSV(`${e.progress}%`),
+      escapeCSV(new Date(e.enrolledAt).toLocaleDateString()),
     ]);
-    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const csv = [headers.map(escapeCSV).join(","), ...rows.map((r) => r.join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
