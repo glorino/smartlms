@@ -222,7 +222,7 @@ export default function CourseLearnPage() {
   };
 
   const currentQuiz = currentLesson ? getQuizForLesson(currentLesson.id) : null;
-  const hasPassedCurrentQuiz = currentLesson ? passedQuizzes.has(currentLesson.id) : true;
+  const hasPassedCurrentQuiz = currentLesson ? (!currentQuiz || passedQuizzes.has(currentLesson.id)) : true;
   const canGoNext = completedLessons.has(currentLesson?.id || "") && hasPassedCurrentQuiz;
 
   const goToLesson = (lesson: LessonData) => {
