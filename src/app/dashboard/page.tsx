@@ -678,8 +678,16 @@ export default function DashboardPage() {
                       key={course.id}
                       className="group rounded-xl border border-gray-100 p-4 transition-all hover:border-indigo-200 hover:shadow-md"
                     >
-                      <div className="flex h-24 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100">
-                        <BookOpen className="h-10 w-10 text-indigo-400" />
+                      <div className="flex h-24 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100">
+                        {course.thumbnail ? (
+                          <img
+                            src={course.thumbnail}
+                            alt={course.title}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <BookOpen className="h-10 w-10 text-indigo-400" />
+                        )}
                       </div>
                       <div className="mt-3">
                         {course.category && (
