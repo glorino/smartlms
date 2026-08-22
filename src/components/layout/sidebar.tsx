@@ -40,37 +40,44 @@ interface User {
   role?: string;
 }
 
-const commonItems = [
+const studentItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/onboarding", label: "Onboarding", icon: ClipboardCheck },
   { href: "/dashboard/training", label: "Training", icon: BookMarked },
   { href: "/courses", label: "Browse Courses", icon: Search },
   { href: "/dashboard/quizzes", label: "Quizzes", icon: FileCheck },
+  { href: "/live-classes", label: "Live Classes", icon: Video },
   { href: "/dashboard/certificates", label: "Certificates", icon: Award },
   { href: "/dashboard/achievements", label: "Achievements", icon: Trophy },
   { href: "/dashboard/messages", label: "Messages", icon: MessageSquare },
-  { href: "/live-classes", label: "Live Classes", icon: Video },
-  { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
   { href: "/dashboard/bookmarks", label: "Bookmarks", icon: Bookmark },
+  { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 const instructorItems = [
+  { href: "/instructor", label: "Dashboard", icon: LayoutDashboard },
   { href: "/instructor/courses", label: "My Courses", icon: Package },
   { href: "/instructor/courses/new", label: "Create Course", icon: PlusCircle },
+  { href: "/instructor/quizzes", label: "Quizzes", icon: FileCheck },
+  { href: "/instructor/live-classes", label: "Live Classes", icon: Video },
   { href: "/instructor/students", label: "My Students", icon: Users },
   { href: "/instructor/earnings", label: "Earnings", icon: DollarSign },
-  { href: "/instructor/live-classes", label: "Live Classes", icon: Video },
   { href: "/instructor/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/instructor/assignments", label: "Assignments", icon: ClipboardCheck },
+  { href: "/instructor/messages", label: "Messages", icon: MessageSquare },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 const adminItems = [
-  { href: "/admin", label: "Admin Dashboard", icon: Shield },
+  { href: "/admin", label: "Dashboard", icon: Shield },
   { href: "/admin/users", label: "Manage Users", icon: Users },
   { href: "/admin/courses", label: "Manage Courses", icon: BookOpen },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
+  { href: "/admin/live-classes", label: "Live Classes", icon: Video },
   { href: "/admin/health", label: "System Health", icon: Activity },
+  { href: "/dashboard/messages", label: "Messages", icon: MessageSquare },
+  { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 function NavItem({
@@ -121,6 +128,30 @@ export default function Sidebar({ user }: { user?: User }) {
     INSTRUCTOR: "bg-amber-500/20 text-amber-400",
     ADMIN: "bg-rose-500/20 text-rose-400",
   };
+
+  const mobileNavItems = isAdmin
+    ? [
+        { href: "/admin", label: "Home", icon: LayoutDashboard },
+        { href: "/admin/users", label: "Users", icon: Users },
+        { href: "/admin/courses", label: "Courses", icon: BookOpen },
+        { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+        { href: "/admin/settings", label: "More", icon: Settings },
+      ]
+    : isInstructor
+    ? [
+        { href: "/instructor", label: "Home", icon: LayoutDashboard },
+        { href: "/instructor/courses", label: "Courses", icon: Package },
+        { href: "/instructor/quizzes", label: "Quizzes", icon: FileCheck },
+        { href: "/instructor/students", label: "Students", icon: Users },
+        { href: "/instructor/earnings", label: "More", icon: DollarSign },
+      ]
+    : [
+        { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+        { href: "/courses", label: "Courses", icon: BookOpen },
+        { href: "/dashboard/quizzes", label: "Quizzes", icon: FileCheck },
+        { href: "/dashboard/certificates", label: "Certs", icon: Award },
+        { href: "/dashboard/settings", label: "More", icon: Settings },
+      ];
 
   return (
     <>
@@ -176,34 +207,10 @@ export default function Sidebar({ user }: { user?: User }) {
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-            {/* Common Items */}
-            {commonItems.map((item) => {
-              if (item.href === "/courses") {
-                const courseItem =
-                  role === "INSTRUCTOR"
-                    ? { href: "/instructor/courses", label: "My Courses", icon: Search }
-                    : role === "STUDENT"
-                    ? { href: "/dashboard/courses", label: "My Courses", icon: Search }
-                    : item;
-                const isActive = pathname.startsWith(courseItem.href);
-                return (
-                  <NavItem
-                    key={courseItem.href}
-                    item={courseItem}
-                    isActive={isActive}
-                    collapsed={collapsed}
-                  />
-                );
-              }
-
-              if (item.href === "/dashboard/certificates" && isInstructor) {
-                return null;
-              }
-
-              const isActive =
-                item.href === "/dashboard"
-                  ? pathname === "/dashboard"
-                  : pathname.startsWith(item.href);
+            {isAdmin && adminItems.map((item) => {
+              const isActive = item.href === "/admin"
+                ? pathname === "/admin"
+                : pathname.startsWith(item.href);
               return (
                 <NavItem
                   key={item.href}
@@ -214,53 +221,34 @@ export default function Sidebar({ user }: { user?: User }) {
               );
             })}
 
-            {/* Instructor Section */}
-            {isInstructor && (
-              <>
-                <div className="my-3 border-t border-slate-700/50" />
-                {!collapsed && (
-                  <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    Instructor
-                  </p>
-                )}
-                {instructorItems.map((item) => {
-                  const isActive = pathname.startsWith(item.href);
-                  return (
-                    <NavItem
-                      key={item.href}
-                      item={item}
-                      isActive={isActive}
-                      collapsed={collapsed}
-                    />
-                  );
-                })}
-              </>
-            )}
+            {isInstructor && instructorItems.map((item) => {
+              const isActive = item.href === "/instructor"
+                ? pathname === "/instructor"
+                : pathname.startsWith(item.href);
+              return (
+                <NavItem
+                  key={item.href}
+                  item={item}
+                  isActive={isActive}
+                  collapsed={collapsed}
+                />
+              );
+            })}
 
-            {/* Admin Section */}
-            {isAdmin && (
-              <>
-                <div className="my-3 border-t border-slate-700/50" />
-                {!collapsed && (
-                  <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    Administration
-                  </p>
-                )}
-                {adminItems.map((item) => {
-                  const isActive = pathname.startsWith(item.href);
-                  return (
-                    <NavItem
-                      key={item.href}
-                      item={item}
-                      isActive={isActive}
-                      collapsed={collapsed}
-                    />
-                  );
-                })}
-              </>
-            )}
+            {!isAdmin && !isInstructor && studentItems.map((item) => {
+              const isActive = item.href === "/dashboard"
+                ? pathname === "/dashboard"
+                : pathname.startsWith(item.href);
+              return (
+                <NavItem
+                  key={item.href}
+                  item={item}
+                  isActive={isActive}
+                  collapsed={collapsed}
+                />
+              );
+            })}
 
-            {/* Help & Support */}
             <div className="my-3 border-t border-slate-700/50" />
             <NavItem
               item={{ href: "/help", label: "Help & Support", icon: HelpCircle }}
@@ -291,18 +279,10 @@ export default function Sidebar({ user }: { user?: User }) {
       {/* Mobile Bottom Navigation */}
       <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white md:hidden">
         <div className="flex items-center justify-around py-2">
-          {[
-            { href: "/dashboard", label: "Home", icon: LayoutDashboard },
-            { href: "/courses", label: "Courses", icon: BookOpen },
-            { href: "/dashboard/quizzes", label: "Quizzes", icon: FileCheck },
-            ...(!isInstructor
-              ? [{ href: "/dashboard/certificates", label: "Certs", icon: Award }]
-              : []),
-            { href: "/dashboard/settings", label: "More", icon: Settings },
-          ].map((item) => {
+          {mobileNavItems.map((item) => {
             const isActive =
-              item.href === "/dashboard"
-                ? pathname === "/dashboard"
+              item.href === "/dashboard" || item.href === "/admin" || item.href === "/instructor"
+                ? pathname === item.href
                 : pathname.startsWith(item.href);
             return (
               <Link
