@@ -6,15 +6,18 @@ import {
   FileText,
   CheckCircle2,
   Clock,
-  AlertCircle,
   Search,
   Filter,
   Eye,
   Download,
   Star,
-  Users,
   BarChart3,
   X,
+  Plus,
+  Pencil,
+  Trash2,
+  Calendar,
+  BookOpen,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,16 +28,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 
-interface Assignment {
+interface Course {
   id: string;
   title: string;
-  course: string;
-  totalSubmissions: number;
-  graded: number;
-  pending: number;
-  avgScore: number;
-  dueDate: string;
-  status: "active" | "closed" | "draft";
+}
+
+interface Lesson {
+  id: string;
+  title: string;
+}
+
+interface ManagedAssignment {
+  id: string;
+  title: string;
+  description: string | null;
+  maxScore: number;
+  dueDate: string | null;
+  status: string;
+  course: { id: string; title: string };
+  lesson: { id: string; title: string } | null;
+  createdAt: string;
 }
 
 interface Submission {
@@ -51,35 +64,93 @@ interface Submission {
   status: "pending" | "graded" | "late";
 }
 
+interface AssignmentFormData {
+  title: string;
+  description: string;
+  courseId: string;
+  lessonId: string;
+  maxScore: string;
+  dueDate: string;
+  status: string;
+}
+
+const defaultForm: AssignmentFormData = {
+  title: "",
+  description: "",
+  courseId: "",
+  lessonId: "",
+  maxScore: "100",
+  dueDate: "",
+  status: "ACTIVE",
+};
+
 export default function AssignmentsPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [assignments, setAssignments] = useState<ManagedAssignment[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [grade, setGrade] = useState("");
   const [feedback, setFeedback] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "graded" | "late">("all");
-  const [viewingAssignment, setViewingAssignment] = useState<Assignment | null>(null);
+
+  const [showForm, setShowForm] = useState(false);
+  const [editingAssignment, setEditingAssignment] = useState<ManagedAssignment | null>(null);
+  const [formData, setFormData] = useState<AssignmentFormData>(defaultForm);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/instructor/assignments");
-        if (res.ok) {
-          const data = await res.json();
-          setSubmissions(data.submissions || []);
-          setAssignments(data.assignments || []);
-        }
-      } catch {
-        setSubmissions([]);
-        setAssignments([]);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (formData.courseId) {
+      fetchLessons(formData.courseId);
+    } else {
+      setLessons([]);
+      setFormData((prev) => ({ ...prev, lessonId: "" }));
+    }
+  }, [formData.courseId]);
+
+  async function fetchLessons(courseId: string) {
+    try {
+      const res = await fetch(`/api/instructor/courses/${courseId}/lessons`);
+      if (res.ok) {
+        const data = await res.json();
+        setLessons(data.lessons || []);
+      }
+    } catch {
+      setLessons([]);
+    }
+  }
+
+  async function fetchData() {
+    try {
+      const [subRes, manageRes] = await Promise.all([
+        fetch("/api/instructor/assignments"),
+        fetch("/api/instructor/assignments/manage"),
+      ]);
+
+      if (subRes.ok) {
+        const subData = await subRes.json();
+        setSubmissions(subData.submissions || []);
+      }
+
+      if (manageRes.ok) {
+        const manageData = await manageRes.json();
+        setAssignments(manageData.assignments || []);
+        setCourses(manageData.courses || []);
+      }
+    } catch {
+      setSubmissions([]);
+      setAssignments([]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const filtered = submissions.filter((s) => {
     const matchesSearch =
@@ -104,6 +175,98 @@ export default function AssignmentsPage() {
         : 0,
   };
 
+  function openCreateForm() {
+    setEditingAssignment(null);
+    setFormData(defaultForm);
+    setShowForm(true);
+  }
+
+  function openEditForm(assignment: ManagedAssignment) {
+    setEditingAssignment(assignment);
+    setFormData({
+      title: assignment.title,
+      description: assignment.description || "",
+      courseId: assignment.course.id,
+      lessonId: assignment.lesson?.id || "",
+      maxScore: String(assignment.maxScore),
+      dueDate: assignment.dueDate ? new Date(assignment.dueDate).toISOString().slice(0, 16) : "",
+      status: assignment.status,
+    });
+    setShowForm(true);
+  }
+
+  function closeForm() {
+    setShowForm(false);
+    setEditingAssignment(null);
+    setFormData(defaultForm);
+    setLessons([]);
+  }
+
+  async function handleSave() {
+    if (!formData.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+    if (!formData.courseId) {
+      toast.error("Please select a course");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const payload = {
+        ...(editingAssignment && { id: editingAssignment.id }),
+        title: formData.title.trim(),
+        description: formData.description.trim() || null,
+        courseId: formData.courseId,
+        lessonId: formData.lessonId || null,
+        maxScore: Number(formData.maxScore) || 100,
+        dueDate: formData.dueDate || null,
+        status: formData.status,
+      };
+
+      const res = await fetch("/api/instructor/assignments/manage", {
+        method: editingAssignment ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        toast.success(editingAssignment ? "Assignment updated" : "Assignment created");
+        closeForm();
+        await fetchData();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to save assignment");
+      }
+    } catch {
+      toast.error("Failed to save assignment");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("Are you sure you want to delete this assignment?")) return;
+
+    setDeleting(id);
+    try {
+      const res = await fetch(`/api/instructor/assignments/manage?id=${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        toast.success("Assignment deleted");
+        await fetchData();
+      } else {
+        toast.error("Failed to delete assignment");
+      }
+    } catch {
+      toast.error("Failed to delete assignment");
+    } finally {
+      setDeleting(null);
+    }
+  }
+
   const handleGrade = async () => {
     if (selectedSubmission && grade) {
       try {
@@ -124,76 +287,15 @@ export default function AssignmentsPage() {
                 : s
             )
           );
+          toast.success("Grade submitted");
         }
       } catch {
-        // handle error
+        toast.error("Failed to submit grade");
       }
       setSelectedSubmission(null);
       setGrade("");
       setFeedback("");
-      toast.success("Grade submitted successfully");
     }
-  };
-
-  const handleExportSubmissions = async () => {
-    try {
-      const res = await fetch("/api/instructor/assignments?format=csv");
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "submissions.csv";
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
-        toast.success("Submissions exported successfully");
-      } else {
-        toast.error("Failed to export submissions");
-      }
-    } catch {
-      toast.error("Failed to export submissions");
-    }
-  };
-
-  const handleExportAssignment = async (assignment: Assignment) => {
-    try {
-      const res = await fetch(`/api/instructor/assignments?assignmentId=${assignment.id}&format=csv`);
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${assignment.title.replace(/\s+/g, "_")}_submissions.csv`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
-        toast.success("Assignment submissions exported");
-      } else {
-        toast.error("Failed to export");
-      }
-    } catch {
-      toast.error("Failed to export");
-    }
-  };
-
-  const handleDownloadSubmission = () => {
-    if (!selectedSubmission?.content) {
-      toast.error("No submission content to download");
-      return;
-    }
-    const blob = new Blob([selectedSubmission.content], { type: "text/plain" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${selectedSubmission.studentName.replace(/\s+/g, "_")}_submission.txt`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    a.remove();
-    toast.success("Submission downloaded");
   };
 
   if (loading) {
@@ -206,9 +308,15 @@ export default function AssignmentsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Assignments</h1>
-        <p className="mt-1 text-gray-600">Review and grade student submissions</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Assignments</h1>
+          <p className="mt-1 text-gray-600">Create, manage, and grade student assignments</p>
+        </div>
+        <Button onClick={openCreateForm}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Assignment
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -225,7 +333,6 @@ export default function AssignmentsPage() {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -239,7 +346,6 @@ export default function AssignmentsPage() {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -253,7 +359,6 @@ export default function AssignmentsPage() {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -269,11 +374,96 @@ export default function AssignmentsPage() {
         </Card>
       </div>
 
-      <Tabs defaultValue="submissions">
+      <Tabs defaultValue="assignments">
         <TabsList>
-          <TabsTrigger value="submissions">Submissions</TabsTrigger>
-          <TabsTrigger value="assignments">Assignments</TabsTrigger>
+          <TabsTrigger value="assignments">My Assignments ({assignments.length})</TabsTrigger>
+          <TabsTrigger value="submissions">Submissions ({submissions.length})</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="assignments">
+          <div className="mt-4 space-y-4">
+            {assignments.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-16">
+                  <FileText className="h-12 w-12 text-gray-400" />
+                  <h3 className="mt-4 text-lg font-medium text-gray-900">No assignments yet</h3>
+                  <p className="mt-1 text-sm text-gray-500">Create your first assignment to get started</p>
+                  <Button className="mt-4" onClick={openCreateForm}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Assignment
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              assignments.map((assignment) => (
+                <Card key={assignment.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-gray-900">{assignment.title}</h3>
+                          <Badge
+                            variant={
+                              assignment.status === "ACTIVE"
+                                ? "default"
+                                : assignment.status === "CLOSED"
+                                ? "secondary"
+                                : "outline"
+                            }
+                          >
+                            {assignment.status}
+                          </Badge>
+                        </div>
+                        {assignment.description && (
+                          <p className="mt-1 text-sm text-gray-500 line-clamp-2">{assignment.description}</p>
+                        )}
+                        <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <BookOpen className="h-4 w-4" />
+                            {assignment.course.title}
+                          </span>
+                          {assignment.lesson && (
+                            <span className="flex items-center gap-1">
+                              <FileText className="h-4 w-4" />
+                              {assignment.lesson.title}
+                            </span>
+                          )}
+                          <span>Max Score: {assignment.maxScore}</span>
+                          {assignment.dueDate && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              Due: {new Date(assignment.dueDate).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => openEditForm(assignment)}>
+                          <Pencil className="mr-1 h-4 w-4" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(assignment.id)}
+                          disabled={deleting === assignment.id}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          {deleting === assignment.id ? (
+                            <Spinner size="sm" />
+                          ) : (
+                            <Trash2 className="mr-1 h-4 w-4" />
+                          )}
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </TabsContent>
 
         <TabsContent value="submissions">
           <Card className="mt-4">
@@ -363,10 +553,7 @@ export default function AssignmentsPage() {
                             </div>
                           </div>
                         ) : (
-                          <Button
-                            size="sm"
-                            onClick={() => setSelectedSubmission(sub)}
-                          >
+                          <Button size="sm" onClick={() => setSelectedSubmission(sub)}>
                             Grade
                           </Button>
                         )}
@@ -378,85 +565,115 @@ export default function AssignmentsPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
-        <TabsContent value="assignments">
-          <div className="mt-4 space-y-4">
-            {assignments.length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-16">
-                  <FileText className="h-12 w-12 text-gray-400" />
-                  <h3 className="mt-4 text-lg font-medium text-gray-900">No assignments yet</h3>
-                  <p className="mt-1 text-sm text-gray-500">Create assignments for your courses</p>
-                </CardContent>
-              </Card>
-            ) : (
-              assignments.map((assignment) => (
-                <Card key={assignment.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-gray-900">{assignment.title}</h3>
-                          <Badge
-                            variant={
-                              assignment.status === "active"
-                                ? "default"
-                                : assignment.status === "closed"
-                                ? "secondary"
-                                : "outline"
-                            }
-                          >
-                            {assignment.status}
-                          </Badge>
-                        </div>
-                        <p className="mt-1 text-sm text-gray-500">{assignment.course}</p>
-                        <p className="mt-1 text-xs text-gray-400">
-                          Due: {new Date(assignment.dueDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setViewingAssignment(assignment)}>
-                          <Eye className="mr-1 h-4 w-4" />
-                          View
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleExportAssignment(assignment)}>
-                          <Download className="mr-1 h-4 w-4" />
-                          Export
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="mt-4 grid grid-cols-4 gap-4 text-center">
-                      <div>
-                        <p className="text-lg font-bold text-gray-900">{assignment.totalSubmissions}</p>
-                        <p className="text-xs text-gray-500">Submissions</p>
-                      </div>
-                      <div>
-                        <p className="text-lg font-bold text-emerald-600">{assignment.graded}</p>
-                        <p className="text-xs text-gray-500">Graded</p>
-                      </div>
-                      <div>
-                        <p className="text-lg font-bold text-amber-600">{assignment.pending}</p>
-                        <p className="text-xs text-gray-500">Pending</p>
-                      </div>
-                      <div>
-                        <p className="text-lg font-bold text-blue-600">{assignment.avgScore}%</p>
-                        <p className="text-xs text-gray-500">Avg. Score</p>
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      <Progress
-                        value={(assignment.graded / assignment.totalSubmissions) * 100}
-                        className="h-2"
-                        color="green"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
-        </TabsContent>
       </Tabs>
+
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <Card className="w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>{editingAssignment ? "Edit Assignment" : "Create Assignment"}</CardTitle>
+                  <CardDescription>
+                    {editingAssignment ? "Update assignment details" : "Create a new assignment for your students"}
+                  </CardDescription>
+                </div>
+                <button onClick={closeForm} className="rounded-sm opacity-70 hover:opacity-100">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Input
+                label="Title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Assignment title"
+              />
+              <Textarea
+                label="Description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Describe the assignment..."
+                className="min-h-[80px]"
+              />
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">Course</label>
+                <select
+                  value={formData.courseId}
+                  onChange={(e) => setFormData({ ...formData, courseId: e.target.value })}
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="">Select a course</option>
+                  {courses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {formData.courseId && lessons.length > 0 && (
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                    Attach to Lesson (optional)
+                  </label>
+                  <select
+                    value={formData.lessonId}
+                    onChange={(e) => setFormData({ ...formData, lessonId: e.target.value })}
+                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    <option value="">No specific lesson</option>
+                    {lessons.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  label="Max Score"
+                  type="number"
+                  min="1"
+                  value={formData.maxScore}
+                  onChange={(e) => setFormData({ ...formData, maxScore: e.target.value })}
+                />
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">Due Date</label>
+                  <input
+                    type="datetime-local"
+                    value={formData.dueDate}
+                    onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">Status</label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="ACTIVE">Active</option>
+                  <option value="DRAFT">Draft</option>
+                  <option value="CLOSED">Closed</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <Button variant="outline" onClick={closeForm}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSave} disabled={saving}>
+                  {saving ? <Spinner size="sm" className="mr-2" /> : null}
+                  {editingAssignment ? "Update" : "Create"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {selectedSubmission && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -470,22 +687,14 @@ export default function AssignmentsPage() {
             <CardContent className="space-y-4">
               <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                 <p className="text-sm font-medium text-gray-700">Submission Details</p>
-                <p className="mt-1 text-sm text-gray-500">
-                  Student: {selectedSubmission.studentName}
-                </p>
-                <p className="text-sm text-gray-500">
-                  Email: {selectedSubmission.studentEmail}
-                </p>
+                <p className="mt-1 text-sm text-gray-500">Student: {selectedSubmission.studentName}</p>
+                <p className="text-sm text-gray-500">Email: {selectedSubmission.studentEmail}</p>
                 <p className="text-sm text-gray-500">
                   Submitted: {new Date(selectedSubmission.submittedAt).toLocaleDateString()}
                 </p>
-                <p className="text-sm text-gray-500">
-                  Status: {selectedSubmission.status}
-                </p>
+                <p className="text-sm text-gray-500">Status: {selectedSubmission.status}</p>
                 {selectedSubmission.content && (
-                  <p className="mt-2 text-sm text-gray-600 border-t pt-2">
-                    {selectedSubmission.content}
-                  </p>
+                  <p className="mt-2 text-sm text-gray-600 border-t pt-2">{selectedSubmission.content}</p>
                 )}
               </div>
               <div className="flex items-center gap-4">
@@ -498,12 +707,6 @@ export default function AssignmentsPage() {
                   onChange={(e) => setGrade(e.target.value)}
                   placeholder="Enter score"
                 />
-                <div className="mt-7">
-                  <Button variant="outline" onClick={handleDownloadSubmission}>
-                    <Download className="mr-1 h-4 w-4" />
-                    Download
-                  </Button>
-                </div>
               </div>
               <Textarea
                 label="Feedback"
@@ -525,64 +728,6 @@ export default function AssignmentsPage() {
                 </Button>
                 <Button onClick={handleGrade} disabled={!grade}>
                   Submit Grade
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {viewingAssignment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <Card className="w-full max-w-lg mx-4">
-            <CardHeader className="flex flex-row items-start justify-between">
-              <div>
-                <CardTitle>{viewingAssignment.title}</CardTitle>
-                <CardDescription>{viewingAssignment.course}</CardDescription>
-              </div>
-              <button
-                onClick={() => setViewingAssignment(null)}
-                className="rounded-sm opacity-70 hover:opacity-100"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-gray-500">Status</p>
-                  <Badge variant={viewingAssignment.status === "active" ? "default" : viewingAssignment.status === "closed" ? "secondary" : "outline"}>
-                    {viewingAssignment.status}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-gray-500">Due Date</p>
-                  <p className="font-medium">{new Date(viewingAssignment.dueDate).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Total Submissions</p>
-                  <p className="font-medium">{viewingAssignment.totalSubmissions}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Avg Score</p>
-                  <p className="font-medium">{viewingAssignment.avgScore}%</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Graded</p>
-                  <p className="font-medium text-emerald-600">{viewingAssignment.graded}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Pending</p>
-                  <p className="font-medium text-amber-600">{viewingAssignment.pending}</p>
-                </div>
-              </div>
-              <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={() => setViewingAssignment(null)}>
-                  Close
-                </Button>
-                <Button onClick={() => handleExportAssignment(viewingAssignment)}>
-                  <Download className="mr-1 h-4 w-4" />
-                  Export CSV
                 </Button>
               </div>
             </CardContent>

@@ -488,8 +488,9 @@ model Assignment {
   content     String?
   score       Float?
   maxScore    Float    @default(100)
+  dueDate     DateTime?
   feedback    String?
-  status      String   @default("SUBMITTED")
+  status      String   @default("DRAFT")
   submittedAt DateTime @default(now())
   gradedAt    DateTime?
 
