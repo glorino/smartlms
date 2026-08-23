@@ -8,7 +8,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 function QRCodeSVG({ data, size = 100 }: { data: string; size?: number }) {
-  const modules = 21;
+  const modules = 25;
   const cellSize = size / modules;
   const cells: { x: number; y: number }[] = [];
 
@@ -48,7 +48,7 @@ function QRCodeSVG({ data, size = 100 }: { data: string; size?: number }) {
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <rect width={size} height={size} fill="white" />
+      <rect width={size} height={size} fill="white" rx="4" />
       {cells.map((cell, i) => (
         <rect
           key={i}
@@ -57,6 +57,7 @@ function QRCodeSVG({ data, size = 100 }: { data: string; size?: number }) {
           width={cellSize}
           height={cellSize}
           fill="#1a1a2e"
+          rx="0.5"
         />
       ))}
     </svg>
@@ -84,7 +85,7 @@ function CertificateActions({
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: "#FFFEF7",
+        backgroundColor: "#FDFCf5",
       });
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
@@ -154,7 +155,6 @@ function CertificateActions({
 
   return (
     <div className="mt-8 flex flex-wrap justify-center gap-3 print:hidden">
-      {/* Download PDF */}
       <button
         onClick={handleDownloadPDF}
         disabled={downloading}
@@ -178,7 +178,6 @@ function CertificateActions({
         )}
       </button>
 
-      {/* Print */}
       <button
         onClick={() => window.print()}
         className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
@@ -189,7 +188,6 @@ function CertificateActions({
         Print
       </button>
 
-      {/* Share with dropdown */}
       <div className="relative">
         <button
           onClick={() => setShareOpen(!shareOpen)}
@@ -204,12 +202,8 @@ function CertificateActions({
 
         {shareOpen && (
           <>
-            <div
-              className="fixed inset-0 z-40"
-              onClick={() => setShareOpen(false)}
-            />
+            <div className="fixed inset-0 z-40" onClick={() => setShareOpen(false)} />
             <div className="absolute left-1/2 z-50 mt-2 w-56 -translate-x-1/2 rounded-xl border border-gray-200 bg-white py-2 shadow-xl">
-              {/* Copy Link */}
               <button
                 onClick={() => {
                   handleCopyLink();
@@ -225,7 +219,6 @@ function CertificateActions({
                 {copied ? "Copied!" : "Copy verification link"}
               </button>
               <div className="my-1 border-t border-gray-100" />
-              {/* Social shares */}
               {shareLinks.map((link) => (
                 <a
                   key={link.name}
@@ -244,7 +237,6 @@ function CertificateActions({
         )}
       </div>
 
-      {/* Verify button */}
       <a
         href={`/verify-certificate?id=${certificateId}`}
         target="_blank"
@@ -295,173 +287,191 @@ export default function CertificateView({
   const courseName = certificate.course?.title || certificate.title;
   const verificationId = certificate.certificateId;
   const isActive = certificate.status === "ACTIVE";
+  const courseLevel = certificate.course?.level || "";
+  const courseDuration = certificate.course?.duration
+    ? Math.round(certificate.course.duration / 60)
+    : null;
+  const courseTags = certificate.course?.tags || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-amber-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
       <Navbar />
 
       <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Back to Dashboard link */}
         <Link
           href="/dashboard"
-          className="mb-4 inline-flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-amber-700 print:hidden"
+          className="mb-6 inline-flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-slate-700 print:hidden"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Dashboard
         </Link>
 
-        {/* Certificate Card */}
-        <div ref={certificateRef} className="certificate-card relative overflow-hidden rounded-2xl border-4 border-double border-amber-600 bg-gradient-to-br from-[#FFFEF7] via-[#FFFDF0] to-[#FFF8E7] shadow-2xl print:shadow-none">
-          {/* Corner Ornaments */}
-          <div className="absolute left-0 top-0 h-32 w-32 bg-gradient-to-br from-amber-200/40 to-transparent print:h-24 print:w-24" />
-          <div className="absolute right-0 top-0 h-32 w-32 bg-gradient-to-bl from-amber-200/40 to-transparent print:h-24 print:w-24" />
-          <div className="absolute bottom-0 left-0 h-32 w-32 bg-gradient-to-tr from-amber-200/40 to-transparent print:h-24 print:w-24" />
-          <div className="absolute bottom-0 right-0 h-32 w-32 bg-gradient-to-tl from-amber-200/40 to-transparent print:h-24 print:w-24" />
+        <div
+          ref={certificateRef}
+          className="relative overflow-hidden rounded-sm border border-slate-200 bg-[#FDFCf5] shadow-2xl print:shadow-none"
+          style={{ aspectRatio: "1.414 / 1" }}
+        >
+          {/* Outer decorative border */}
+          <div className="absolute inset-0 border-[12px] border-double border-slate-800" />
+          <div className="absolute inset-2 border border-slate-300" />
 
-          {/* Inner Border */}
-          <div className="m-3 border-2 border-amber-300/60 p-8 sm:m-4 sm:p-12 print:m-2 print:p-8">
+          {/* Corner ornaments */}
+          <div className="absolute left-3 top-3 h-16 w-16 border-l-2 border-t-2 border-slate-400" />
+          <div className="absolute right-3 top-3 h-16 w-16 border-r-2 border-t-2 border-slate-400" />
+          <div className="absolute bottom-3 left-3 h-16 w-16 border-b-2 border-l-2 border-slate-400" />
+          <div className="absolute bottom-3 right-3 h-16 w-16 border-b-2 border-r-2 border-slate-400" />
+
+          {/* Subtle background pattern */}
+          <div className="absolute inset-0 opacity-[0.03]" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }} />
+
+          <div className="relative flex h-full flex-col items-center justify-between px-12 py-10 sm:px-20 sm:py-14">
+            {/* Header */}
             <div className="text-center">
-              {/* Company Logo */}
-              <div className="mb-6 flex justify-center print:mb-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-amber-700 shadow-lg print:h-12 print:w-12">
-                  <svg className="h-10 w-10 text-white print:h-8 print:w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {/* Logo */}
+              <div className="mb-3 flex justify-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-800 shadow-lg">
+                  <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
               </div>
 
-              {/* Certificate Title */}
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700 print:text-xs">
-                SmartLMS Platform
+              <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-500">
+                SmartLMS Online Learning Platform
               </p>
+
               <h1
-                className="mt-4 font-serif text-4xl font-bold text-amber-900 sm:text-5xl print:mt-2 print:text-4xl"
-                style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif" }}
+                className="mt-3 text-3xl font-light tracking-wide text-slate-900 sm:text-4xl"
+                style={{ fontFamily: "'Georgia', 'Palatino Linotype', 'Book Antiqua', serif" }}
               >
                 Certificate of Completion
               </h1>
 
-              {/* Decorative Line */}
-              <div className="mx-auto mt-6 flex items-center justify-center gap-3 print:mt-4">
-                <div className="h-px w-16 bg-gradient-to-r from-transparent to-amber-400 sm:w-24" />
-                <svg className="h-5 w-5 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              {/* Decorative divider */}
+              <div className="mx-auto mt-4 flex items-center justify-center gap-4">
+                <div className="h-px w-20 bg-gradient-to-r from-transparent to-slate-400" />
+                <svg className="h-4 w-4 text-slate-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z" />
                 </svg>
-                <div className="h-px w-16 bg-gradient-to-l from-transparent to-amber-400 sm:w-24" />
+                <div className="h-px w-20 bg-gradient-to-l from-transparent to-slate-400" />
               </div>
+            </div>
 
-              {/* This is to certify */}
-              <p className="mt-6 text-base text-gray-600 print:mt-4 print:text-sm">
+            {/* Body */}
+            <div className="text-center flex-1 flex flex-col items-center justify-center">
+              <p className="text-sm text-slate-500">
                 This is to certify that
               </p>
 
-              {/* Student Name */}
               <h2
-                className="mt-3 border-b-2 border-amber-300 pb-2 font-serif text-3xl font-bold text-gray-900 sm:text-4xl print:mt-2 print:text-3xl"
+                className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl"
                 style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif" }}
               >
                 {studentName}
               </h2>
 
-              {/* Has completed */}
-              <p className="mt-6 text-base text-gray-600 print:mt-4 print:text-sm">
+              <div className="mt-3 h-px w-64 bg-slate-300" />
+
+              <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-600">
                 has successfully completed the course
               </p>
 
-              {/* Course Name */}
               <h3
-                className="mt-3 text-xl font-bold text-amber-800 sm:text-2xl print:text-xl"
+                className="mt-1 text-lg font-semibold text-slate-800 sm:text-xl"
                 style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif" }}
               >
                 {courseName}
               </h3>
 
-              {/* Course Details */}
-              <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-xs text-gray-500 print:text-xs">
-                {certificate.course?.level && (
-                  <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-0.5">
-                    {certificate.course.level}
+              {/* Course metadata */}
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
+                {courseLevel && (
+                  <span className="rounded border border-slate-200 bg-slate-100 px-2 py-0.5 font-medium">
+                    {courseLevel}
                   </span>
                 )}
-                {certificate.course?.duration && (
-                  <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-0.5">
-                    {Math.round(certificate.course.duration / 60)} hours
+                {courseDuration && (
+                  <span className="rounded border border-slate-200 bg-slate-100 px-2 py-0.5 font-medium">
+                    {courseDuration} Hours
                   </span>
                 )}
-                {certificate.course?.tags && certificate.course.tags.length > 0 && (
-                  <span className="text-gray-400">
-                    {certificate.course.tags.slice(0, 4).join(" · ")}
+                {courseTags.length > 0 && (
+                  <span className="text-slate-400">
+                    {courseTags.slice(0, 4).join(" · ")}
                   </span>
                 )}
               </div>
+
               {certificate.course?.description && (
-                <p className="mt-2 max-w-lg text-xs leading-relaxed text-gray-400 print:text-xs">
-                  {certificate.course.description.replace(/<[^>]*>/g, "").slice(0, 140)}
-                  {certificate.course.description.length > 140 ? "..." : ""}
+                <p className="mt-2 max-w-lg text-xs leading-relaxed text-slate-400">
+                  {certificate.course.description.replace(/<[^>]*>/g, "").slice(0, 120)}
+                  {certificate.course.description.length > 120 ? "..." : ""}
                 </p>
               )}
 
-              {/* Date Issued */}
-              <p className="mt-6 text-sm text-gray-500 print:mt-4">
-                Issued on <span className="font-semibold text-gray-700">{issuedDate}</span>
+              <p className="mt-4 text-xs text-slate-400">
+                Issued on <span className="font-semibold text-slate-600">{issuedDate}</span>
               </p>
+            </div>
 
-              {/* Signatures Row */}
-              <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 print:mt-8">
+            {/* Footer */}
+            <div className="w-full">
+              {/* Signatures */}
+              <div className="flex items-end justify-between">
                 <div className="flex flex-col items-center">
-                  <div className="w-48 border-b border-gray-400 pb-1">
+                  <div className="w-40 border-b border-slate-400 pb-1">
                     <p
-                      className="text-center font-serif text-lg italic text-gray-700"
+                      className="text-center text-sm italic text-slate-600"
                       style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif" }}
                     >
                       {instructorName}
                     </p>
                   </div>
-                  <p className="mt-2 text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Instructor Signature
+                  <p className="mt-1 text-[10px] font-medium uppercase tracking-wider text-slate-400">
+                    Course Instructor
                   </p>
                 </div>
+
+                {/* QR + Verification */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className="rounded border border-slate-200 bg-white p-1.5 shadow-sm">
+                    <QRCodeSVG
+                      data={`${typeof window !== "undefined" ? window.location.origin : ""}/certificate/${verificationId}`}
+                      size={72}
+                    />
+                  </div>
+                  <p className="text-[9px] text-slate-400">Scan to verify authenticity</p>
+                </div>
+
                 <div className="flex flex-col items-center">
-                  <div className="w-48 border-b border-gray-400 pb-1">
+                  <div className="w-40 border-b border-slate-400 pb-1">
                     <p
-                      className="text-center font-serif text-lg italic text-gray-700"
+                      className="text-center text-sm italic text-slate-600"
                       style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif" }}
                     >
                       SmartLMS
                     </p>
                   </div>
-                  <p className="mt-2 text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Platform Director
+                  <p className="mt-1 text-[10px] font-medium uppercase tracking-wider text-slate-400">
+                    Platform Authority
                   </p>
                 </div>
               </div>
 
-              {/* Bottom Section: QR + Verification */}
-              <div className="mt-10 flex flex-col items-center justify-between gap-6 sm:flex-row sm:items-end print:mt-8">
-                {/* Verification ID */}
-                <div className="text-left">
-                  <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
-                    Verification ID
-                  </p>
-                  <p className="mt-1 font-mono text-sm font-bold text-gray-800">
-                    {verificationId}
-                  </p>
-                  <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                    <ShieldCheck className="h-3.5 w-3.5" />
-                    Verified by SmartLMS
+              {/* Verification strip */}
+              <div className="mt-4 flex items-center justify-between rounded border border-slate-200 bg-slate-50 px-4 py-2">
+                <div className="flex items-center gap-3">
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+                    <ShieldCheck className="h-3 w-3" />
+                    Verified
                   </div>
+                  <span className="text-[10px] text-slate-400">ID: {verificationId}</span>
                 </div>
-
-                {/* QR Code */}
-                <div className="flex flex-col items-center">
-                  <div className="rounded-lg border border-gray-200 bg-white p-2 shadow-sm">
-                    <QRCodeSVG
-                      data={`${typeof window !== "undefined" ? window.location.origin : ""}/certificate/${verificationId}`}
-                      size={90}
-                    />
-                  </div>
-                  <p className="mt-1 text-[10px] text-gray-400">Scan to view</p>
-                </div>
+                <p className="text-[10px] text-slate-400">
+                  Verify at smartlms-bay.vercel.app/verify-certificate
+                </p>
               </div>
             </div>
           </div>
@@ -481,13 +491,11 @@ export default function CertificateView({
           </div>
         </div>
 
-        {/* Action Buttons */}
         <CertificateActions
           certificateId={verificationId}
           certificateRef={certificateRef}
         />
 
-        {/* Footer Note */}
         <p className="mt-6 text-center text-xs text-gray-400 print:hidden">
           This certificate can be verified by sharing the Verification ID or scanning the QR code.
         </p>
