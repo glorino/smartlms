@@ -121,7 +121,12 @@ export default async function CourseDetailPage({
     notFound();
   }
 
-  const session = await auth();
+  let session = null;
+  try {
+    session = await auth();
+  } catch {
+    session = null;
+  }
   const userId = session?.user?.id;
 
   let isBookmarked = false;
