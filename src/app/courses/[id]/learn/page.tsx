@@ -841,7 +841,7 @@ export default function CourseLearnPage() {
           setAiTutorOpen(!aiTutorOpen);
           setRightPanel("none");
         }}
-        className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full px-4 py-3 text-sm font-medium shadow-lg transition-all hover:scale-105 ${
+        className={`fixed bottom-6 right-20 z-40 flex items-center gap-2 rounded-full px-4 py-3 text-sm font-medium shadow-lg transition-all hover:scale-105 max-md:bottom-24 max-md:right-16 ${
           aiTutorOpen
             ? "bg-blue-700 text-white"
             : "bg-blue-600 text-white hover:bg-blue-500"
