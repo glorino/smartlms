@@ -115,19 +115,25 @@ export default async function CourseDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const course = await getCourse(id);
+
+  let course;
+  try {
+    course = await getCourse(id);
+  } catch {
+    course = null;
+  }
 
   if (!course) {
     notFound();
   }
 
-  let session = null;
+  let userId: string | undefined;
   try {
-    session = await auth();
+    const session = await auth();
+    userId = session?.user?.id;
   } catch {
-    session = null;
+    userId = undefined;
   }
-  const userId = session?.user?.id;
 
   let isBookmarked = false;
   let isEnrolled = false;
@@ -162,10 +168,17 @@ export default async function CourseDetailPage({
     }
   }
 
-  const [reviews, instructorStats] = await Promise.all([
-    getReviews(id),
-    course.instructor ? getInstructorStats(course.instructor.id) : null,
-  ]);
+  let reviews: any[] = [];
+  let instructorStats: any = null;
+  try {
+    [reviews, instructorStats] = await Promise.all([
+      getReviews(id),
+      course.instructor ? getInstructorStats(course.instructor.id) : Promise.resolve(null),
+    ]);
+  } catch {
+    reviews = [];
+    instructorStats = null;
+  }
 
   const totalLessons =
     course.sections?.reduce(
