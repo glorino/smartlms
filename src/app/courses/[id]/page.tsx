@@ -1,4 +1,7 @@
-import { notFound } from "next/navigation";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
   Play,
@@ -15,13 +18,13 @@ import {
   Infinity,
   BarChart3,
   Download,
-  Share2,
   Target,
   Zap,
   MessageSquare,
   Trophy,
   Smartphone,
   RefreshCw,
+  Loader2,
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
@@ -29,66 +32,71 @@ import EnrollButton from "./enroll-button";
 import BookmarkButton from "./bookmark-button";
 import ShareButton from "./share-button";
 import ReviewForm from "./review-form";
-import prisma from "@/lib/prisma";
-import { auth } from "@/lib/auth";
 
-async function getCourse(id: string) {
-  try {
-    const course = await prisma.course.findUnique({
-      where: { id },
-      include: {
-        instructor: {
-          select: { id: true, name: true, email: true, avatar: true, bio: true },
-        },
-        sections: {
-          include: {
-            lessons: { orderBy: { order: "asc" } },
-          },
-          orderBy: { order: "asc" },
-        },
-        _count: { select: { enrollments: true, reviews: true, quizzes: true } },
-      },
-    });
-    return course;
-  } catch {
-    return null;
-  }
-}
-
-async function getReviews(id: string) {
-  try {
-    const reviews = await prisma.review.findMany({
-      where: { courseId: id },
-      include: { user: { select: { id: true, name: true, avatar: true } } },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    });
-    return reviews;
-  } catch {
-    return [];
-  }
-}
-
-async function getInstructorStats(instructorId: string) {
-  try {
-    const stats = await prisma.course.aggregate({
-      where: { instructorId, status: "PUBLISHED" },
-      _count: { id: true },
-      _sum: { totalStudents: true, revenue: true },
-    });
-    const avgRating = await prisma.course.aggregate({
-      where: { instructorId, status: "PUBLISHED" },
-      _avg: { rating: true },
-    });
-    return {
-      courseCount: stats._count.id,
-      totalStudents: stats._sum.totalStudents || 0,
-      totalRevenue: stats._sum.revenue || 0,
-      avgRating: avgRating._avg.rating || 0,
+interface CourseData {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  shortDescription: string;
+  thumbnail: string;
+  price: number;
+  salePrice: number | null;
+  currency: string;
+  status: string;
+  level: string;
+  language: string;
+  duration: number;
+  prerequisites: string[];
+  tags: string[];
+  category: string;
+  isFeatured: boolean;
+  rating: number;
+  totalRatings: number;
+  totalStudents: number;
+  instructor: {
+    id: string;
+    name: string;
+    email: string;
+    avatar: string;
+    bio: string;
+  };
+  sections: {
+    id: string;
+    title: string;
+    lessons: {
+      id: string;
+      title: string;
+      description: string;
+      type: string;
+      videoUrl: string;
+      duration: number;
+      order: number;
+      isPreview: boolean;
+    }[];
+  }[];
+  quizzes: {
+    id: string;
+    title: string;
+    description: string;
+    passingScore: number;
+    lessonId: string;
+  }[];
+  reviews: {
+    id: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+    user: {
+      id: string;
+      name: string;
+      avatar: string;
     };
-  } catch {
-    return { courseCount: 0, totalStudents: 0, totalRevenue: 0, avgRating: 0 };
-  }
+  }[];
+  _count: {
+    enrollments: number;
+    reviews: number;
+  };
 }
 
 function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "lg" }) {
@@ -109,75 +117,174 @@ function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "lg
   );
 }
 
-export default async function CourseDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+function LoadingSpinner() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="mx-auto h-10 w-10 animate-spin text-indigo-600" />
+          <p className="mt-4 text-sm text-gray-500">Loading course...</p>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+}
 
-  let course;
-  try {
-    course = await getCourse(id);
-  } catch {
-    course = null;
-  }
+function NotFound() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
+            <BookOpen className="h-10 w-10 text-gray-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Course not found</h1>
+          <p className="mt-2 text-gray-500">The course you&apos;re looking for doesn&apos;t exist or has been removed.</p>
+          <Link
+            href="/courses"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
+          >
+            Browse Courses
+          </Link>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+}
 
-  if (!course) {
-    notFound();
-  }
+export default function CourseDetailPage() {
+  const params = useParams();
+  const courseId = params.id as string;
 
-  let userId: string | undefined;
-  try {
-    const session = await auth();
-    userId = session?.user?.id;
-  } catch {
-    userId = undefined;
-  }
+  const [course, setCourse] = useState<CourseData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFoundState, setNotFoundState] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [instructorStats, setInstructorStats] = useState<{
+    courseCount: number;
+    totalStudents: number;
+    avgRating: number;
+  } | null>(null);
 
-  let isBookmarked = false;
-  let isEnrolled = false;
-  if (userId && course.id) {
-    try {
-      const bookmark = await prisma.bookmark.findUnique({
-        where: {
-          userId_courseId: {
-            userId,
-            courseId: course.id,
-          },
-        },
-        select: { id: true },
-      });
-      isBookmarked = !!bookmark;
-    } catch {
-      isBookmarked = false;
+  useEffect(() => {
+    if (!courseId) return;
+
+    async function fetchCourse() {
+      try {
+        const res = await fetch(`/api/courses/${courseId}`);
+        if (res.status === 404) {
+          setNotFoundState(true);
+          setLoading(false);
+          return;
+        }
+        const data = await res.json();
+        if (data.course) {
+          setCourse(data.course);
+        } else {
+          setNotFoundState(true);
+        }
+      } catch {
+        setNotFoundState(true);
+      } finally {
+        setLoading(false);
+      }
     }
-    try {
-      const enrollment = await prisma.enrollment.findUnique({
-        where: {
-          userId_courseId: {
-            userId,
-            courseId: course.id,
-          },
-        },
-        select: { id: true },
-      });
-      isEnrolled = !!enrollment;
-    } catch {
-      isEnrolled = false;
+
+    async function fetchBookmarkAndEnrollment() {
+      try {
+        const [bookmarkRes, enrollmentRes] = await Promise.all([
+          fetch("/api/bookmarks").catch(() => null),
+          fetch("/api/enrollments").catch(() => null),
+        ]);
+
+        if (bookmarkRes?.ok) {
+          const bookmarkData = await bookmarkRes.json();
+          const bookmarks = bookmarkData.bookmarks || [];
+          setIsBookmarked(bookmarks.some((b: any) => b.courseId === courseId));
+        }
+
+        if (enrollmentRes?.ok) {
+          const enrollmentData = await enrollmentRes.json();
+          const enrollments = enrollmentData.enrollments || [];
+          setIsEnrolled(enrollments.some((e: any) => e.courseId === courseId));
+        }
+      } catch {
+        setIsBookmarked(false);
+        setIsEnrolled(false);
+      }
     }
+
+    async function fetchInstructorStats(instructorId: string) {
+      try {
+        const res = await fetch(`/api/courses?instructorId=${instructorId}`);
+        if (res.ok) {
+          const data = await res.json();
+          const courses = data.courses || [];
+          const totalStudents = courses.reduce(
+            (acc: number, c: any) => acc + (c.totalStudents || 0),
+            0
+          );
+          const avgRating =
+            courses.length > 0
+              ? courses.reduce((acc: number, c: any) => acc + (c.rating || 0), 0) / courses.length
+              : 0;
+          setInstructorStats({
+            courseCount: courses.length,
+            totalStudents,
+            avgRating,
+          });
+        }
+      } catch {
+        setInstructorStats(null);
+      }
+    }
+
+    fetchCourse().then(() => {
+      fetchBookmarkAndEnrollment();
+    });
+  }, [courseId]);
+
+  useEffect(() => {
+    if (course?.instructor?.id) {
+      async function fetchStats() {
+        try {
+          const res = await fetch(`/api/courses?instructorId=${course!.instructor.id}`);
+          if (res.ok) {
+            const data = await res.json();
+            const courses = data.courses || [];
+            const totalStudents = courses.reduce(
+              (acc: number, c: any) => acc + (c.totalStudents || 0),
+              0
+            );
+            const avgRating =
+              courses.length > 0
+                ? courses.reduce((acc: number, c: any) => acc + (c.rating || 0), 0) / courses.length
+                : 0;
+            setInstructorStats({
+              courseCount: courses.length,
+              totalStudents,
+              avgRating,
+            });
+          }
+        } catch {
+          setInstructorStats(null);
+        }
+      }
+      fetchStats();
+    }
+  }, [course?.instructor?.id]);
+
+  if (loading) {
+    return <LoadingSpinner />;
   }
 
-  let reviews: any[] = [];
-  let instructorStats: any = null;
-  try {
-    [reviews, instructorStats] = await Promise.all([
-      getReviews(id),
-      course.instructor ? getInstructorStats(course.instructor.id) : Promise.resolve(null),
-    ]);
-  } catch {
-    reviews = [];
-    instructorStats = null;
+  if (notFoundState || !course) {
+    return <NotFound />;
   }
 
   const totalLessons =
@@ -196,10 +303,11 @@ export default async function CourseDetailPage({
   const displayTotalRatings = course.totalRatings ?? 0;
   const displayTotalStudents = course.totalStudents ?? 0;
 
-  const videoLessons = course.sections?.reduce(
-    (acc: number, s: any) => acc + (s.lessons?.filter((l: any) => l.type === "VIDEO")?.length || 0),
-    0
-  ) || 0;
+  const videoLessons =
+    course.sections?.reduce(
+      (acc: number, s: any) => acc + (s.lessons?.filter((l: any) => l.type === "VIDEO")?.length || 0),
+      0
+    ) || 0;
 
   const textLessons = totalLessons - videoLessons;
 
@@ -207,9 +315,13 @@ export default async function CourseDetailPage({
     ? course.description.split("\n").filter((l: string) => l.trim())
     : [];
 
-  const requirementLines = course.prerequisites && course.prerequisites.length > 0
-    ? course.prerequisites
-    : ["No prior experience required", "A computer with internet access", "Willingness to learn"];
+  const requirementLines =
+    course.prerequisites && course.prerequisites.length > 0
+      ? course.prerequisites
+      : ["No prior experience required", "A computer with internet access", "Willingness to learn"];
+
+  const quizCount = course.quizzes?.length || 0;
+  const reviews = course.reviews || [];
 
   return (
     <>
@@ -267,7 +379,9 @@ export default async function CourseDetailPage({
                 </h1>
 
                 <p className="mt-5 max-w-2xl text-lg leading-relaxed text-gray-300">
-                  {course.shortDescription || descriptionLines[0] || "Master the skills with this comprehensive course designed for all levels."}
+                  {course.shortDescription ||
+                    descriptionLines[0] ||
+                    "Master the skills with this comprehensive course designed for all levels."}
                 </p>
 
                 {/* Rating & Stats */}
@@ -282,7 +396,9 @@ export default async function CourseDetailPage({
                   <div className="h-4 w-px bg-gray-700" />
                   <div className="flex items-center gap-1.5 text-gray-300">
                     <Users className="h-4 w-4" />
-                    <span className="text-sm font-medium">{displayTotalStudents.toLocaleString()} students</span>
+                    <span className="text-sm font-medium">
+                      {displayTotalStudents.toLocaleString()} students
+                    </span>
                   </div>
                 </div>
 
@@ -321,7 +437,7 @@ export default async function CourseDetailPage({
                   </span>
                 </div>
 
-                {userId && (
+                {course.id && (
                   <div className="mt-6">
                     <BookmarkButton courseId={course.id} initialBookmarked={isBookmarked} />
                   </div>
@@ -343,7 +459,7 @@ export default async function CourseDetailPage({
                       ) : (
                         <div className="flex h-full items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-700">
                           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-                            <Play className="h-8 w-8 text-white ml-1" fill="white" />
+                            <Play className="ml-1 h-8 w-8 text-white" fill="white" />
                           </div>
                         </div>
                       )}
@@ -372,11 +488,11 @@ export default async function CourseDetailPage({
                           <div className="flex items-baseline gap-3">
                             {course.salePrice && (
                               <span className="text-lg text-gray-500 line-through">
-                                ₦{course.price.toLocaleString()}
+                                &#8358;{course.price.toLocaleString()}
                               </span>
                             )}
                             <p className="text-4xl font-extrabold text-white">
-                              ₦{(course.salePrice || course.price).toLocaleString()}
+                              &#8358;{(course.salePrice || course.price).toLocaleString()}
                             </p>
                           </div>
                         )}
@@ -409,7 +525,7 @@ export default async function CourseDetailPage({
                         </li>
                         <li className="flex items-center gap-3 text-sm text-gray-300">
                           <Download className="h-4 w-4 text-indigo-400" />
-                          Downloadable resources & source code
+                          Downloadable resources &amp; source code
                         </li>
                         <li className="flex items-center gap-3 text-sm text-gray-300">
                           <Infinity className="h-4 w-4 text-indigo-400" />
@@ -421,11 +537,11 @@ export default async function CourseDetailPage({
                         </li>
                         <li className="flex items-center gap-3 text-sm text-gray-300">
                           <Smartphone className="h-4 w-4 text-indigo-400" />
-                          Access on mobile, tablet & desktop
+                          Access on mobile, tablet &amp; desktop
                         </li>
                         <li className="flex items-center gap-3 text-sm text-gray-300">
                           <MessageSquare className="h-4 w-4 text-indigo-400" />
-                          Direct instructor support via Q&A
+                          Direct instructor support via Q&amp;A
                         </li>
                       </ul>
 
@@ -444,7 +560,6 @@ export default async function CourseDetailPage({
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-5">
             <div className="lg:col-span-3 space-y-8">
-
               {/* What You'll Learn - Rich Card */}
               {descriptionLines.length > 0 && (
                 <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-white p-6 shadow-sm sm:p-8">
@@ -452,13 +567,14 @@ export default async function CourseDetailPage({
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100">
                       <Target className="h-5 w-5 text-indigo-600" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      What you&apos;ll learn
-                    </h2>
+                    <h2 className="text-2xl font-bold text-gray-900">What you&apos;ll learn</h2>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     {descriptionLines.map((item: string, i: number) => (
-                      <div key={i} className="flex items-start gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
+                      <div
+                        key={i}
+                        className="flex items-start gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100"
+                      >
                         <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100">
                           <Check className="h-3.5 w-3.5 text-emerald-600" />
                         </div>
@@ -485,18 +601,18 @@ export default async function CourseDetailPage({
               {/* Course Content / Curriculum */}
               {course.sections && course.sections.length > 0 && (
                 <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-                  <h2 className="mb-2 text-2xl font-bold text-gray-900">
-                    Course Content
-                  </h2>
+                  <h2 className="mb-2 text-2xl font-bold text-gray-900">Course Content</h2>
                   <p className="mb-6 text-sm text-gray-500">
                     {course.sections.length} sections &middot; {totalLessons} lessons &middot;{" "}
                     {Math.floor(totalDuration / 60)}h {totalDuration % 60}m total length
                   </p>
                   <div className="space-y-3">
                     {course.sections.map((section: any, sIdx: number) => {
-                      const sectionDuration = section.lessons?.reduce(
-                        (acc: number, l: any) => acc + (l.duration || 0), 0
-                      ) || 0;
+                      const sectionDuration =
+                        section.lessons?.reduce(
+                          (acc: number, l: any) => acc + (l.duration || 0),
+                          0
+                        ) || 0;
                       return (
                         <details
                           key={section.id}
@@ -527,7 +643,10 @@ export default async function CourseDetailPage({
                                   <div className="flex items-center gap-3">
                                     {lesson.type === "VIDEO" ? (
                                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-50">
-                                        <Play className="h-3 w-3 text-indigo-600 ml-0.5" fill="currentColor" />
+                                        <Play
+                                          className="ml-0.5 h-3 w-3 text-indigo-600"
+                                          fill="currentColor"
+                                        />
                                       </div>
                                     ) : (
                                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50">
@@ -578,7 +697,7 @@ export default async function CourseDetailPage({
                       className="h-20 w-20 shrink-0 rounded-2xl object-cover ring-2 ring-gray-100"
                     />
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-900 hover:text-indigo-600 transition-colors">
+                      <h3 className="text-xl font-bold text-gray-900 transition-colors hover:text-indigo-600">
                         {course.instructor.name}
                       </h3>
                       <p className="mt-0.5 text-sm font-medium text-indigo-600">Instructor</p>
@@ -591,28 +710,34 @@ export default async function CourseDetailPage({
                         <div className="mt-4 flex flex-wrap gap-4">
                           <div className="flex items-center gap-1.5 text-sm text-gray-600">
                             <BookOpen className="h-4 w-4 text-gray-400" />
-                            <span><strong>{instructorStats.courseCount}</strong> courses</span>
+                            <span>
+                              <strong>{instructorStats.courseCount}</strong> courses
+                            </span>
                           </div>
                           <div className="flex items-center gap-1.5 text-sm text-gray-600">
                             <Users className="h-4 w-4 text-gray-400" />
-                            <span><strong>{instructorStats.totalStudents.toLocaleString()}</strong> students</span>
+                            <span>
+                              <strong>{instructorStats.totalStudents.toLocaleString()}</strong> students
+                            </span>
                           </div>
                           {instructorStats.avgRating > 0 && (
                             <div className="flex items-center gap-1.5 text-sm text-gray-600">
                               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                              <span><strong>{instructorStats.avgRating.toFixed(1)}</strong> avg rating</span>
+                              <span>
+                                <strong>{instructorStats.avgRating.toFixed(1)}</strong> avg rating
+                              </span>
                             </div>
                           )}
                         </div>
-                )}
-              </div>
+                      )}
+                    </div>
+                  </div>
 
-              <ReviewForm
-                courseId={course.id}
-                isEnrolled={isEnrolled}
-                onReviewSubmitted={() => {}}
-              />
-            </div>
+                  <ReviewForm
+                    courseId={course.id}
+                    isEnrolled={isEnrolled}
+                    onReviewSubmitted={() => {}}
+                  />
                 </div>
               )}
 
@@ -639,10 +764,7 @@ export default async function CourseDetailPage({
                 ) : (
                   <div className="space-y-6">
                     {reviews.map((review: any) => (
-                      <div
-                        key={review.id}
-                        className="rounded-xl border border-gray-100 p-5"
-                      >
+                      <div key={review.id} className="rounded-xl border border-gray-100 p-5">
                         <div className="flex items-start gap-4">
                           <img
                             src={review.user?.avatar || "/avatars/default.png"}
@@ -688,10 +810,14 @@ export default async function CourseDetailPage({
                       { icon: BookOpen, label: "Lessons", value: totalLessons },
                       { icon: Play, label: "Video Lessons", value: videoLessons },
                       { icon: FileText, label: "Text Lessons", value: textLessons },
-                      { icon: Clock, label: "Duration", value: `${Math.floor(totalDuration / 60)}h ${totalDuration % 60}m` },
+                      {
+                        icon: Clock,
+                        label: "Duration",
+                        value: `${Math.floor(totalDuration / 60)}h ${totalDuration % 60}m`,
+                      },
                       { icon: Users, label: "Students", value: displayTotalStudents.toLocaleString() },
                       { icon: Star, label: "Rating", value: `${displayRating.toFixed(1)} / 5` },
-                      ...(course._count.quizzes > 0 ? [{ icon: Target, label: "Quizzes", value: course._count.quizzes }] : []),
+                      ...(quizCount > 0 ? [{ icon: Target, label: "Quizzes", value: quizCount }] : []),
                     ].map(({ icon: Icon, label, value }) => (
                       <div key={label} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
