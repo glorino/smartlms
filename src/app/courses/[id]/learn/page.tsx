@@ -23,6 +23,7 @@ import {
   ClipboardCheck,
   Award,
   RotateCcw,
+  Bot,
 } from "lucide-react";
 import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import QuizEngine from "@/components/quiz/quiz-engine";
+import AITutor from "@/components/ai/ai-tutor";
 import type { Quiz as AppQuiz, Question as AppQuestion } from "@/types";
 
 interface LessonData {
@@ -107,6 +109,7 @@ export default function CourseLearnPage() {
   const [progress, setProgress] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [rightPanel, setRightPanel] = useState<"none" | "notes" | "qa">("none");
+  const [aiTutorOpen, setAiTutorOpen] = useState(false);
 
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState("");
@@ -795,7 +798,10 @@ export default function CourseLearnPage() {
       {/* Bottom Panel Toggle (mobile) */}
       <div className="flex border-t border-gray-800 bg-gray-900 sm:hidden">
         <button
-          onClick={() => setRightPanel(rightPanel === "notes" ? "none" : "notes")}
+          onClick={() => {
+            setRightPanel(rightPanel === "notes" ? "none" : "notes");
+            setAiTutorOpen(false);
+          }}
           className={`flex flex-1 flex-col items-center gap-1 py-3 text-xs ${
             rightPanel === "notes" ? "text-blue-400" : "text-gray-400"
           }`}
@@ -804,7 +810,10 @@ export default function CourseLearnPage() {
           Notes
         </button>
         <button
-          onClick={() => setRightPanel(rightPanel === "qa" ? "none" : "qa")}
+          onClick={() => {
+            setRightPanel(rightPanel === "qa" ? "none" : "qa");
+            setAiTutorOpen(false);
+          }}
           className={`flex flex-1 flex-col items-center gap-1 py-3 text-xs ${
             rightPanel === "qa" ? "text-blue-400" : "text-gray-400"
           }`}
@@ -812,7 +821,48 @@ export default function CourseLearnPage() {
           <MessageSquare className="h-5 w-5" />
           Q&A
         </button>
+        <button
+          onClick={() => {
+            setAiTutorOpen(!aiTutorOpen);
+            setRightPanel("none");
+          }}
+          className={`flex flex-1 flex-col items-center gap-1 py-3 text-xs ${
+            aiTutorOpen ? "text-blue-400" : "text-gray-400"
+          }`}
+        >
+          <Bot className="h-5 w-5" />
+          AI Tutor
+        </button>
       </div>
+
+      {/* Floating AI Tutor Button (desktop) */}
+      <button
+        onClick={() => {
+          setAiTutorOpen(!aiTutorOpen);
+          setRightPanel("none");
+        }}
+        className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full px-4 py-3 text-sm font-medium shadow-lg transition-all hover:scale-105 ${
+          aiTutorOpen
+            ? "bg-blue-700 text-white"
+            : "bg-blue-600 text-white hover:bg-blue-500"
+        }`}
+      >
+        <Bot className="h-5 w-5" />
+        <span className="hidden sm:inline">AI Tutor</span>
+      </button>
+
+      {/* AI Tutor Panel */}
+      {aiTutorOpen && (
+        <aside className="fixed inset-y-0 right-0 z-50 w-96 max-w-full md:relative md:z-auto">
+          <AITutor
+            courseId={courseId}
+            lessonId={currentLesson?.id}
+            courseName={course.title}
+            isOpen={aiTutorOpen}
+            onClose={() => setAiTutorOpen(false)}
+          />
+        </aside>
+      )}
 
       {/* Inline Quiz Overlay */}
       {showInlineQuiz && inlineQuiz && (

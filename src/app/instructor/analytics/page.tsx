@@ -21,6 +21,9 @@ import {
   FileSpreadsheet,
   Search,
   Filter,
+  Brain,
+  AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { exportToCSV, exportToPDF, type Column } from "@/lib/export";
@@ -114,6 +117,11 @@ export default function InstructorAnalyticsPage() {
   const [completionByCourse, setCompletionByCourse] = useState<CompletionByCourse[]>([]);
   const [completionLoading, setCompletionLoading] = useState(false);
   const [studentSearch, setStudentSearch] = useState("");
+  const [aiInsights, setAiInsights] = useState<
+    { userId: string; name: string; email: string; riskLevel: string; engagementScore: number; reasons: string[]; recommendations: string[] }[]
+  >([]);
+  const [aiInsightsLoading, setAiInsightsLoading] = useState(false);
+  const [aiInsightsLoaded, setAiInsightsLoaded] = useState(false);
 
   useEffect(() => {
     async function fetchAnalytics() {
@@ -195,6 +203,22 @@ export default function InstructorAnalyticsPage() {
     }
     fetchDetailed();
   }, [selectedCourseId]);
+
+  async function fetchAiInsights() {
+    setAiInsightsLoading(true);
+    try {
+      const res = await fetch("/api/ai/predictions");
+      if (res.ok) {
+        const json = await res.json();
+        setAiInsights(json.students || []);
+        setAiInsightsLoaded(true);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setAiInsightsLoading(false);
+    }
+  }
 
   const handleExportAll = () => {
     const escapeCSV = (value: string | number | null | undefined): string => {
@@ -947,6 +971,116 @@ export default function InstructorAnalyticsPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* AI Insights - At-Risk Students */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-purple-500" />
+              AI Insights - At-Risk Students
+            </span>
+            <button
+              onClick={fetchAiInsights}
+              disabled={aiInsightsLoading}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${aiInsightsLoading ? "animate-spin" : ""}`} />
+              {aiInsightsLoading ? "Analyzing..." : aiInsightsLoaded ? "Refresh Insights" : "Load Insights"}
+            </button>
+          </CardTitle>
+          <CardDescription>AI-powered student risk assessment and intervention recommendations</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {!aiInsightsLoaded && !aiInsightsLoading ? (
+            <div className="py-12 text-center">
+              <Brain className="mx-auto h-12 w-12 text-gray-300" />
+              <p className="mt-4 text-gray-500">Click &quot;Load Insights&quot; to analyze at-risk students</p>
+            </div>
+          ) : aiInsightsLoading ? (
+            <div className="flex justify-center py-8 text-gray-400">
+              <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+              Analyzing student data...
+            </div>
+          ) : aiInsights.length === 0 ? (
+            <div className="flex justify-center py-8 text-gray-400">No students found</div>
+          ) : (
+            <div className="space-y-4">
+              {aiInsights
+                .filter((s) => s.riskLevel !== "low")
+                .sort((a, b) => {
+                  const order: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+                  return (order[a.riskLevel] ?? 4) - (order[b.riskLevel] ?? 4);
+                })
+                .map((student) => {
+                  const riskStyles: Record<string, string> = {
+                    critical: "bg-red-100 text-red-800",
+                    high: "bg-orange-100 text-orange-800",
+                    medium: "bg-yellow-100 text-yellow-800",
+                    low: "bg-green-100 text-green-800",
+                  };
+                  return (
+                    <div
+                      key={student.userId}
+                      className="rounded-xl border border-gray-200 p-5 transition-colors hover:bg-gray-50"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white font-semibold">
+                            {student.name?.charAt(0) || "?"}
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">{student.name}</h4>
+                            <p className="text-sm text-gray-500">{student.email}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <p className="text-sm text-gray-500">Engagement</p>
+                            <p className="text-lg font-bold text-gray-900">{student.engagementScore}/100</p>
+                          </div>
+                          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${riskStyles[student.riskLevel] || riskStyles.medium}`}>
+                            {student.riskLevel.toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+
+                      {student.reasons.length > 0 && (
+                        <div className="mt-4">
+                          <p className="mb-2 text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <AlertTriangle className="h-4 w-4 text-amber-500" />
+                            Risk Factors
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {student.reasons.map((reason, i) => (
+                              <span key={i} className="rounded-lg bg-red-50 px-3 py-1 text-xs text-red-700">
+                                {reason}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {student.recommendations.length > 0 && (
+                        <div className="mt-4">
+                          <p className="mb-2 text-sm font-medium text-gray-700">AI Recommendations</p>
+                          <ul className="space-y-1">
+                            {student.recommendations.map((rec, i) => (
+                              <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />
+                                {rec}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           )}
         </CardContent>

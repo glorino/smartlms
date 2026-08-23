@@ -33,7 +33,7 @@ declare global {
 
 interface VoiceCommand {
   patterns: RegExp[];
-  action: "navigate" | "search" | "openChat" | "help" | "scroll" | "goBack" | "enroll" | "quiz" | "readPage";
+  action: "navigate" | "search" | "openChat" | "help" | "scroll" | "goBack" | "enroll" | "quiz" | "readPage" | "askAI";
   target?: string;
   description: string;
   speakResponse?: string;
@@ -67,6 +67,7 @@ const VOICE_COMMANDS: VoiceCommand[] = [
   { patterns: [/scroll\s*up/i, /page\s*up/i], action: "scroll", target: "up", description: "Scroll up", speakResponse: "Scrolling up." },
   { patterns: [/go\s*back/i, /back\s*button/i, /previous\s*page/i, /back\s*again/i], action: "goBack", description: "Go back to previous page", speakResponse: "Going back." },
   { patterns: [/read\s*(the\s*)?page/i, /read\s*content/i, /what.*(on|is)\s*(this|the)\s*page/i], action: "readPage", description: "Read page content aloud", speakResponse: "Reading page content." },
+  { patterns: [/ask\s*ai\s+(.+)/i, /ai\s*question\s+(.+)/i, /what\s*is\s+(.+)/i, /how\s+do\s+(.+)/i, /tell\s+me\s+about\s+(.+)/i, /explain\s+(.+)/i], action: "askAI", description: "Ask AI a question", speakResponse: "Let me ask the AI for you." },
 ];
 
 function findCommand(transcript: string): { command: VoiceCommand; searchTerm?: string } | null {
@@ -77,6 +78,9 @@ function findCommand(transcript: string): { command: VoiceCommand; searchTerm?: 
       const match = lower.match(pattern);
       if (match) {
         if (cmd.action === "search" && match[1]) {
+          return { command: cmd, searchTerm: match[1].trim() };
+        }
+        if (cmd.action === "askAI" && match[1]) {
           return { command: cmd, searchTerm: match[1].trim() };
         }
         return { command: cmd };
@@ -210,8 +214,28 @@ export default function VoiceCommand() {
     };
   }, []);
 
+  const fetchAIResponse = async (question: string): Promise<string> => {
+    try {
+      const res = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: question }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to get AI response");
+      }
+
+      const data = await res.json();
+      return data.response;
+    } catch (error) {
+      console.error("AI voice query error:", error);
+      return "I'm having trouble connecting to my AI brain right now. Please try again or visit our help center.";
+    }
+  };
+
   const processCommand = useCallback(
-    (text: string) => {
+    async (text: string) => {
       const match = findCommand(text);
 
       if (!match) {
@@ -285,6 +309,21 @@ export default function VoiceCommand() {
           setFeedback("Reading page content aloud...");
           speak(pageText, voiceEnabled);
           break;
+        case "askAI":
+          if (searchTerm) {
+            setFeedback(`Asking AI: "${searchTerm}"...`);
+            speak("Let me think about that.", voiceEnabled);
+            
+            const aiResponse = await fetchAIResponse(searchTerm);
+            
+            setFeedback(`AI: ${aiResponse.substring(0, 100)}${aiResponse.length > 100 ? "..." : ""}`);
+            speak(aiResponse, voiceEnabled);
+          } else {
+            const msg = "What would you like to ask? Say 'ask AI' followed by your question.";
+            setFeedback(msg);
+            speak("What would you like to ask the AI?", voiceEnabled);
+          }
+          break;
       }
 
       clearFeedbackAfterDelay();
@@ -294,7 +333,7 @@ export default function VoiceCommand() {
 
   const clearFeedbackAfterDelay = () => {
     if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
-    feedbackTimeoutRef.current = setTimeout(() => setFeedback(""), 8000);
+    feedbackTimeoutRef.current = setTimeout(() => setFeedback(""), 12000);
   };
 
   const toggleListening = async () => {
@@ -328,8 +367,8 @@ export default function VoiceCommand() {
     try {
       recognitionRef.current.start();
       setIsListening(true);
-      const msg = "Listening. Say a command like go to courses or help.";
-      setFeedback("Listening... Say a command like \"go to courses\" or \"help\"");
+      const msg = "Listening. Say a command or ask AI a question.";
+      setFeedback("Listening... Say a command or ask AI a question");
       speak(msg, voiceEnabled);
     } catch (e) {
       console.error("Failed to start recognition:", e);
@@ -502,6 +541,7 @@ export default function VoiceCommand() {
                   { cmd: "Scroll down", desc: "Scroll the page down" },
                   { cmd: "Go back", desc: "Navigate to previous page" },
                   { cmd: "Read the page", desc: "Read page content aloud (accessibility)" },
+                  { cmd: "Ask AI what courses do you have", desc: "Ask the AI a question using voice" },
                   { cmd: "Help", desc: "Show this list of commands" },
                 ].map((item) => (
                   <div key={item.cmd} className="rounded-xl border border-gray-100 p-3 hover:bg-gray-50 transition-colors">
@@ -509,6 +549,14 @@ export default function VoiceCommand() {
                     <p className="mt-0.5 text-xs text-gray-500">{item.desc}</p>
                   </div>
                 ))}
+              </div>
+
+              <div className="mt-4 rounded-xl bg-indigo-50 p-3">
+                <p className="text-xs font-medium text-indigo-700">AI Voice Feature</p>
+                <p className="mt-1 text-xs text-indigo-600">
+                  Say &quot;Ask AI&quot; followed by your question to get instant answers. 
+                  The AI will respond audibly and can help with any SmartLMS question.
+                </p>
               </div>
 
               <div className="mt-4 rounded-xl bg-indigo-50 p-3">

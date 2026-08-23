@@ -30,6 +30,7 @@ import {
   BookMarked,
   Calendar,
   Trophy,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -51,6 +52,7 @@ const studentItems = [
   { href: "/dashboard/messages", label: "Messages", icon: MessageSquare },
   { href: "/dashboard/bookmarks", label: "Bookmarks", icon: Bookmark },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
+  { href: "/dashboard/career", label: "Career Paths", icon: Briefcase },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 

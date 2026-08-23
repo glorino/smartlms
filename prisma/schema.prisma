@@ -90,8 +90,14 @@ model User {
    messagesSent         Message[]            @relation("SentMessages")
    messagesReceived     Message[]            @relation("ReceivedMessages")
    lessonProgress       LessonProgress[]
-    bookmarks            Bookmark[]
-    announcements        Announcement[]
+     bookmarks            Bookmark[]
+     announcements        Announcement[]
+     learningProfiles     LearningProfile[]
+     adaptivePaths        AdaptivePath[]
+     aiConversations      AICONversation[]
+     aiGeneratedQuizzes   AIGeneratedQuiz[]
+     aiContentGens        AIContentGeneration[]
+     careerPaths          CareerPath[]
 
   @@index([email])
   @@index([role])
@@ -138,8 +144,12 @@ model Course {
   purchases       Purchase[]
   assignments     Assignment[]
   grades          Grade[]
-   notes           Note[]
-   announcements   Announcement[]
+    notes           Note[]
+    announcements   Announcement[]
+    learningProfiles LearningProfile[]
+    adaptivePaths   AdaptivePath[]
+    aiConversations AICONversation[]
+    aiGeneratedQuizzes AIGeneratedQuiz[]
 
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
@@ -247,6 +257,7 @@ model Quiz {
   questions       Question[]
   attempts        QuizAttempt[]
   grades          Grade[]
+  aiGenerated     AIGeneratedQuiz[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -645,4 +656,113 @@ model SiteSettings {
   key         String   @unique
   value       Json
   updatedAt   DateTime @updatedAt
+}
+
+model LearningProfile {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId         String
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  strengths       Json     @default("[]")
+  weaknesses      Json     @default("[]")
+  learningStyle   String   @default("visual")
+  pacePreference  String   @default("moderate")
+  engagementScore Float    @default(0)
+  riskLevel       String   @default("low")
+  lastActivityAt  DateTime?
+  totalStudyTime  Int      @default(0)
+  lessonsCompleted Int     @default(0)
+  averageScore    Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model AdaptivePath {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId         String
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  pathData        Json     @default("[]")
+  currentNodeId   String?
+  status          String   @default("active")
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, courseId])
+  @@index([userId])
+}
+
+model AICONversation {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId         String?
+  course          Course?  @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  title           String?
+  messages        Json     @default("[]")
+  context         Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([courseId])
+}
+
+model AIGeneratedQuiz {
+  id              String   @id @default(cuid())
+  instructorId    String
+  instructor      User     @relation(fields: [instructorId], references: [id])
+  courseId         String
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title           String
+  topic           String
+  difficulty      String   @default("MEDIUM")
+  questionCount   Int      @default(5)
+  questions       Json     @default("[]")
+  isPublished     Boolean  @default(false)
+  quizId          String?
+  quiz            Quiz?    @relation(fields: [quizId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+
+  @@index([instructorId])
+  @@index([courseId])
+}
+
+model AIContentGeneration {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  type            String
+  sourceContent   String
+  generatedContent Json
+  courseId         String?
+  lessonId        String?
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([courseId])
+}
+
+model CareerPath {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  skills          Json     @default("[]")
+  recommendations Json     @default("[]")
+  roadmap         Json     @default("[]")
+  matchScore      Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
 }

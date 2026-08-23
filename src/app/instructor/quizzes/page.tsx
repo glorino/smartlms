@@ -19,6 +19,7 @@ import {
   BookOpen,
   GripVertical,
   X,
+  Sparkles,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
+import QuizGeneratorModal from "@/components/ai/quiz-generator-modal";
 
 interface QuizQuestion {
   content: string;
@@ -89,6 +91,9 @@ export default function InstructorQuizzesPage() {
   const [formMaxAttempts, setFormMaxAttempts] = useState("3");
   const [formDifficulty, setFormDifficulty] = useState("MEDIUM");
   const [formQuestions, setFormQuestions] = useState<QuizQuestion[]>([{ ...defaultQuestion }]);
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [aiCourseId, setAiCourseId] = useState("");
+  const [aiCourseName, setAiCourseName] = useState("");
 
   useEffect(() => {
     async function fetchData() {
@@ -387,15 +392,66 @@ export default function InstructorQuizzesPage() {
 
   return (
     <div className="space-y-6">
+      {showAIModal && aiCourseId && (
+        <QuizGeneratorModal
+          courseId={aiCourseId}
+          courseName={aiCourseName}
+          onQuizGenerated={(quiz) => {
+            setQuizzes((prev) => [
+              {
+                id: quiz.id,
+                title: quiz.title,
+                description: "",
+                timeLimit: null,
+                passingScore: 60,
+                maxAttempts: null,
+                difficulty: "MEDIUM",
+                points: quiz.questions.reduce((s, q) => s + q.points, 0),
+                courseId: aiCourseId,
+                courseName: aiCourseName,
+                totalQuestions: quiz.questions.length,
+                isPublished: true,
+              },
+              ...prev,
+            ]);
+            setShowAIModal(false);
+          }}
+          onClose={() => setShowAIModal(false)}
+        />
+      )}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Quiz Management</h1>
           <p className="mt-1 text-gray-600">Create and manage quizzes for your courses</p>
         </div>
-        <Button className="gap-2" onClick={() => setShowForm(!showForm)}>
-          {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {showForm ? "Cancel" : "Create Quiz"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => {
+              if (courses.length === 0) {
+                toast.error("No courses available. Create a course first.");
+                return;
+              }
+              if (filterCourse !== "all") {
+                const c = courses.find((c) => c.id === filterCourse);
+                setAiCourseId(filterCourse);
+                setAiCourseName(c?.title || "");
+              } else {
+                setAiCourseId(courses[0].id);
+                setAiCourseName(courses[0].title);
+              }
+              setShowAIModal(true);
+            }}
+          >
+            <Sparkles className="h-4 w-4" />
+            AI Generate
+          </Button>
+          <Button className="gap-2" onClick={() => setShowForm(!showForm)}>
+            {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            {showForm ? "Cancel" : "Create Quiz"}
+          </Button>
+        </div>
       </div>
 
       {showForm && (
