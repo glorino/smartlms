@@ -43,6 +43,7 @@ interface User {
 
 const studentItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/my-courses", label: "My Courses", icon: BookOpen },
   { href: "/dashboard/training", label: "Training", icon: BookMarked },
   { href: "/courses", label: "Browse Courses", icon: Search },
   { href: "/dashboard/quizzes", label: "Quizzes", icon: FileCheck },
