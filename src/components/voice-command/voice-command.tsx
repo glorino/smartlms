@@ -39,53 +39,124 @@ interface VoiceCommand {
   speakResponse?: string;
 }
 
-const VOICE_COMMANDS: VoiceCommand[] = [
-  { patterns: [/go\s*to\s*courses?/i, /open\s*courses?/i, /show\s*courses?/i, /browse\s*courses?/i, /courses?\s*page/i], action: "navigate", target: "/courses", description: "Go to courses page", speakResponse: "Opening courses page." },
-  { patterns: [/go\s*to\s*dashboard/i, /open\s*dashboard/i, /show\s*dashboard/i, /my\s*dashboard/i, /dashboard/i], action: "navigate", target: "/dashboard", description: "Go to dashboard", speakResponse: "Opening your dashboard." },
-  { patterns: [/go\s*to\s*certificate/i, /open\s*certificate/i, /show\s*certificate/i, /my\s*certificate/i, /certificate/i], action: "navigate", target: "/dashboard/certificates", description: "Go to certificates", speakResponse: "Opening your certificates." },
-  { patterns: [/go\s*to\s*quiz/i, /open\s*quiz/i, /show\s*quiz/i, /take\s*quiz/i, /start\s*quiz/i, /quiz/i], action: "navigate", target: "/dashboard/quizzes", description: "Go to quizzes", speakResponse: "Opening quizzes." },
-  { patterns: [/go\s*to\s*setting/i, /open\s*setting/i, /show\s*setting/i, /my\s*setting/i, /setting/i], action: "navigate", target: "/dashboard/settings", description: "Go to settings", speakResponse: "Opening settings." },
-  { patterns: [/go\s*to\s*live/i, /open\s*live/i, /live\s*class/i, /join\s*live/i, /live\s*session/i], action: "navigate", target: "/live-classes", description: "Go to live classes", speakResponse: "Opening live classes." },
-  { patterns: [/go\s*to\s*training/i, /open\s*training/i, /show\s*training/i, /training/i], action: "navigate", target: "/courses", description: "Go to training", speakResponse: "Opening training courses." },
-  { patterns: [/go\s*to\s*notification/i, /open\s*notification/i, /show\s*notification/i, /my\s*notification/i, /notification/i], action: "navigate", target: "/dashboard/notifications", description: "Go to notifications", speakResponse: "Opening notifications." },
-  { patterns: [/go\s*to\s*bookmark/i, /open\s*bookmark/i, /show\s*bookmark/i, /my\s*bookmark/i, /bookmark/i], action: "navigate", target: "/dashboard/bookmarks", description: "Go to bookmarks", speakResponse: "Opening bookmarks." },
-  { patterns: [/go\s*to\s*message/i, /open\s*message/i, /show\s*message/i, /my\s*message/i, /message/i], action: "navigate", target: "/dashboard/messages", description: "Go to messages", speakResponse: "Opening messages." },
-  { patterns: [/go\s*to\s*profile/i, /open\s*profile/i, /show\s*profile/i, /my\s*profile/i, /profile/i], action: "navigate", target: "/dashboard/settings", description: "Go to profile", speakResponse: "Opening your profile." },
-  { patterns: [/go\s*to\s*assignment/i, /open\s*assignment/i, /show\s*assignment/i, /my\s*assignment/i, /assignment/i], action: "navigate", target: "/dashboard/assignments", description: "Go to assignments", speakResponse: "Opening assignments." },
-  { patterns: [/go\s*home/i, /open\s*home/i, /home\s*page/i, /back\s*to\s*home/i, /go\s*back\s*home/i, /homepage/i], action: "navigate", target: "/", description: "Go to home page", speakResponse: "Going to the home page." },
-  { patterns: [/go\s*to\s*pricing/i, /open\s*pricing/i, /show\s*pricing/i, /pricing/i, /how\s*much/i, /cost/i, /plan/i, /subscription/i], action: "navigate", target: "/pricing", description: "Go to pricing", speakResponse: "Opening pricing page." },
-  { patterns: [/go\s*to\s*about/i, /open\s*about/i, /about\s*page/i, /about\s*us/i], action: "navigate", target: "/about", description: "Go to about page", speakResponse: "Opening about page." },
-  { patterns: [/go\s*to\s*login/i, /open\s*login/i, /login\s*page/i, /sign\s*in/i], action: "navigate", target: "/login", description: "Go to login", speakResponse: "Opening login page." },
-  { patterns: [/go\s*to\s*register/i, /open\s*register/i, /register\s*page/i, /sign\s*up/i, /create\s*account/i], action: "navigate", target: "/register", description: "Go to registration", speakResponse: "Opening registration page." },
-  { patterns: [/go\s*to\s*instructor/i, /open\s*instructor/i, /instructor\s*dashboard/i, /teach/i, /become.*instructor/i], action: "navigate", target: "/instructor/courses", description: "Go to instructor area", speakResponse: "Opening instructor area." },
-  { patterns: [/enroll.*course/i, /start.*course/i, /begin.*course/i, /join.*course/i], action: "enroll", description: "Enroll in a course", speakResponse: "Opening courses to enroll." },
-  { patterns: [/take.*quiz/i, /start.*quiz/i, /begin.*quiz/i, /do.*quiz/i], action: "quiz", description: "Take a quiz", speakResponse: "Opening quizzes." },
-  { patterns: [/search\s+for\s+(.+)/i, /find\s+(.+)/i, /look\s+for\s+(.+)/i, /search\s+(.+)/i], action: "search", description: "Search for a course", speakResponse: "Searching for courses." },
-  { patterns: [/open\s*chat/i, /start\s*chat/i, /chat\s*bot/i, /ai\s*help/i, /talk\s*to/i, /ask.*assistant/i], action: "openChat", description: "Open the AI chatbot", speakResponse: "Opening the AI assistant." },
-  { patterns: [/help/i, /what\s*can\s*you\s*do/i, /commands?/i, /voice\s*command/i, /options/i], action: "help", description: "Show available commands", speakResponse: "Here are the available voice commands." },
-  { patterns: [/scroll\s*down/i, /page\s*down/i], action: "scroll", target: "down", description: "Scroll down", speakResponse: "Scrolling down." },
-  { patterns: [/scroll\s*up/i, /page\s*up/i], action: "scroll", target: "up", description: "Scroll up", speakResponse: "Scrolling up." },
-  { patterns: [/go\s*back/i, /back\s*button/i, /previous\s*page/i, /back\s*again/i], action: "goBack", description: "Go back to previous page", speakResponse: "Going back." },
-  { patterns: [/read\s*(the\s*)?page/i, /read\s*content/i, /what.*(on|is)\s*(this|the)\s*page/i], action: "readPage", description: "Read page content aloud", speakResponse: "Reading page content." },
-  { patterns: [/ask\s*ai\s+(.+)/i, /ai\s*question\s+(.+)/i, /what\s*is\s+(.+)/i, /how\s+do\s+(.+)/i, /tell\s+me\s+about\s+(.+)/i, /explain\s+(.+)/i], action: "askAI", description: "Ask AI a question", speakResponse: "Let me ask the AI for you." },
+const NAV_COMMANDS: VoiceCommand[] = [
+  { patterns: [/courses?/i, /browse/i, /learn/i, /class/i, /lesson/i], action: "navigate", target: "/courses", description: "courses", speakResponse: "Opening courses." },
+  { patterns: [/dashboard/i, /home\s*page/i, /my\s*page/i, /main/i], action: "navigate", target: "/dashboard", description: "dashboard", speakResponse: "Opening your dashboard." },
+  { patterns: [/certificate/i, /credential/i, /badge/i], action: "navigate", target: "/dashboard/certificates", description: "certificates", speakResponse: "Opening your certificates." },
+  { patterns: [/quiz/i, /quizzes/i, /test/i, /assessment/i, /exam/i], action: "navigate", target: "/dashboard/quizzes", description: "quizzes", speakResponse: "Opening quizzes." },
+  { patterns: [/setting/i, /account/i, /profile/i, /preferences/i], action: "navigate", target: "/dashboard/settings", description: "settings", speakResponse: "Opening settings." },
+  { patterns: [/live\s*class/i, /live\s*session/i, /webinar/i, /stream/i, /join.*live/i], action: "navigate", target: "/live-classes", description: "live classes", speakResponse: "Opening live classes." },
+  { patterns: [/training/i, /course/i], action: "navigate", target: "/courses", description: "training", speakResponse: "Opening training courses." },
+  { patterns: [/notification/i, /alerts?/i], action: "navigate", target: "/dashboard/notifications", description: "notifications", speakResponse: "Opening notifications." },
+  { patterns: [/bookmark/i, /saved/i, /favorites?/i, /wishlist/i], action: "navigate", target: "/dashboard/bookmarks", description: "bookmarks", speakResponse: "Opening bookmarks." },
+  { patterns: [/message/i, /inbox/i, /chat/i, /mail/i], action: "navigate", target: "/dashboard/messages", description: "messages", speakResponse: "Opening messages." },
+  { patterns: [/assignment/i, /homework/i, /task/i, /submit/i], action: "navigate", target: "/dashboard/quizzes", description: "assignments", speakResponse: "Opening assignments." },
+  { patterns: [/pricing/i, /plan/i, /subscription/i, /cost/i, /price/i, /how\s*much/i], action: "navigate", target: "/pricing", description: "pricing", speakResponse: "Opening pricing page." },
+  { patterns: [/about/i, /who\s*are\s*you/i, /company/i, /team/i], action: "navigate", target: "/about", description: "about", speakResponse: "Opening about page." },
+  { patterns: [/login/i, /sign\s*in/i, /log\s*in/i], action: "navigate", target: "/login", description: "login", speakResponse: "Opening login page." },
+  { patterns: [/register/i, /sign\s*up/i, /create.*account/i, /join/i], action: "navigate", target: "/register", description: "registration", speakResponse: "Opening registration." },
+  { patterns: [/instructor/i, /teach/i, /become.*teacher/i, /create.*course/i], action: "navigate", target: "/instructor/courses", description: "instructor area", speakResponse: "Opening instructor area." },
+  { patterns: [/career/i, /job/i, /employment/i, /hiring/i], action: "navigate", target: "/dashboard/career", description: "career paths", speakResponse: "Opening career paths." },
+  { patterns: [/community/i, /forum/i, /discussion/i, /group/i], action: "navigate", target: "/community", description: "community", speakResponse: "Opening community." },
+  { patterns: [/blog/i, /article/i, /post/i, /news/i], action: "navigate", target: "/blog", description: "blog", speakResponse: "Opening blog." },
+  { patterns: [/help/i, /support/i, /contact/i, /assist/i], action: "navigate", target: "/help", description: "help center", speakResponse: "Opening help center." },
 ];
 
 function findCommand(transcript: string): { command: VoiceCommand; searchTerm?: string } | null {
   const lower = transcript.toLowerCase().trim();
 
-  for (const cmd of VOICE_COMMANDS) {
+  // Direct "go to X" / "open X" / "show X" patterns
+  const goMatch = lower.match(/(?:go\s*to|open|show|take\s*me\s*to|navigate\s*to|i\s*(?:want|need)\s*to\s*(?:see|go)|where\s*(?:is|are)|take\s*me)\s+(.+)/i);
+  if (goMatch) {
+    const target = goMatch[1].trim();
+    for (const cmd of NAV_COMMANDS) {
+      for (const pattern of cmd.patterns) {
+        if (pattern.test(target)) {
+          return { command: cmd };
+        }
+      }
+    }
+  }
+
+  // Direct keyword match (user just says "courses" or "dashboard")
+  for (const cmd of NAV_COMMANDS) {
     for (const pattern of cmd.patterns) {
-      const match = lower.match(pattern);
-      if (match) {
-        if (cmd.action === "search" && match[1]) {
-          return { command: cmd, searchTerm: match[1].trim() };
-        }
-        if (cmd.action === "askAI" && match[1]) {
-          return { command: cmd, searchTerm: match[1].trim() };
-        }
+      if (pattern.test(lower)) {
         return { command: cmd };
       }
     }
+  }
+
+  // Search: "search for X", "find X", "look for X"
+  const searchMatch = lower.match(/(?:search|find|look\s*for|look\s*up|hunt|google|look\s*into)\s+(.+)/i);
+  if (searchMatch) {
+    return {
+      command: { patterns: [], action: "search", description: "search" },
+      searchTerm: searchMatch[1].trim(),
+    };
+  }
+
+  // Ask AI: various natural phrasings
+  const aiMatch = lower.match(/(?:ask\s*(?:ai|assistant|bot|you|smart\s*lms)|ai|what\s*is|what\s*are|how\s*(?:do|can|to|much|about)|tell\s*me\s*about|explain|describe|define|help\s*me\s*(?:understand|with)|can\s*you|could\s*you|what\s*do\s*you|which|why\s*do|when\s*did|where\s*can)\s+(.+)/i);
+  if (aiMatch) {
+    return {
+      command: { patterns: [], action: "askAI", description: "ask AI" },
+      searchTerm: aiMatch[1].trim(),
+    };
+  }
+
+  // Simple "ask ai" without question
+  if (/^(?:ask|ai|hey|hello|hi|hey\s*there)/i.test(lower)) {
+    return {
+      command: { patterns: [], action: "askAI", description: "ask AI" },
+      searchTerm: lower.replace(/^(?:ask|ai|hey|hello|hi|hey\s*there)\s*/i, "").trim() || undefined,
+    };
+  }
+
+  // Open chat
+  if (/chat|assistant|bot|talk|converse/i.test(lower)) {
+    return { command: { patterns: [], action: "openChat", description: "chat" } };
+  }
+
+  // Scroll
+  if (/scroll\s*down|page\s*down|down/i.test(lower)) {
+    return { command: { patterns: [], action: "scroll", target: "down", description: "scroll down" } };
+  }
+  if (/scroll\s*up|page\s*up|up\s*page/i.test(lower)) {
+    return { command: { patterns: [], action: "scroll", target: "up", description: "scroll up" } };
+  }
+
+  // Go back
+  if (/go\s*back|back|previous|return/i.test(lower)) {
+    return { command: { patterns: [], action: "goBack", description: "go back" } };
+  }
+
+  // Read page
+  if (/read|read\s*(?:the|this)\s*page|what(?:'s| is)\s*(?:on|this)/i.test(lower)) {
+    return { command: { patterns: [], action: "readPage", description: "read page" } };
+  }
+
+  // Help
+  if (/^(?:help|commands?|what\s*can|options|menu)/i.test(lower)) {
+    return { command: { patterns: [], action: "help", description: "help" } };
+  }
+
+  // Enroll
+  if (/enrol|sign\s*up\s*for|register\s*for|start\s*(?:a\s*)?course/i.test(lower)) {
+    return { command: { patterns: [], action: "enroll", description: "enroll" } };
+  }
+
+  // Quiz
+  if (/take|start|do|begin|take\s*a/i.test(lower) && /quiz|test|exam|assessment/i.test(lower)) {
+    return { command: { patterns: [], action: "quiz", description: "quiz" } };
+  }
+
+  // If nothing matched, try AI as fallback for any question-like input
+  if (lower.length > 5 && /\?|what|how|why|when|where|who|which|can|do|is|are|should/i.test(lower)) {
+    return {
+      command: { patterns: [], action: "askAI", description: "ask AI" },
+      searchTerm: lower,
+    };
   }
 
   return null;
@@ -130,9 +201,12 @@ export default function VoiceCommand() {
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [voiceEnabled, setVoiceEnabled] = useState(true);
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [conversationHistory, setConversationHistory] = useState<{ role: string; content: string }[]>([]);
+  const [showTranscript, setShowTranscript] = useState(false);
   const recognitionRef = useRef<any>(null);
   const feedbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isListeningRef = useRef(false);
 
   useEffect(() => {
     if (window.speechSynthesis) {
@@ -149,7 +223,7 @@ export default function VoiceCommand() {
 
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
-      recognition.continuous = false;
+      recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = "en-US";
       recognition.maxAlternatives = 3;
@@ -170,47 +244,59 @@ export default function VoiceCommand() {
         setTranscript(finalTranscript || interimTranscript);
 
         if (finalTranscript) {
-          processCommand(finalTranscript);
+          processCommand(finalTranscript.trim());
         }
       };
 
       recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-        console.error("Speech recognition error:", event.error);
         if (event.error === "not-allowed" || event.error === "service-not-allowed") {
           setPermissionDenied(true);
           const msg = "Microphone permission denied. Please allow access in your browser settings.";
           setFeedback(msg);
           speak(msg, voiceEnabled);
+          setIsListening(false);
+          isListeningRef.current = false;
         } else if (event.error === "network") {
-          const msg = "Network error. Please check your internet connection and try again.";
+          const msg = "Network error. Check your connection and try again.";
           setFeedback(msg);
           speak(msg, voiceEnabled);
-        } else if (event.error !== "no-speech") {
-          const msg = "Error: " + event.error + ". Please try again.";
+        } else if (event.error === "no-speech") {
+          // Silently restart if no speech detected
+          if (isListeningRef.current) {
+            try { recognition.start(); } catch {}
+          }
+        } else if (event.error !== "aborted") {
+          const msg = `Error: ${event.error}. Tap mic to try again.`;
           setFeedback(msg);
           speak(msg, voiceEnabled);
         }
-        setIsListening(false);
       };
 
       recognition.onend = () => {
-        setIsListening(false);
-        setTimeout(() => setTranscript(""), 2000);
+        // Auto-restart if still in listening mode
+        if (isListeningRef.current) {
+          try {
+            recognition.start();
+          } catch {
+            setIsListening(false);
+            isListeningRef.current = false;
+          }
+        } else {
+          setIsListening(false);
+          setTimeout(() => setTranscript(""), 2000);
+        }
       };
 
       recognitionRef.current = recognition;
     }
 
     return () => {
+      isListeningRef.current = false;
       if (recognitionRef.current) {
-        recognitionRef.current.abort();
+        try { recognitionRef.current.abort(); } catch {}
       }
-      if (feedbackTimeoutRef.current) {
-        clearTimeout(feedbackTimeoutRef.current);
-      }
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
+      if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
     };
   }, []);
 
@@ -219,18 +305,26 @@ export default function VoiceCommand() {
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: question }),
+        body: JSON.stringify({
+          message: question,
+          context: conversationHistory.slice(-6),
+        }),
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to get AI response");
-      }
+      if (!res.ok) throw new Error("AI unavailable");
 
       const data = await res.json();
-      return data.response;
-    } catch (error) {
-      console.error("AI voice query error:", error);
-      return "I'm having trouble connecting to my AI brain right now. Please try again or visit our help center.";
+      const response = data.response || "I couldn't process that. Can you try rephrasing?";
+
+      setConversationHistory((prev) => [
+        ...prev.slice(-6),
+        { role: "user", content: question },
+        { role: "assistant", content: response },
+      ]);
+
+      return response;
+    } catch {
+      return "I'm having trouble reaching my AI brain right now. Please try again in a moment.";
     }
   };
 
@@ -239,9 +333,15 @@ export default function VoiceCommand() {
       const match = findCommand(text);
 
       if (!match) {
-        const msg = `Command not recognized: "${text}". Say "help" for available commands.`;
-        setFeedback(msg);
-        speak("Command not recognized. Say help for available commands.", voiceEnabled);
+        // Fallback: send any unrecognized speech to AI
+        setIsProcessing(true);
+        setFeedback(`Thinking about "${text.substring(0, 50)}${text.length > 50 ? "..." : ""}"...`);
+        speak("Let me think about that.", voiceEnabled);
+
+        const aiResponse = await fetchAIResponse(text);
+        setFeedback(`AI: ${aiResponse.substring(0, 120)}${aiResponse.length > 120 ? "..." : ""}`);
+        speak(aiResponse, voiceEnabled);
+        setIsProcessing(false);
         clearFeedbackAfterDelay();
         return;
       }
@@ -250,101 +350,111 @@ export default function VoiceCommand() {
 
       switch (command.action) {
         case "navigate":
-          setFeedback(`Navigating to ${command.description}...`);
+          setFeedback(`Opening ${command.description}...`);
           speak(command.speakResponse || `Opening ${command.description}.`, voiceEnabled);
           router.push(command.target!);
           break;
+
         case "search":
           if (searchTerm) {
             setFeedback(`Searching for "${searchTerm}"...`);
             speak(`Searching for ${searchTerm}.`, voiceEnabled);
             router.push(`/courses?search=${encodeURIComponent(searchTerm)}`);
           } else {
-            const msg = "What would you like to search for? Say 'search for [topic]'.";
+            const msg = "What would you like to search for? Say 'search for' followed by a topic.";
             setFeedback(msg);
-            speak("What would you like to search for? Say search for a topic.", voiceEnabled);
+            speak("What would you like to search for?", voiceEnabled);
           }
           break;
+
         case "openChat":
           setFeedback("Opening AI assistant...");
-          speak(command.speakResponse || "Opening the AI assistant.", voiceEnabled);
-          const chatButton =
-            document.querySelector<HTMLButtonElement>('[aria-label="Open chat"]');
-          if (chatButton) {
-            chatButton.click();
+          speak("Opening the AI assistant.", voiceEnabled);
+          const chatBtn = document.querySelector<HTMLButtonElement>('[aria-label="Open chat"]');
+          if (chatBtn) {
+            chatBtn.click();
           } else {
-            const msg = "Chat is not available on this page.";
-            setFeedback(msg);
-            speak(msg, voiceEnabled);
+            const chatEvent = new CustomEvent("smartlms:open-chat");
+            window.dispatchEvent(chatEvent);
           }
           break;
+
         case "help":
           setShowHelp(true);
-          setFeedback("Showing available commands.");
-          speak(command.speakResponse || "Here are the available voice commands.", voiceEnabled);
+          setFeedback("Here are your voice commands.");
+          speak("Here are the available voice commands. You can say things like: go to courses, open dashboard, search for React, ask AI a question, scroll down, or go back.", voiceEnabled);
           break;
+
         case "scroll":
-          const direction = command.target === "up" ? -1 : 1;
-          window.scrollBy({ top: direction * 400, behavior: "smooth" });
+          window.scrollBy({ top: command.target === "up" ? -400 : 400, behavior: "smooth" });
           setFeedback(`Scrolling ${command.target}...`);
-          speak(command.speakResponse || `Scrolling ${command.target}.`, voiceEnabled);
+          speak(`Scrolling ${command.target}.`, voiceEnabled);
           break;
+
         case "goBack":
           setFeedback("Going back...");
-          speak(command.speakResponse || "Going back.", voiceEnabled);
+          speak("Going back.", voiceEnabled);
           router.back();
           break;
+
         case "enroll":
           setFeedback("Opening courses to enroll...");
-          speak(command.speakResponse || "Opening courses to enroll.", voiceEnabled);
+          speak("Opening courses.", voiceEnabled);
           router.push("/courses");
           break;
+
         case "quiz":
           setFeedback("Opening quizzes...");
-          speak(command.speakResponse || "Opening quizzes.", voiceEnabled);
+          speak("Opening quizzes.", voiceEnabled);
           router.push("/dashboard/quizzes");
           break;
+
         case "readPage":
           const pageText = readPageContent();
-          setFeedback("Reading page content aloud...");
+          setFeedback("Reading page content...");
           speak(pageText, voiceEnabled);
           break;
+
         case "askAI":
           if (searchTerm) {
-            setFeedback(`Asking AI: "${searchTerm}"...`);
+            setIsProcessing(true);
+            setFeedback(`AI thinking about "${searchTerm.substring(0, 40)}${searchTerm.length > 40 ? "..." : ""}"...`);
             speak("Let me think about that.", voiceEnabled);
-            
+
             const aiResponse = await fetchAIResponse(searchTerm);
-            
-            setFeedback(`AI: ${aiResponse.substring(0, 100)}${aiResponse.length > 100 ? "..." : ""}`);
+            setFeedback(`AI: ${aiResponse.substring(0, 120)}${aiResponse.length > 120 ? "..." : ""}`);
             speak(aiResponse, voiceEnabled);
+            setIsProcessing(false);
           } else {
-            const msg = "What would you like to ask? Say 'ask AI' followed by your question.";
+            const msg = "What would you like to ask? Say your question after 'ask AI'.";
             setFeedback(msg);
-            speak("What would you like to ask the AI?", voiceEnabled);
+            speak("What would you like to know?", voiceEnabled);
           }
           break;
       }
 
       clearFeedbackAfterDelay();
     },
-    [router, voiceEnabled]
+    [router, voiceEnabled, conversationHistory]
   );
 
   const clearFeedbackAfterDelay = () => {
     if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
-    feedbackTimeoutRef.current = setTimeout(() => setFeedback(""), 12000);
+    feedbackTimeoutRef.current = setTimeout(() => {
+      setFeedback("");
+      setTranscript("");
+    }, 10000);
   };
 
   const toggleListening = async () => {
     if (!recognitionRef.current) return;
 
     if (isListening) {
+      isListeningRef.current = false;
       recognitionRef.current.stop();
       setIsListening(false);
       if (voiceEnabled && window.speechSynthesis) {
         window.speechSynthesis.cancel();
-        setIsSpeaking(false);
       }
       return;
     }
@@ -365,14 +475,13 @@ export default function VoiceCommand() {
     setTranscript("");
     setFeedback("");
     try {
+      isListeningRef.current = true;
       recognitionRef.current.start();
       setIsListening(true);
-      const msg = "Listening. Say a command or ask AI a question.";
-      setFeedback("Listening... Say a command or ask AI a question");
-      speak(msg, voiceEnabled);
-    } catch (e) {
-      console.error("Failed to start recognition:", e);
-      const msg = "Failed to start voice recognition. Please try again.";
+      setFeedback("Listening... speak naturally, I'll understand.");
+      speak("I'm listening. Say anything — ask a question, navigate, or give a command.", voiceEnabled);
+    } catch {
+      const msg = "Failed to start. Please try again.";
       setFeedback(msg);
       speak(msg, voiceEnabled);
       clearFeedbackAfterDelay();
@@ -398,9 +507,9 @@ export default function VoiceCommand() {
               <AlertTriangle className="h-5 w-5 text-amber-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900">Voice commands unavailable</p>
+              <p className="text-sm font-medium text-gray-900">Voice unavailable</p>
               <p className="mt-1 text-xs text-gray-500">
-                Your browser doesn&apos;t support speech recognition. Try Chrome, Edge, or Safari.
+                Use Chrome, Edge, or Safari for voice commands.
               </p>
             </div>
           </div>
@@ -411,32 +520,37 @@ export default function VoiceCommand() {
 
   return (
     <>
-      {/* Main Button */}
       <div className="fixed bottom-6 left-6 z-50" role="region" aria-label="Voice commands">
         <div className="relative group">
+          {/* Feedback bubble */}
           {feedback && (
             <div
               className="absolute bottom-full left-0 mb-3 w-80 rounded-xl bg-gray-900 px-4 py-3 text-sm text-white shadow-xl"
               role="status"
               aria-live="polite"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-start gap-2">
                 {isListening ? (
-                  <Loader2 className="h-4 w-4 shrink-0 text-indigo-400 animate-spin" />
+                  <Loader2 className="h-4 w-4 shrink-0 text-indigo-400 animate-spin mt-0.5" />
+                ) : isProcessing ? (
+                  <Loader2 className="h-4 w-4 shrink-0 text-purple-400 animate-spin mt-0.5" />
                 ) : (
-                  <Volume2 className="h-4 w-4 shrink-0 text-indigo-400" />
+                  <Volume2 className="h-4 w-4 shrink-0 text-indigo-400 mt-0.5" />
                 )}
-                <span>{feedback}</span>
-              </div>
-              {transcript && (
-                <div className="mt-2 border-t border-gray-700 pt-2 text-xs text-gray-400">
-                  &quot;{transcript}&quot;
+                <div className="flex-1 min-w-0">
+                  <span className="break-words">{feedback}</span>
+                  {transcript && transcript !== feedback && (
+                    <div className="mt-1.5 border-t border-gray-700 pt-1.5 text-xs text-gray-400 italic">
+                      &quot;{transcript}&quot;
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
               <div className="absolute -bottom-1.5 left-6 h-3 w-3 rotate-45 bg-gray-900" />
             </div>
           )}
 
+          {/* Tooltip */}
           {!isListening && !feedback && (
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg">
               Voice Commands
@@ -445,6 +559,7 @@ export default function VoiceCommand() {
           )}
 
           <div className="flex items-center gap-2">
+            {/* Voice toggle */}
             <button
               onClick={toggleVoice}
               className={cn(
@@ -454,15 +569,12 @@ export default function VoiceCommand() {
                   : "bg-white text-gray-400 hover:bg-gray-50 border border-gray-200"
               )}
               aria-label={voiceEnabled ? "Disable voice responses" : "Enable voice responses"}
-              title={voiceEnabled ? "Voice responses ON" : "Voice responses OFF"}
+              title={voiceEnabled ? "Voice ON" : "Voice OFF"}
             >
-              {voiceEnabled ? (
-                <Volume2 className="h-4 w-4" />
-              ) : (
-                <VolumeX className="h-4 w-4" />
-              )}
+              {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
             </button>
 
+            {/* Main mic button */}
             <button
               onClick={toggleListening}
               className={cn(
@@ -474,7 +586,7 @@ export default function VoiceCommand() {
                   ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-red-500/30 focus:ring-red-300 animate-pulse"
                   : "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-indigo-500/30 hover:shadow-xl hover:scale-110 focus:ring-indigo-300"
               )}
-              aria-label={isListening ? "Stop voice command" : "Start voice command"}
+              aria-label={isListening ? "Stop listening" : "Start voice command"}
               aria-pressed={isListening}
             >
               {isListening && (
@@ -487,10 +599,11 @@ export default function VoiceCommand() {
               )}
             </button>
 
+            {/* Help button */}
             <button
               onClick={() => {
                 setShowHelp(true);
-                speak("Voice commands help. Click the microphone and say any of these naturally.", voiceEnabled);
+                speak("Here are examples of what you can say. Try speaking naturally.", voiceEnabled);
               }}
               className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-white text-gray-500 shadow-md hover:bg-gray-50 hover:text-gray-700 transition-colors"
               aria-label="Voice command help"
@@ -510,60 +623,91 @@ export default function VoiceCommand() {
           aria-label="Voice commands help"
           onClick={() => setShowHelp(false)}
         >
-          <div className="mx-4 w-full max-w-md rounded-2xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="mx-4 w-full max-w-lg rounded-2xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
               <div className="flex items-center gap-3">
                 <div className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 p-2">
                   <Mic className="h-5 w-5 text-white" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">Voice Commands</h3>
+                <h3 className="text-lg font-bold text-gray-900">Voice Assistant</h3>
               </div>
               <button
                 onClick={() => setShowHelp(false)}
                 className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                aria-label="Close help"
+                aria-label="Close"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="p-6 max-h-96 overflow-y-auto">
-              <p className="mb-4 text-sm text-gray-500">
-                Click the microphone and say any of these naturally. The system will respond audibly.
+            <div className="p-6 max-h-[70vh] overflow-y-auto space-y-5">
+              <p className="text-sm text-gray-600">
+                Tap the mic and speak naturally. I understand conversational language — no need for exact phrases.
               </p>
-              <div className="space-y-2">
-                {[
-                  { cmd: "Go to courses", desc: "Navigate to the courses page" },
-                  { cmd: "Open dashboard", desc: "Go to your dashboard" },
-                  { cmd: "Search for React", desc: "Search courses by topic" },
-                  { cmd: "Open chat", desc: "Open the AI assistant" },
-                  { cmd: "Go to pricing", desc: "View pricing plans" },
-                  { cmd: "Scroll down", desc: "Scroll the page down" },
-                  { cmd: "Go back", desc: "Navigate to previous page" },
-                  { cmd: "Read the page", desc: "Read page content aloud (accessibility)" },
-                  { cmd: "Ask AI what courses do you have", desc: "Ask the AI a question using voice" },
-                  { cmd: "Help", desc: "Show this list of commands" },
-                ].map((item) => (
-                  <div key={item.cmd} className="rounded-xl border border-gray-100 p-3 hover:bg-gray-50 transition-colors">
-                    <p className="font-mono text-sm font-medium text-indigo-600">&quot;{item.cmd}&quot;</p>
-                    <p className="mt-0.5 text-xs text-gray-500">{item.desc}</p>
-                  </div>
-                ))}
+
+              {/* Navigation */}
+              <div>
+                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Navigation</h4>
+                <div className="space-y-1.5">
+                  {[
+                    { say: "Go to courses", alt: "I want to see my courses" },
+                    { say: "Open dashboard", alt: "Show me the dashboard" },
+                    { say: "Take me to pricing", alt: "How much does it cost?" },
+                    { say: "Go to my certificates", alt: "Where are my certificates?" },
+                    { say: "Open live classes", alt: "I want to join a live session" },
+                  ].map((item) => (
+                    <div key={item.say} className="rounded-lg border border-gray-100 p-2.5 hover:bg-gray-50">
+                      <p className="font-mono text-sm font-medium text-indigo-600">&quot;{item.say}&quot;</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Also works: <span className="italic">&quot;{item.alt}&quot;</span></p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="mt-4 rounded-xl bg-indigo-50 p-3">
-                <p className="text-xs font-medium text-indigo-700">AI Voice Feature</p>
-                <p className="mt-1 text-xs text-indigo-600">
-                  Say &quot;Ask AI&quot; followed by your question to get instant answers. 
-                  The AI will respond audibly and can help with any SmartLMS question.
-                </p>
+              {/* AI */}
+              <div>
+                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Ask AI Anything</h4>
+                <div className="space-y-1.5">
+                  {[
+                    { say: "Ask AI what courses do you have?", alt: "What courses are available?" },
+                    { say: "How do I reset my password?", alt: "Explain the certificate system" },
+                    { say: "Tell me about web development", alt: "What is React?" },
+                    { say: "Can you help me with my assignment?", alt: "How do quizzes work?" },
+                  ].map((item) => (
+                    <div key={item.say} className="rounded-lg border border-gray-100 p-2.5 hover:bg-gray-50">
+                      <p className="font-mono text-sm font-medium text-indigo-600">&quot;{item.say}&quot;</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Also works: <span className="italic">&quot;{item.alt}&quot;</span></p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="mt-4 rounded-xl bg-indigo-50 p-3">
-                <p className="text-xs font-medium text-indigo-700">Accessibility Features</p>
+              {/* Actions */}
+              <div>
+                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Actions</h4>
+                <div className="space-y-1.5">
+                  {[
+                    { say: "Search for React", alt: "Find courses about JavaScript" },
+                    { say: "Open chat", alt: "I need help" },
+                    { say: "Scroll down", alt: "Page down" },
+                    { say: "Go back", alt: "Return to previous page" },
+                    { say: "Read the page", alt: "What's on this page?" },
+                    { say: "Help", alt: "What can you do?" },
+                  ].map((item) => (
+                    <div key={item.say} className="rounded-lg border border-gray-100 p-2.5 hover:bg-gray-50">
+                      <p className="font-mono text-sm font-medium text-indigo-600">&quot;{item.say}&quot;</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Also works: <span className="italic">&quot;{item.alt}&quot;</span></p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 p-4 border border-indigo-100">
+                <p className="text-sm font-semibold text-indigo-700">Natural Language</p>
                 <p className="mt-1 text-xs text-indigo-600">
-                  Click the <Volume2 className="inline h-3 w-3" /> button to toggle audible responses.
-                  Say &quot;Read the page&quot; to have content read aloud.
+                  You don&apos;t need exact commands. Just speak naturally — &quot;I want to learn React&quot;,
+                  &quot;where can I find my quizzes?&quot;, or &quot;help me understand certificates&quot; all work.
+                  If I don&apos;t understand a command, I&apos;ll ask the AI for help automatically.
                 </p>
               </div>
             </div>
@@ -573,7 +717,7 @@ export default function VoiceCommand() {
                 onClick={() => setShowHelp(false)}
                 className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white"
               >
-                Got it
+                Got it — let&apos;s try it!
               </Button>
             </div>
           </div>

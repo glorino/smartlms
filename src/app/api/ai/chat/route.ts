@@ -53,6 +53,7 @@ interface ChatRequest {
     courseName?: string;
     currentPage?: string;
   };
+  history?: { role: "user" | "assistant"; content: string }[];
 }
 
 function generateSuggestions(response: string, context?: ChatRequest["context"]): string[] {
@@ -91,7 +92,7 @@ function generateSuggestions(response: string, context?: ChatRequest["context"])
 export async function POST(request: Request) {
   try {
     const body: ChatRequest = await request.json();
-    const { message, context } = body;
+    const { message, context, history } = body;
 
     if (!message || typeof message !== "string") {
       return NextResponse.json(
@@ -117,11 +118,17 @@ export async function POST(request: Request) {
       systemMessage += `\n\nThe user is on the ${context.currentPage} page.`;
     }
 
+    const messages = [
+      { role: "system" as const, content: systemMessage },
+      ...(history || []).slice(-6).map((h) => ({
+        role: h.role as "user" | "assistant",
+        content: h.content,
+      })),
+      { role: "user" as const, content: message },
+    ];
+
     const response = await chatCompletion(
-      [
-        { role: "system", content: systemMessage },
-        { role: "user", content: message },
-      ],
+      messages,
       { temperature: 0.7, maxTokens: 512 }
     );
 
