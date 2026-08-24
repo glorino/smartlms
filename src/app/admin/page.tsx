@@ -50,6 +50,20 @@ const fallbackStats: PlatformStats = {
   enrollmentGrowth: 0,
 };
 
+function getMonthlyData(data: Record<string, number>, months: number): { labels: string[]; values: number[] } {
+  const labels: string[] = [];
+  const values: number[] = [];
+  const now = new Date();
+  for (let i = months - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = d.toISOString().slice(0, 7);
+    const label = d.toLocaleString("default", { month: "short" });
+    labels.push(label);
+    values.push(data[key] || 0);
+  }
+  return { labels, values };
+}
+
 const statCards = [
   { label: "Total Students", key: "totalStudents" as const, icon: Users, color: "bg-blue-500", growthKey: "userGrowth" as const },
   { label: "Total Courses", key: "totalCourses" as const, icon: BookOpen, color: "bg-emerald-500", growthKey: "courseGrowth" as const },
@@ -87,6 +101,8 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<PlatformStats>(fallbackStats);
   const [activities, setActivities] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [monthlyRevenue, setMonthlyRevenue] = useState<Record<string, number>>({});
+  const [monthlyEnrollments, setMonthlyEnrollments] = useState<Record<string, number>>({});
 
   useEffect(() => {
     async function fetchData() {
@@ -105,6 +121,8 @@ export default function AdminDashboardPage() {
             enrollmentGrowth: data.enrollmentGrowth || 0,
           });
           setActivities(data.recentActivity || []);
+          setMonthlyRevenue(data.monthlyRevenue || {});
+          setMonthlyEnrollments(data.monthlyEnrollments || {});
         }
       } catch {
         // Use fallback data
@@ -114,6 +132,11 @@ export default function AdminDashboardPage() {
     }
     fetchData();
   }, []);
+
+  const revenueData = getMonthlyData(monthlyRevenue, 12);
+  const enrollmentData = getMonthlyData(monthlyEnrollments, 12);
+  const maxRevenue = Math.max(...revenueData.values, 1);
+  const maxEnrollment = Math.max(...enrollmentData.values, 1);
 
   const formatValue = (value: number, prefix?: string) => {
     if (prefix) return `${prefix}${value.toLocaleString()}`;
@@ -187,49 +210,51 @@ export default function AdminDashboardPage() {
       </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Revenue Chart Placeholder */}
+        {/* Revenue Chart - Real Data */}
         <Card>
           <CardHeader>
             <CardTitle>Revenue Overview</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex h-48 items-end gap-2">
-              {[40, 65, 45, 80, 55, 90, 70, 85, 60, 95, 75, 100].map((h, i) => (
+              {revenueData.values.map((val, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center">
                   <div
                     className="w-full rounded-t-md bg-gradient-to-t from-purple-500 to-purple-400 transition-all hover:from-purple-600 hover:to-purple-500"
-                    style={{ height: `${h}%` }}
+                    style={{ height: `${(val / maxRevenue) * 100}%`, minHeight: val > 0 ? "4px" : "0px" }}
+                    title={`₦${val.toLocaleString()}`}
                   />
                 </div>
               ))}
             </div>
             <div className="mt-4 flex justify-between text-xs text-gray-500">
-              {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((m) => (
-                <span key={m}>{m}</span>
+              {revenueData.labels.map((m, i) => (
+                <span key={i}>{m}</span>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* User Growth Chart Placeholder */}
+        {/* Enrollments Chart - Real Data */}
         <Card>
           <CardHeader>
-            <CardTitle>User Growth</CardTitle>
+            <CardTitle>Enrollment Growth</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex h-48 items-end gap-2">
-              {[20, 35, 25, 50, 40, 65, 45, 70, 55, 80, 60, 85].map((h, i) => (
+              {enrollmentData.values.map((val, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center">
                   <div
                     className="w-full rounded-t-md bg-gradient-to-t from-blue-500 to-blue-400 transition-all hover:from-blue-600 hover:to-blue-500"
-                    style={{ height: `${h}%` }}
+                    style={{ height: `${(val / maxEnrollment) * 100}%`, minHeight: val > 0 ? "4px" : "0px" }}
+                    title={`${val} enrollments`}
                   />
                 </div>
               ))}
             </div>
             <div className="mt-4 flex justify-between text-xs text-gray-500">
-              {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((m) => (
-                <span key={m}>{m}</span>
+              {enrollmentData.labels.map((m, i) => (
+                <span key={i}>{m}</span>
               ))}
             </div>
           </CardContent>

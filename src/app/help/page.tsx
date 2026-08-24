@@ -111,7 +111,7 @@ const supportChannels = [
     icon: MessageSquare,
     title: "Live Chat",
     description: "Chat with our support team in real-time",
-    contact: "Available Mon-Fri, 9am-6pm EST",
+    contact: "Click to start chatting",
     action: "#",
   },
   {
@@ -132,12 +132,29 @@ export default function HelpPage() {
     message: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setContactForm({ name: "", email: "", subject: "", message: "" });
-    setTimeout(() => setSubmitted(false), 3000);
+    setSending(true);
+    setError("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(contactForm),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send message");
+      setSubmitted(true);
+      setContactForm({ name: "", email: "", subject: "", message: "" });
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -309,9 +326,18 @@ export default function HelpPage() {
                   />
                 </div>
                 <div className="flex justify-end">
-                  <Button type="submit">
-                    <Send className="mr-2 h-4 w-4" />
-                    Send Message
+                  {error && (
+                    <p className="mr-auto text-sm text-red-600">{error}</p>
+                  )}
+                  <Button type="submit" disabled={sending}>
+                    {sending ? (
+                      <>Sending...</>
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-4 w-4" />
+                        Send Message
+                      </>
+                    )}
                   </Button>
                 </div>
               </form>

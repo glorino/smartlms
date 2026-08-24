@@ -1,6 +1,22 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { generateJSON } from "@/lib/ai";
+
+const systemPrompts: Record<string, string> = {
+  COURSE_OUTLINE: `You are an expert curriculum designer. Generate a detailed course outline in JSON format with:
+{ "title": "Course Title", "modules": [{ "title": "Module Title", "description": "Module description", "lessons": ["Lesson 1", "Lesson 2"] }] }
+Return ONLY valid JSON, no markdown.`,
+  LESSON: `You are an expert educator. Generate lesson content in JSON format with:
+{ "title": "Lesson Title", "content": "<h2>Title</h2><p>Full HTML lesson content with multiple sections, examples, and key takeaways</p>", "objectives": ["Objective 1", "Objective 2", "Objective 3"], "duration": 30 }
+Return ONLY valid JSON, no markdown.`,
+  QUIZ: `You are an expert assessment designer. Generate quiz questions in JSON format with:
+{ "title": "Quiz Title", "questions": [{ "content": "Question text", "type": "MULTIPLE_CHOICE", "answers": [{ "content": "Answer option", "isCorrect": true }], "explanation": "Why this is correct" }] }
+Include 5-10 questions with varied difficulty. Return ONLY valid JSON, no markdown.`,
+  DESCRIPTION: `You are a marketing copywriter. Generate course descriptions in JSON format with:
+{ "shortDescription": "One compelling sentence (max 160 chars)", "description": "Detailed 2-3 paragraph course description highlighting benefits, target audience, and learning outcomes" }
+Return ONLY valid JSON, no markdown.`,
+};
 
 export async function POST(request: Request) {
   try {
@@ -21,112 +37,25 @@ export async function POST(request: Request) {
       );
     }
 
-    let generatedContent: any;
-
-    switch (type) {
-      case "COURSE_OUTLINE":
-        generatedContent = {
-          title: "AI Generated Course Outline",
-          modules: [
-            {
-              title: "Introduction",
-              description: "Overview of the course",
-              lessons: ["Welcome", "Course Goals", "Prerequisites"],
-            },
-            {
-              title: "Core Concepts",
-              description: "Fundamental principles",
-              lessons: ["Key Concepts", "Examples", "Best Practices"],
-            },
-            {
-              title: "Advanced Topics",
-              description: "Deep dive into advanced material",
-              lessons: ["Advanced Techniques", "Case Studies", "Real-world Applications"],
-            },
-            {
-              title: "Conclusion",
-              description: "Wrap up and next steps",
-              lessons: ["Summary", "Resources", "Next Steps"],
-            },
-          ],
-        };
-        break;
-
-      case "LESSON":
-        generatedContent = {
-          title: "AI Generated Lesson",
-          content: `
-            <h2>${prompt}</h2>
-            <p>This lesson covers the fundamentals of the topic.</p>
-            <h3>Key Points</h3>
-            <ul>
-              <li>Point 1: Understanding the basics</li>
-              <li>Point 2: Applying the concepts</li>
-              <li>Point 3: Best practices</li>
-            </ul>
-            <h3>Summary</h3>
-            <p>In this lesson, we explored the essential aspects of the topic.</p>
-          `,
-          objectives: [
-            "Understand the basic concepts",
-            "Apply the knowledge practically",
-            "Identify best practices",
-          ],
-          duration: 30,
-        };
-        break;
-
-      case "QUIZ":
-        generatedContent = {
-          title: "AI Generated Quiz",
-          questions: [
-            {
-              content: "What is the primary purpose of this topic?",
-              type: "MULTIPLE_CHOICE",
-              answers: [
-                { content: "To learn fundamentals", isCorrect: true },
-                { content: "To advanced concepts", isCorrect: false },
-                { content: "To review basics", isCorrect: false },
-                { content: "To test knowledge", isCorrect: false },
-              ],
-              explanation: "The primary purpose is to learn fundamentals.",
-            },
-            {
-              content: "Which of the following is a best practice?",
-              type: "SINGLE_CHOICE",
-              answers: [
-                { content: "Follow guidelines", isCorrect: true },
-                { content: "Skip steps", isCorrect: false },
-                { content: "Ignore errors", isCorrect: false },
-                { content: "Rush through", isCorrect: false },
-              ],
-              explanation: "Following guidelines is always recommended.",
-            },
-          ],
-        };
-        break;
-
-      case "DESCRIPTION":
-        generatedContent = {
-          shortDescription: "A comprehensive course covering essential concepts and practical applications.",
-          description: `This course provides a thorough exploration of ${prompt}. Through a combination of theoretical knowledge and hands-on practice, students will gain a deep understanding of the subject matter. The course is designed for both beginners and intermediate learners looking to enhance their skills.`,
-        };
-        break;
-
-      default:
-        generatedContent = {
-          message: `AI generation for type "${type}" is not yet supported`,
-          prompt,
-          model: model || "openai",
-        };
+    const systemPrompt = systemPrompts[type];
+    if (!systemPrompt) {
+      return NextResponse.json(
+        { error: `AI generation for type "${type}" is not yet supported` },
+        { status: 400 }
+      );
     }
+
+    const generatedContent = await generateJSON<any>([
+      { role: "system", content: systemPrompt },
+      { role: "user", content: prompt },
+    ]);
 
     await prisma.aIGeneratedContent.create({
       data: {
         type,
         prompt,
         content: generatedContent,
-        model: model || "openai",
+        model: model || "gpt-4o-mini",
         userId,
       },
     });
@@ -134,11 +63,12 @@ export async function POST(request: Request) {
     return NextResponse.json({
       content: generatedContent,
       type,
-      model: model || "openai",
+      model: model || "gpt-4o-mini",
     });
   } catch (error) {
+    console.error("AI generate error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to generate content" },
       { status: 500 }
     );
   }

@@ -4,7 +4,6 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import prisma from "@/lib/prisma";
 
 const FLUTTERWAVE_SECRET = process.env.FLUTTERWAVE_SECRET_KEY;
-const FLUTTERWAVE_PUBLIC = process.env.FLUTTERWAVE_PUBLIC_KEY;
 
 export async function POST(request: Request) {
   try {
