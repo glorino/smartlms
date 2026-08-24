@@ -23,6 +23,7 @@ import Footer from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { SITE_CONFIG } from "@/lib/constants";
 
 const faqCategories = [
   {
@@ -104,15 +105,15 @@ const supportChannels = [
     icon: Mail,
     title: "Email Support",
     description: "Send us an email and we'll respond within 24 hours",
-    contact: "support@smartlms.com",
-    action: "mailto:support@smartlms.com",
+    contact: SITE_CONFIG.contact.email,
+    action: `mailto:${SITE_CONFIG.contact.email}`,
   },
   {
     icon: MessageSquare,
     title: "Live Chat",
-    description: "Chat with our support team in real-time",
-    contact: "Click to start chatting",
-    action: "#",
+    description: "Chat with our support team in real-time via the chatbot",
+    contact: "Available via chatbot below",
+    action: "#chatbot",
   },
   {
     icon: Phone,
@@ -187,6 +188,7 @@ export default function HelpPage() {
                 <p className="text-sm text-gray-500 mb-3">{channel.description}</p>
                 <a
                   href={channel.action}
+                  onClick={channel.title === "Live Chat" ? (e) => { e.preventDefault(); window.dispatchEvent(new Event("smartlms:open-chat")); } : undefined}
                   className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
                 >
                   {channel.contact}

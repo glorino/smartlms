@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email";
+import { SITE_CONFIG } from "@/lib/constants";
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
     }
 
     await sendEmail({
-      to: process.env.CONTACT_EMAIL || "support@smartlms.com",
+      to: process.env.CONTACT_EMAIL || SITE_CONFIG.contact.email,
       subject: `Contact Form: ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

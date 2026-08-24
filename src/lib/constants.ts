@@ -13,11 +13,12 @@ export const SITE_CONFIG = {
     phone: "+234 800 SMART LMS",
     address: "Lagos, Nigeria",
   },
+  // TODO: Configure real social media URLs before launch
   social: {
-    twitter: "https://twitter.com/smartlms",
-    linkedin: "https://linkedin.com/company/smartlms",
-    github: "https://github.com/smartlms",
-    youtube: "https://youtube.com/smartlms",
+    twitter: "#",
+    linkedin: "#",
+    github: "#",
+    youtube: "#",
   },
 };
 

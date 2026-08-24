@@ -1,15 +1,24 @@
 import { PrismaClient, UserRole, CourseStatus, EnrollmentStatus, QuestionDifficulty, CertificateStatus, PaymentStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { enrichedLessons, lessonQuizzes } from "./enriched-lessons";
 
 const prisma = new PrismaClient();
 
-const PASSWORD = "password123";
+function generateRandomPassword(): string {
+  return crypto.randomBytes(24).toString("base64url");
+}
 
 // ─── Users ───────────────────────────────────────────────────────────────────
 
 async function createUsers() {
-  const hashed = await bcrypt.hash(PASSWORD, 12);
+  const passwords: Record<string, string> = {};
+
+  async function makeHash(email: string): Promise<string> {
+    const pw = generateRandomPassword();
+    passwords[email] = pw;
+    return bcrypt.hash(pw, 12);
+  }
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@smartlms.com" },
@@ -17,7 +26,7 @@ async function createUsers() {
     create: {
       email: "admin@smartlms.com",
       name: "Admin User",
-      password: hashed,
+      password: await makeHash("admin@smartlms.com"),
       role: UserRole.ADMIN,
       bio: "Platform administrator managing SmartLMS operations.",
       phone: "+1-555-0100",
@@ -30,7 +39,7 @@ async function createUsers() {
     create: {
       email: "instructor1@smartlms.com",
       name: "Dr. Sarah Johnson",
-      password: hashed,
+      password: await makeHash("instructor1@smartlms.com"),
       role: UserRole.INSTRUCTOR,
       bio: "Senior software engineer and educator with 12+ years of experience in web development, data science, and cloud computing.",
       phone: "+1-555-0101",
@@ -43,7 +52,7 @@ async function createUsers() {
     create: {
       email: "instructor2@smartlms.com",
       name: "Prof. Michael Chen",
-      password: hashed,
+      password: await makeHash("instructor2@smartlms.com"),
       role: UserRole.INSTRUCTOR,
       bio: "Cybersecurity expert and mobile developer. Former tech lead at Fortune 500 companies.",
       phone: "+1-555-0102",
@@ -56,7 +65,7 @@ async function createUsers() {
     create: {
       email: "student1@smartlms.com",
       name: "Emily Rodriguez",
-      password: hashed,
+      password: await makeHash("student1@smartlms.com"),
       role: UserRole.STUDENT,
       bio: "Aspiring full-stack developer passionate about creating impactful web applications.",
       phone: "+1-555-0201",
@@ -69,14 +78,19 @@ async function createUsers() {
     create: {
       email: "student2@smartlms.com",
       name: "James Wilson",
-      password: hashed,
+      password: await makeHash("student2@smartlms.com"),
       role: UserRole.STUDENT,
       bio: "Data enthusiast exploring machine learning and analytics.",
       phone: "+1-555-0202",
     },
   });
 
-  console.log("Created 5 users");
+  console.log("\n=== Demo User Passwords ===");
+  for (const [email, pw] of Object.entries(passwords)) {
+    console.log(`${email}: ${pw}`);
+  }
+  console.log("===========================\n");
+
   return { admin, instructor1, instructor2, student1, student2 };
 }
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { chatCompletion } from "@/lib/ai";
+import { SITE_CONFIG } from "@/lib/constants";
 
 const SYSTEM_PROMPT = `You are SmartLMS Assistant, an intelligent AI helper for the SmartLMS online learning platform. You can help users with:
 
@@ -31,7 +32,7 @@ LEARNING FEATURES:
 - Progress tracking and analytics
 
 SUPPORT:
-- Contact: support@smartlms.com
+- Contact: ${SITE_CONFIG.contact.email}
 - Live chat, help center, community forum
 - Response time: within 2 hours during business hours
 
@@ -135,7 +136,7 @@ export async function POST(request: Request) {
     console.error("AI Chat error:", error);
     return NextResponse.json(
       {
-        response: "I'm having trouble connecting to my AI brain right now. Please try again in a moment, or contact support@smartlms.com if the issue persists.",
+        response: `I'm having trouble connecting to my AI brain right now. Please try again in a moment, or contact ${SITE_CONFIG.contact.email} if the issue persists.`,
         suggestions: ["Contact Support", "Browse Courses"],
       },
       { status: 200 }

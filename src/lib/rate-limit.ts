@@ -1,13 +1,15 @@
-const rateLimit = new Map<string, { count: number; resetTime: number }>();
+const rateLimit = new Map<string, { timestamps: number[] }>();
 
 export function checkRateLimit(key: string, maxRequests: number, windowMs: number): boolean {
   const now = Date.now();
-  const record = rateLimit.get(key);
-  if (!record || now > record.resetTime) {
-    rateLimit.set(key, { count: 1, resetTime: now + windowMs });
+  const windowStart = now - windowMs;
+  const entry = rateLimit.get(key);
+  if (!entry) {
+    rateLimit.set(key, { timestamps: [now] });
     return true;
   }
-  if (record.count >= maxRequests) return false;
-  record.count++;
+  entry.timestamps = entry.timestamps.filter((t) => t > windowStart);
+  if (entry.timestamps.length >= maxRequests) return false;
+  entry.timestamps.push(now);
   return true;
 }

@@ -46,6 +46,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import LearningPathWidget from "@/components/ai/learning-path-widget";
 
 const motivationalQuotes = [
   "The expert in anything was once a beginner.",
@@ -504,6 +505,9 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* AI Learning Path Widget */}
+      <LearningPathWidget />
 
       {/* Quick Stats Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

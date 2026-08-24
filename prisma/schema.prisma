@@ -97,7 +97,10 @@ model User {
      aiConversations      AICONversation[]
      aiGeneratedQuizzes   AIGeneratedQuiz[]
      aiContentGens        AIContentGeneration[]
-     careerPaths          CareerPath[]
+      careerPaths          CareerPath[]
+      forumPosts           ForumPost[]
+      forumReplies         ForumReply[]
+      payouts              Payout[]
 
   @@index([email])
   @@index([role])
@@ -234,6 +237,7 @@ model LessonProgress {
   completedAt DateTime?
 
   @@unique([userId, lessonId])
+  @@index([userId])
 }
 
 model Quiz {
@@ -338,6 +342,7 @@ model Enrollment {
   @@unique([userId, courseId])
   @@index([userId])
   @@index([courseId])
+  @@index([status])
 }
 
 model Review {
@@ -353,6 +358,7 @@ model Review {
   course    Course   @relation(fields: [courseId], references: [id])
 
   @@unique([userId, courseId])
+  @@index([courseId])
 }
 
 model Certificate {
@@ -429,6 +435,7 @@ model LiveClass {
   updatedAt    DateTime          @updatedAt
 
   @@index([courseId])
+  @@index([instructorId])
 }
 
 model LiveClassAttendance {
@@ -443,6 +450,7 @@ model LiveClassAttendance {
   liveClass   LiveClass @relation(fields: [liveClassId], references: [id])
 
   @@unique([userId, liveClassId])
+  @@index([liveClassId])
 }
 
 model Purchase {
@@ -478,6 +486,7 @@ model Subscription {
   user        User               @relation(fields: [userId], references: [id])
 
   @@index([userId])
+  @@index([status])
 }
 
 model Assignment {
@@ -506,6 +515,7 @@ model Assignment {
 
   @@index([userId])
   @@index([courseId])
+  @@index([lessonId])
 }
 
 model Grade {
@@ -562,6 +572,7 @@ model Achievement {
   user        User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
+  @@index([type])
 }
 
 model AIGeneratedContent {
@@ -591,6 +602,7 @@ model Message {
 
   @@index([senderId])
   @@index([receiverId])
+  @@index([createdAt])
 }
 
 model Notification {
@@ -766,4 +778,54 @@ model CareerPath {
   updatedAt       DateTime @updatedAt
 
   @@index([userId])
+}
+
+model ForumPost {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category    String?
+  tags        String?
+  likes       Int      @default(0)
+  replies     ForumReply[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model ForumReply {
+  id          String   @id @default(cuid())
+  content     String
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  postId      String
+  post        ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  likes       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([postId])
+  @@index([authorId])
+}
+
+model Payout {
+  id           String   @id @default(cuid())
+  instructorId String
+  instructor   User     @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  amount       Float
+  status       String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  method       String?  // bank_transfer, paypal
+  reference    String?  @unique
+  notes        String?
+  processedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([instructorId])
+  @@index([status])
 }

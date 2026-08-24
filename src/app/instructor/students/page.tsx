@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar } from "@/components/ui/avatar";
+import StudyGroups from "@/components/ai/study-groups";
 
 interface StudentData {
   userId: string;
@@ -294,6 +295,13 @@ export default function InstructorStudentsPage() {
           )}
         </CardContent>
       </Card>
+
+      {!loading && enrollments.length > 0 && (
+        <StudyGroups
+          courseId={enrollments[0].course.id}
+          courseName={enrollments[0].course.title}
+        />
+      )}
     </div>
   );
 }

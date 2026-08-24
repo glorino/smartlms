@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { SITE_CONFIG } from "@/lib/constants";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 
 interface Message {
@@ -65,6 +66,12 @@ export default function Chatbot() {
   }, [messages, isTyping, scrollToBottom]);
 
   useEffect(() => {
+    const handler = () => setIsOpen(true);
+    window.addEventListener("smartlms:open-chat", handler);
+    return () => window.removeEventListener("smartlms:open-chat", handler);
+  }, []);
+
+  useEffect(() => {
     if (isOpen) {
       inputRef.current?.focus();
     }
@@ -90,7 +97,7 @@ export default function Chatbot() {
     } catch (error) {
       console.error("AI chat error:", error);
       return {
-        response: "I'm having trouble connecting right now. Please try again in a moment, or contact support@smartlms.com for assistance.",
+        response: `I'm having trouble connecting right now. Please try again in a moment, or contact ${SITE_CONFIG.contact.email} for assistance.`,
         suggestions: ["Contact Support"],
       };
     }
@@ -180,6 +187,7 @@ export default function Chatbot() {
     <>
       {/* Floating Chat Button */}
       <button
+        id="chatbot"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg",

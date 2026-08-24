@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { SITE_CONFIG } from "@/lib/constants";
 
 interface ChatRequest {
   message: string;
@@ -28,7 +29,7 @@ const smartResponses: { keywords: string[]; response: string }[] = [
   {
     keywords: ["contact", "support", "help", "assist"],
     response:
-      "You can reach our support team at support@smartlms.com. We're available 24/7 to help with any questions about courses, account issues, or technical problems.",
+      `You can reach our support team at ${SITE_CONFIG.contact.email}. We're available 24/7 to help with any questions about courses, account issues, or technical problems.`,
   },
   {
     keywords: ["live", "class", "stream", "real-time", "session"],
