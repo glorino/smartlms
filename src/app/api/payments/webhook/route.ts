@@ -57,7 +57,6 @@ export async function POST(request: Request) {
       });
 
       if (existingPurchase) {
-        console.log(`Webhook: Purchase already exists for tx_ref ${tx_ref}`);
         return NextResponse.json({ received: true });
       }
 
@@ -98,7 +97,6 @@ export async function POST(request: Request) {
           });
         });
 
-        console.log(`Webhook: Created enrollment for user ${userId}, course ${courseId}`);
       }
     }
 
