@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   XCircle,
+  Database,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -103,6 +104,8 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [monthlyRevenue, setMonthlyRevenue] = useState<Record<string, number>>({});
   const [monthlyEnrollments, setMonthlyEnrollments] = useState<Record<string, number>>({});
+  const [seeding, setSeeding] = useState(false);
+  const [seedMessage, setSeedMessage] = useState("");
 
   useEffect(() => {
     async function fetchData() {
@@ -132,6 +135,24 @@ export default function AdminDashboardPage() {
     }
     fetchData();
   }, []);
+
+  async function handleSeed() {
+    setSeeding(true);
+    setSeedMessage("");
+    try {
+      const res = await fetch("/api/admin/seed", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        setSeedMessage(data.message);
+      } else {
+        setSeedMessage(data.error || "Seed failed");
+      }
+    } catch {
+      setSeedMessage("Network error — try again");
+    } finally {
+      setSeeding(false);
+    }
+  }
 
   const revenueData = getMonthlyData(monthlyRevenue, 12);
   const enrollmentData = getMonthlyData(monthlyEnrollments, 12);
@@ -205,7 +226,18 @@ export default function AdminDashboardPage() {
                 {action.label}
               </Link>
             ))}
+            <button
+              onClick={handleSeed}
+              disabled={seeding}
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-50"
+            >
+              <Database className="h-4 w-4" />
+              {seeding ? "Seeding..." : "Seed Blog & Jobs"}
+            </button>
           </div>
+          {seedMessage && (
+            <p className="mt-3 text-sm text-emerald-600">{seedMessage}</p>
+          )}
         </CardContent>
       </Card>
 
