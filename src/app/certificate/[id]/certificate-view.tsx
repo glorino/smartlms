@@ -264,7 +264,9 @@ interface CertificateData {
     instructor?: { name: string };
   };
   user?: {
+    id?: string;
     name: string;
+    email?: string;
   };
 }
 
@@ -318,8 +320,7 @@ export default function CertificateView({
         {/* Certificate */}
         <div
           ref={certificateRef}
-          className="relative overflow-hidden rounded-sm bg-[#FDFCf5] shadow-2xl print:shadow-none"
-          style={{ aspectRatio: "1.414 / 1" }}
+          className="relative overflow-hidden rounded-sm bg-[#FDFCf5] shadow-2xl print:shadow-none min-h-[700px]"
         >
           {/* Outer gold border */}
           <div className="absolute inset-0 border-[14px] border-double" style={{ borderColor: "#8B7355" }} />
