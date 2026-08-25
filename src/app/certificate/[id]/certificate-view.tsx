@@ -95,8 +95,7 @@ function CertificateActions({
       });
       pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
       pdf.save(`SmartLMS-Certificate-${certificateId}.pdf`);
-    } catch (err) {
-      console.error("PDF generation failed:", err);
+    } catch {
       alert("Failed to generate PDF. Please try again.");
     } finally {
       setDownloading(false);
@@ -133,7 +132,7 @@ function CertificateActions({
     },
     {
       name: "Twitter",
-      url: `https://twitter.com/intent/tweet?text=${encodeURIComponent("I just earned a certificate on SmartLMS! 🎓")}&url=${encodeURIComponent(verificationUrl)}`,
+      url: `https://twitter.com/intent/tweet?text=${encodeURIComponent("I just earned a certificate on SmartLMS!")}&url=${encodeURIComponent(verificationUrl)}`,
       color: "hover:bg-sky-50 text-sky-500",
       icon: (
         <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -282,6 +281,14 @@ export default function CertificateView({
     day: "numeric",
   });
 
+  const expiryDate = certificate.expiresAt
+    ? new Date(certificate.expiresAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
+
   const instructorName = certificate.course?.instructor?.name || "SmartLMS Team";
   const studentName = certificate.user?.name || "Student";
   const courseName = certificate.course?.title || certificate.title;
@@ -292,6 +299,8 @@ export default function CertificateView({
     ? Math.round(certificate.course.duration / 60)
     : null;
   const courseTags = certificate.course?.tags || [];
+
+  const verificationUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/verify-certificate?id=${verificationId}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
@@ -306,171 +315,227 @@ export default function CertificateView({
           Back to Dashboard
         </Link>
 
+        {/* Certificate */}
         <div
           ref={certificateRef}
-          className="relative overflow-hidden rounded-sm border border-slate-200 bg-[#FDFCf5] shadow-2xl print:shadow-none"
+          className="relative overflow-hidden rounded-sm bg-[#FDFCf5] shadow-2xl print:shadow-none"
           style={{ aspectRatio: "1.414 / 1" }}
         >
-          {/* Outer decorative border */}
-          <div className="absolute inset-0 border-[12px] border-double border-slate-800" />
-          <div className="absolute inset-2 border border-slate-300" />
+          {/* Outer gold border */}
+          <div className="absolute inset-0 border-[14px] border-double" style={{ borderColor: "#8B7355" }} />
+          <div className="absolute inset-2 border-2" style={{ borderColor: "#C4A265" }} />
+          <div className="absolute inset-3 border" style={{ borderColor: "#D4C5A0" }} />
 
           {/* Corner ornaments */}
-          <div className="absolute left-3 top-3 h-16 w-16 border-l-2 border-t-2 border-slate-400" />
-          <div className="absolute right-3 top-3 h-16 w-16 border-r-2 border-t-2 border-slate-400" />
-          <div className="absolute bottom-3 left-3 h-16 w-16 border-b-2 border-l-2 border-slate-400" />
-          <div className="absolute bottom-3 right-3 h-16 w-16 border-b-2 border-r-2 border-slate-400" />
+          {[
+            "left-4 top-4 border-l-2 border-t-2",
+            "right-4 top-4 border-r-2 border-t-2",
+            "left-4 bottom-4 border-l-2 border-b-2",
+            "right-4 bottom-4 border-r-2 border-b-2",
+          ].map((pos, i) => (
+            <div key={i} className={`absolute h-14 w-14 ${pos}`} style={{ borderColor: "#8B7355" }} />
+          ))}
 
-          {/* Subtle background pattern */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          {/* Decorative corner diamonds */}
+          {[
+            "left-5 top-5",
+            "right-5 top-5",
+            "left-5 bottom-5",
+            "right-5 bottom-5",
+          ].map((pos, i) => (
+            <div key={i} className={`absolute ${pos}`}>
+              <svg width="12" height="12" viewBox="0 0 12 12">
+                <rect x="3" y="0" width="6" height="6" transform="rotate(45 6 3)" fill="#C4A265" />
+              </svg>
+            </div>
+          ))}
+
+          {/* Background pattern */}
+          <div className="absolute inset-0 opacity-[0.02]" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%238B7355' fill-opacity='1'%3E%3Cpath d='M20 0L40 20L20 40L0 20z' fill-opacity='0.15'/%3E%3C/g%3E%3C/svg%3E")`,
           }} />
 
-          <div className="relative flex h-full flex-col items-center justify-between px-12 py-10 sm:px-20 sm:py-14">
-            {/* Header */}
-            <div className="text-center">
+          {/* Content */}
+          <div className="relative flex h-full flex-col items-center justify-between px-8 py-8 sm:px-16 sm:py-10">
+
+            {/* Top Section: Logo + Title */}
+            <div className="text-center w-full">
               {/* Logo */}
-              <div className="mb-3 flex justify-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-800 shadow-lg">
-                  <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex justify-center mb-2">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full shadow-lg" style={{ backgroundColor: "#1a1a2e" }}>
+                  <svg className="h-9 w-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
               </div>
 
-              <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-500">
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em]" style={{ color: "#8B7355" }}>
                 SmartLMS Online Learning Platform
               </p>
 
               <h1
-                className="mt-3 text-3xl font-light tracking-wide text-slate-900 sm:text-4xl"
-                style={{ fontFamily: "'Georgia', 'Palatino Linotype', 'Book Antiqua', serif" }}
+                className="mt-2 text-3xl font-light tracking-wide sm:text-4xl"
+                style={{ fontFamily: "'Georgia', 'Palatino Linotype', 'Book Antiqua', serif", color: "#1a1a2e" }}
               >
                 Certificate of Completion
               </h1>
 
               {/* Decorative divider */}
-              <div className="mx-auto mt-4 flex items-center justify-center gap-4">
-                <div className="h-px w-20 bg-gradient-to-r from-transparent to-slate-400" />
-                <svg className="h-4 w-4 text-slate-400" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z" />
+              <div className="mx-auto mt-3 flex items-center justify-center gap-3">
+                <div className="h-px w-16" style={{ backgroundColor: "#C4A265" }} />
+                <svg width="16" height="16" viewBox="0 0 16 16">
+                  <rect x="4" y="0" width="8" height="8" transform="rotate(45 8 4)" fill="#C4A265" />
                 </svg>
-                <div className="h-px w-20 bg-gradient-to-l from-transparent to-slate-400" />
+                <div className="h-px w-16" style={{ backgroundColor: "#C4A265" }} />
               </div>
             </div>
 
-            {/* Body */}
-            <div className="text-center flex-1 flex flex-col items-center justify-center">
-              <p className="text-sm text-slate-500">
+            {/* Middle Section: Certification Text */}
+            <div className="text-center flex-1 flex flex-col items-center justify-center w-full max-w-2xl">
+              <p className="text-sm" style={{ color: "#6B5B4F" }}>
                 This is to certify that
               </p>
 
               <h2
-                className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl"
-                style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif" }}
+                className="mt-1 text-4xl font-bold sm:text-5xl"
+                style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif", color: "#1a1a2e" }}
               >
                 {studentName}
               </h2>
 
-              <div className="mt-3 h-px w-64 bg-slate-300" />
+              <div className="mt-2 h-px w-72" style={{ backgroundColor: "#C4A265" }} />
 
-              <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-600">
-                has successfully completed the course
+              <p className="mt-2 max-w-lg text-sm leading-relaxed" style={{ color: "#6B5B4F" }}>
+                has successfully completed the course of study in
               </p>
 
               <h3
-                className="mt-1 text-lg font-semibold text-slate-800 sm:text-xl"
-                style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif" }}
+                className="mt-1 text-xl font-semibold sm:text-2xl"
+                style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif", color: "#1a1a2e" }}
               >
                 {courseName}
               </h3>
 
-              {/* Course metadata */}
-              <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
+              {/* Course details */}
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-xs" style={{ color: "#8B7355" }}>
                 {courseLevel && (
-                  <span className="rounded border border-slate-200 bg-slate-100 px-2 py-0.5 font-medium">
+                  <span className="rounded border px-2.5 py-1 font-semibold" style={{ borderColor: "#D4C5A0", backgroundColor: "rgba(196,162,101,0.08)" }}>
                     {courseLevel}
                   </span>
                 )}
                 {courseDuration && (
-                  <span className="rounded border border-slate-200 bg-slate-100 px-2 py-0.5 font-medium">
+                  <span className="rounded border px-2.5 py-1 font-semibold" style={{ borderColor: "#D4C5A0", backgroundColor: "rgba(196,162,101,0.08)" }}>
                     {courseDuration} Hours
-                  </span>
-                )}
-                {courseTags.length > 0 && (
-                  <span className="text-slate-400">
-                    {courseTags.slice(0, 4).join(" · ")}
                   </span>
                 )}
               </div>
 
+              {/* Skills covered */}
+              {courseTags.length > 0 && (
+                <div className="mt-2 text-center">
+                  <p className="text-[10px] uppercase tracking-wider" style={{ color: "#8B7355" }}>
+                    Skills Covered
+                  </p>
+                  <p className="mt-0.5 text-xs" style={{ color: "#6B5B4F" }}>
+                    {courseTags.slice(0, 5).join(" · ")}
+                  </p>
+                </div>
+              )}
+
+              {/* Description */}
               {certificate.course?.description && (
-                <p className="mt-2 max-w-lg text-xs leading-relaxed text-slate-400">
-                  {certificate.course.description.replace(/<[^>]*>/g, "").slice(0, 120)}
-                  {certificate.course.description.length > 120 ? "..." : ""}
+                <p className="mt-2 max-w-md text-[11px] leading-relaxed" style={{ color: "#8B7355" }}>
+                  {certificate.course.description.replace(/<[^>]*>/g, "").slice(0, 150)}
+                  {certificate.course.description.length > 150 ? "..." : ""}
                 </p>
               )}
 
-              <p className="mt-4 text-xs text-slate-400">
-                Issued on <span className="font-semibold text-slate-600">{issuedDate}</span>
-              </p>
+              {/* Date issued */}
+              <div className="mt-3 flex items-center gap-6 text-xs" style={{ color: "#6B5B4F" }}>
+                <div className="text-center">
+                  <p className="font-semibold">{issuedDate}</p>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ color: "#8B7355" }}>Date of Issue</p>
+                </div>
+                {expiryDate && (
+                  <div className="text-center">
+                    <p className="font-semibold">{expiryDate}</p>
+                    <p className="text-[10px] uppercase tracking-wider" style={{ color: "#8B7355" }}>Valid Until</p>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Footer */}
+            {/* Bottom Section: Signatures + QR + Verification */}
             <div className="w-full">
-              {/* Signatures */}
+              {/* Signatures Row */}
               <div className="flex items-end justify-between">
+                {/* Instructor Signature */}
                 <div className="flex flex-col items-center">
-                  <div className="w-40 border-b border-slate-400 pb-1">
+                  <div className="w-36 border-b pb-1" style={{ borderColor: "#8B7355" }}>
                     <p
-                      className="text-center text-sm italic text-slate-600"
-                      style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif" }}
+                      className="text-center text-sm italic"
+                      style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif", color: "#1a1a2e" }}
                     >
                       {instructorName}
                     </p>
                   </div>
-                  <p className="mt-1 text-[10px] font-medium uppercase tracking-wider text-slate-400">
+                  <p className="mt-1 text-[9px] font-semibold uppercase tracking-wider" style={{ color: "#8B7355" }}>
                     Course Instructor
                   </p>
                 </div>
 
-                {/* QR + Verification */}
-                <div className="flex flex-col items-center gap-2">
-                  <div className="rounded border border-slate-200 bg-white p-1.5 shadow-sm">
+                {/* QR Code + Verification */}
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="rounded-lg border-2 p-2 shadow-md" style={{ borderColor: "#C4A265", backgroundColor: "white" }}>
                     <QRCodeSVG
-                      data={`${typeof window !== "undefined" ? window.location.origin : ""}/certificate/${verificationId}`}
-                      size={72}
+                      data={verificationUrl}
+                      size={80}
                     />
                   </div>
-                  <p className="text-[9px] text-slate-400">Scan to verify authenticity</p>
+                  <p className="text-[8px] font-semibold uppercase tracking-wider" style={{ color: "#8B7355" }}>
+                    Scan to Verify
+                  </p>
+                  <p className="max-w-[120px] text-center text-[7px] leading-tight" style={{ color: "#6B5B4F" }}>
+                    Scan QR code or visit the verification URL to confirm authenticity
+                  </p>
                 </div>
 
+                {/* Platform Signature */}
                 <div className="flex flex-col items-center">
-                  <div className="w-40 border-b border-slate-400 pb-1">
+                  <div className="w-36 border-b pb-1" style={{ borderColor: "#8B7355" }}>
                     <p
-                      className="text-center text-sm italic text-slate-600"
-                      style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif" }}
+                      className="text-center text-sm italic"
+                      style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif", color: "#1a1a2e" }}
                     >
                       SmartLMS
                     </p>
                   </div>
-                  <p className="mt-1 text-[10px] font-medium uppercase tracking-wider text-slate-400">
+                  <p className="mt-1 text-[9px] font-semibold uppercase tracking-wider" style={{ color: "#8B7355" }}>
                     Platform Authority
                   </p>
                 </div>
               </div>
 
-              {/* Verification strip */}
-              <div className="mt-4 flex items-center justify-between rounded border border-slate-200 bg-slate-50 px-4 py-2">
+              {/* Verification Strip */}
+              <div className="mt-4 flex items-center justify-between rounded-lg border px-4 py-2.5" style={{ borderColor: "#D4C5A0", backgroundColor: "rgba(196,162,101,0.05)" }}>
                 <div className="flex items-center gap-3">
-                  <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+                  <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold" style={{ backgroundColor: "#E8F5E9", color: "#2E7D32" }}>
                     <ShieldCheck className="h-3 w-3" />
-                    Verified
+                    Verified Authentic
                   </div>
-                  <span className="text-[10px] text-slate-400">ID: {verificationId}</span>
+                  <span className="text-[10px] font-mono" style={{ color: "#6B5B4F" }}>
+                    Certificate ID: {verificationId}
+                  </span>
                 </div>
-                <p className="text-[10px] text-slate-400">
-                  Verify at smartlms-bay.vercel.app/verify-certificate
+                <p className="text-[9px]" style={{ color: "#8B7355" }}>
+                  smartlms-bay.vercel.app/verify-certificate
+                </p>
+              </div>
+
+              {/* Bottom fine print */}
+              <div className="mt-2 text-center">
+                <p className="text-[8px]" style={{ color: "#8B7355" }}>
+                  This certificate was issued by SmartLMS Platform. It can be verified by scanning the QR code or visiting the verification URL above.
                 </p>
               </div>
             </div>
@@ -497,7 +562,7 @@ export default function CertificateView({
         />
 
         <p className="mt-6 text-center text-xs text-gray-400 print:hidden">
-          This certificate can be verified by sharing the Verification ID or scanning the QR code.
+          This certificate can be verified by sharing the Verification ID or scanning the QR code above.
         </p>
       </div>
     </div>
