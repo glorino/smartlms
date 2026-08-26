@@ -173,20 +173,28 @@ function findCommand(transcript: string): { command: VoiceCommand; searchTerm?: 
   return null;
 }
 
-function speak(text: string, enabled: boolean) {
-  if (!enabled || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 1.0;
-  utterance.pitch = 1.0;
-  utterance.volume = 1.0;
-  utterance.lang = "en-US";
-  const voices = window.speechSynthesis.getVoices();
-  const preferred =
-    voices.find((v) => v.lang === "en-US" && v.name.includes("Google")) ||
-    voices.find((v) => v.lang.startsWith("en"));
-  if (preferred) utterance.voice = preferred;
-  window.speechSynthesis.speak(utterance);
+function speak(text: string, enabled: boolean, lastSpokenRef?: React.MutableRefObject<string>): Promise<void> {
+  return new Promise((resolve) => {
+    if (!enabled || !window.speechSynthesis) {
+      resolve();
+      return;
+    }
+    if (lastSpokenRef) lastSpokenRef.current = text;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+    utterance.lang = "en-US";
+    const voices = window.speechSynthesis.getVoices();
+    const preferred =
+      voices.find((v) => v.lang === "en-US" && v.name.includes("Google")) ||
+      voices.find((v) => v.lang.startsWith("en"));
+    if (preferred) utterance.voice = preferred;
+    utterance.onend = () => resolve();
+    utterance.onerror = () => resolve();
+    window.speechSynthesis.speak(utterance);
+  });
 }
 
 function readPageContent(): string {
@@ -308,6 +316,8 @@ export default function VoiceCommand() {
   const feedbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isListeningRef = useRef(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  const lastSpokenRef = useRef<string>("");
+  const cooldownRef = useRef(false);
 
   useEffect(() => {
     if (window.speechSynthesis) {
@@ -345,6 +355,11 @@ export default function VoiceCommand() {
         setTranscript(finalTranscript || interimTranscript);
 
         if (finalTranscript) {
+          const cleaned = finalTranscript.trim().toLowerCase();
+          const lastSpoken = lastSpokenRef.current.toLowerCase();
+          if (lastSpoken && (cleaned.includes(lastSpoken) || lastSpoken.includes(cleaned))) {
+            return;
+          }
           processCommand(finalTranscript.trim());
         }
       };
@@ -454,20 +469,40 @@ export default function VoiceCommand() {
     }
   };
 
+  const pauseMic = useCallback(() => {
+    if (recognitionRef.current && isListeningRef.current) {
+      try { recognitionRef.current.stop(); } catch {}
+    }
+  }, []);
+
+  const resumeMic = useCallback(() => {
+    if (recognitionRef.current && isListeningRef.current && !cooldownRef.current) {
+      try { recognitionRef.current.start(); } catch {}
+    }
+  }, []);
+
   const processCommand = useCallback(
     async (text: string) => {
+      if (cooldownRef.current) return;
+      cooldownRef.current = true;
+      setTimeout(() => { cooldownRef.current = false; }, 800);
+
+      pauseMic();
+
       const match = findCommand(text);
 
       if (!match) {
         setIsProcessing(true);
         setFeedback(`Thinking about "${text.substring(0, 50)}${text.length > 50 ? "..." : ""}"...`);
-        speak("Let me think about that.", voiceEnabled);
+        await speak("Let me think about that.", voiceEnabled, lastSpokenRef);
 
         const aiResponse = await fetchAIResponse(text);
-        setFeedback(`AI: ${aiResponse.substring(0, 120)}${aiResponse.length > 120 ? "..." : ""}`);
-        speak(aiResponse, voiceEnabled);
+        const shortFeedback = `AI: ${aiResponse.substring(0, 120)}${aiResponse.length > 120 ? "..." : ""}`;
+        setFeedback(shortFeedback);
+        await speak(aiResponse, voiceEnabled, lastSpokenRef);
         setIsProcessing(false);
         clearFeedbackAfterDelay();
+        resumeMic();
         return;
       }
 
@@ -476,25 +511,25 @@ export default function VoiceCommand() {
       switch (command.action) {
         case "navigate":
           setFeedback(`Opening ${command.description}...`);
-          speak(command.speakResponse || `Opening ${command.description}.`, voiceEnabled);
+          await speak(command.speakResponse || `Opening ${command.description}.`, voiceEnabled, lastSpokenRef);
           router.push(command.target!);
           break;
 
         case "search":
           if (searchTerm) {
             setFeedback(`Searching for "${searchTerm}"...`);
-            speak(`Searching for ${searchTerm}.`, voiceEnabled);
+            await speak(`Searching for ${searchTerm}.`, voiceEnabled, lastSpokenRef);
             router.push(`/courses?search=${encodeURIComponent(searchTerm)}`);
           } else {
             const msg = "What would you like to search for? Say 'search for' followed by a topic.";
             setFeedback(msg);
-            speak("What would you like to search for?", voiceEnabled);
+            await speak("What would you like to search for?", voiceEnabled, lastSpokenRef);
           }
           break;
 
         case "openChat":
           setFeedback("Opening AI assistant...");
-          speak("Opening the AI assistant.", voiceEnabled);
+          await speak("Opening the AI assistant.", voiceEnabled, lastSpokenRef);
           const chatBtn = document.querySelector<HTMLButtonElement>('[aria-label="Open chat"]');
           if (chatBtn) {
             chatBtn.click();
@@ -507,60 +542,61 @@ export default function VoiceCommand() {
         case "help":
           setShowHelp(true);
           setFeedback("Here are your voice commands.");
-          speak("Here are the available voice commands.", voiceEnabled);
+          await speak("Here are the available voice commands.", voiceEnabled, lastSpokenRef);
           break;
 
         case "scroll":
           window.scrollBy({ top: command.target === "up" ? -400 : 400, behavior: "smooth" });
           setFeedback(`Scrolling ${command.target}...`);
-          speak(`Scrolling ${command.target}.`, voiceEnabled);
+          await speak(`Scrolling ${command.target}.`, voiceEnabled, lastSpokenRef);
           break;
 
         case "goBack":
           setFeedback("Going back...");
-          speak("Going back.", voiceEnabled);
+          await speak("Going back.", voiceEnabled, lastSpokenRef);
           router.back();
           break;
 
         case "enroll":
           setFeedback("Opening courses to enroll...");
-          speak("Opening courses.", voiceEnabled);
+          await speak("Opening courses.", voiceEnabled, lastSpokenRef);
           router.push("/courses");
           break;
 
         case "quiz":
           setFeedback("Opening quizzes...");
-          speak("Opening quizzes.", voiceEnabled);
+          await speak("Opening quizzes.", voiceEnabled, lastSpokenRef);
           router.push("/dashboard/quizzes");
           break;
 
         case "readPage":
           const pageText = readPageContent();
           setFeedback("Reading page content...");
-          speak(pageText, voiceEnabled);
+          await speak(pageText, voiceEnabled, lastSpokenRef);
           break;
 
         case "askAI":
           if (searchTerm) {
             setIsProcessing(true);
             setFeedback(`AI thinking about "${searchTerm.substring(0, 40)}${searchTerm.length > 40 ? "..." : ""}"...`);
-            speak("Let me think about that.", voiceEnabled);
+            await speak("Let me think about that.", voiceEnabled, lastSpokenRef);
 
             const aiResponse = await fetchAIResponse(searchTerm);
             setFeedback(`AI: ${aiResponse.substring(0, 120)}${aiResponse.length > 120 ? "..." : ""}`);
-            speak(aiResponse, voiceEnabled);
+            await speak(aiResponse, voiceEnabled, lastSpokenRef);
             setIsProcessing(false);
           } else {
             const msg = "What would you like to ask? Say your question after 'ask AI'.";
             setFeedback(msg);
-            speak("What would you like to know?", voiceEnabled);
+            await speak("What would you like to know?", voiceEnabled, lastSpokenRef);
           }
           break;
       }
 
       clearFeedbackAfterDelay();
+      resumeMic();
     },
-    [router, voiceEnabled, conversationHistory]
+    [router, voiceEnabled, conversationHistory, pauseMic, resumeMic]
   );
 
   const clearFeedbackAfterDelay = () => {
