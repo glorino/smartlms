@@ -11,6 +11,13 @@ import {
   VolumeX,
   AlertTriangle,
   Loader2,
+  ChevronRight,
+  Navigation,
+  Brain,
+  Zap,
+  Keyboard,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -33,10 +40,21 @@ declare global {
 
 interface VoiceCommand {
   patterns: RegExp[];
-  action: "navigate" | "search" | "openChat" | "help" | "scroll" | "goBack" | "enroll" | "quiz" | "readPage" | "askAI";
+  action:
+    | "navigate"
+    | "search"
+    | "openChat"
+    | "help"
+    | "scroll"
+    | "goBack"
+    | "enroll"
+    | "quiz"
+    | "readPage"
+    | "askAI";
   target?: string;
   description: string;
   speakResponse?: string;
+  icon?: string;
 }
 
 const NAV_COMMANDS: VoiceCommand[] = [
@@ -65,8 +83,9 @@ const NAV_COMMANDS: VoiceCommand[] = [
 function findCommand(transcript: string): { command: VoiceCommand; searchTerm?: string } | null {
   const lower = transcript.toLowerCase().trim();
 
-  // Direct "go to X" / "open X" / "show X" patterns
-  const goMatch = lower.match(/(?:go\s*to|open|show|take\s*me\s*to|navigate\s*to|i\s*(?:want|need)\s*to\s*(?:see|go)|where\s*(?:is|are)|take\s*me)\s+(.+)/i);
+  const goMatch = lower.match(
+    /(?:go\s*to|open|show|take\s*me\s*to|navigate\s*to|i\s*(?:want|need)\s*to\s*(?:see|go)|where\s*(?:is|are)|take\s*me)\s+(.+)/i
+  );
   if (goMatch) {
     const target = goMatch[1].trim();
     for (const cmd of NAV_COMMANDS) {
@@ -78,7 +97,6 @@ function findCommand(transcript: string): { command: VoiceCommand; searchTerm?: 
     }
   }
 
-  // Direct keyword match (user just says "courses" or "dashboard")
   for (const cmd of NAV_COMMANDS) {
     for (const pattern of cmd.patterns) {
       if (pattern.test(lower)) {
@@ -87,8 +105,9 @@ function findCommand(transcript: string): { command: VoiceCommand; searchTerm?: 
     }
   }
 
-  // Search: "search for X", "find X", "look for X"
-  const searchMatch = lower.match(/(?:search|find|look\s*for|look\s*up|hunt|google|look\s*into)\s+(.+)/i);
+  const searchMatch = lower.match(
+    /(?:search|find|look\s*for|look\s*up|hunt|google|look\s*into)\s+(.+)/i
+  );
   if (searchMatch) {
     return {
       command: { patterns: [], action: "search", description: "search" },
@@ -96,8 +115,9 @@ function findCommand(transcript: string): { command: VoiceCommand; searchTerm?: 
     };
   }
 
-  // Ask AI: various natural phrasings
-  const aiMatch = lower.match(/(?:ask\s*(?:ai|assistant|bot|you|smart\s*lms)|ai|what\s*is|what\s*are|how\s*(?:do|can|to|much|about)|tell\s*me\s*about|explain|describe|define|help\s*me\s*(?:understand|with)|can\s*you|could\s*you|what\s*do\s*you|which|why\s*do|when\s*did|where\s*can)\s+(.+)/i);
+  const aiMatch = lower.match(
+    /(?:ask\s*(?:ai|assistant|bot|you|smart\s*lms)|ai|what\s*is|what\s*are|how\s*(?:do|can|to|much|about)|tell\s*me\s*about|explain|describe|define|help\s*me\s*(?:understand|with)|can\s*you|could\s*you|what\s*do\s*you|which|why\s*do|when\s*did|where\s*can)\s+(.+)/i
+  );
   if (aiMatch) {
     return {
       command: { patterns: [], action: "askAI", description: "ask AI" },
@@ -105,7 +125,6 @@ function findCommand(transcript: string): { command: VoiceCommand; searchTerm?: 
     };
   }
 
-  // Simple "ask ai" without question
   if (/^(?:ask|ai|hey|hello|hi|hey\s*there)/i.test(lower)) {
     return {
       command: { patterns: [], action: "askAI", description: "ask AI" },
@@ -113,12 +132,10 @@ function findCommand(transcript: string): { command: VoiceCommand; searchTerm?: 
     };
   }
 
-  // Open chat
   if (/chat|assistant|bot|talk|converse/i.test(lower)) {
     return { command: { patterns: [], action: "openChat", description: "chat" } };
   }
 
-  // Scroll
   if (/scroll\s*down|page\s*down|down/i.test(lower)) {
     return { command: { patterns: [], action: "scroll", target: "down", description: "scroll down" } };
   }
@@ -126,32 +143,26 @@ function findCommand(transcript: string): { command: VoiceCommand; searchTerm?: 
     return { command: { patterns: [], action: "scroll", target: "up", description: "scroll up" } };
   }
 
-  // Go back
   if (/go\s*back|back|previous|return/i.test(lower)) {
     return { command: { patterns: [], action: "goBack", description: "go back" } };
   }
 
-  // Read page
   if (/read|read\s*(?:the|this)\s*page|what(?:'s| is)\s*(?:on|this)/i.test(lower)) {
     return { command: { patterns: [], action: "readPage", description: "read page" } };
   }
 
-  // Help
   if (/^(?:help|commands?|what\s*can|options|menu)/i.test(lower)) {
     return { command: { patterns: [], action: "help", description: "help" } };
   }
 
-  // Enroll
   if (/enrol|sign\s*up\s*for|register\s*for|start\s*(?:a\s*)?course/i.test(lower)) {
     return { command: { patterns: [], action: "enroll", description: "enroll" } };
   }
 
-  // Quiz
   if (/take|start|do|begin|take\s*a/i.test(lower) && /quiz|test|exam|assessment/i.test(lower)) {
     return { command: { patterns: [], action: "quiz", description: "quiz" } };
   }
 
-  // If nothing matched, try AI as fallback for any question-like input
   if (lower.length > 5 && /\?|what|how|why|when|where|who|which|can|do|is|are|should/i.test(lower)) {
     return {
       command: { patterns: [], action: "askAI", description: "ask AI" },
@@ -171,9 +182,9 @@ function speak(text: string, enabled: boolean) {
   utterance.volume = 1.0;
   utterance.lang = "en-US";
   const voices = window.speechSynthesis.getVoices();
-  const preferred = voices.find(
-    (v) => v.lang === "en-US" && v.name.includes("Google")
-  ) || voices.find((v) => v.lang.startsWith("en"));
+  const preferred =
+    voices.find((v) => v.lang === "en-US" && v.name.includes("Google")) ||
+    voices.find((v) => v.lang.startsWith("en"));
   if (preferred) utterance.voice = preferred;
   window.speechSynthesis.speak(utterance);
 }
@@ -192,6 +203,94 @@ function readPageContent(): string {
   return text || "No readable content found on this page.";
 }
 
+function AudioWaveform({ isActive }: { isActive: boolean }) {
+  if (!isActive) return null;
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      {[0, 1, 2, 3, 4].map((i) => (
+        <div
+          key={i}
+          className="absolute bg-white/30 rounded-full"
+          style={{
+            width: "3px",
+            animationDelay: `${i * 0.15}s`,
+            animation: isActive ? "waveform 1.2s ease-in-out infinite" : "none",
+          }}
+        />
+      ))}
+      <style jsx>{`
+        @keyframes waveform {
+          0%, 100% { height: 8px; opacity: 0.3; }
+          50% { height: 24px; opacity: 0.8; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function PulseRing({ isActive, color }: { isActive: boolean; color: string }) {
+  if (!isActive) return null;
+  return (
+    <>
+      <span
+        className={cn(
+          "absolute inset-0 rounded-full animate-ping",
+          color === "indigo" ? "bg-indigo-400" : "bg-red-400"
+        )}
+        style={{ animationDuration: "1.5s", opacity: 0.15 }}
+      />
+      <span
+        className={cn(
+          "absolute -inset-1 rounded-full animate-ping",
+          color === "indigo" ? "bg-indigo-300" : "bg-red-300"
+        )}
+        style={{ animationDuration: "2s", animationDelay: "0.3s", opacity: 0.1 }}
+      />
+    </>
+  );
+}
+
+function StatusIndicator({
+  isListening,
+  isProcessing,
+  hasPermission,
+  feedback,
+}: {
+  isListening: boolean;
+  isProcessing: boolean;
+  hasPermission: boolean;
+  feedback: string;
+}) {
+  if (!hasPermission) {
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-amber-600">
+        <AlertTriangle className="h-3 w-3" />
+        <span>Mic blocked</span>
+      </div>
+    );
+  }
+  if (isProcessing) {
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-purple-600">
+        <Loader2 className="h-3 w-3 animate-spin" />
+        <span>Thinking</span>
+      </div>
+    );
+  }
+  if (isListening) {
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-red-500">
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+        </span>
+        <span>Listening</span>
+      </div>
+    );
+  }
+  return null;
+}
+
 export default function VoiceCommand() {
   const router = useRouter();
   const [isListening, setIsListening] = useState(false);
@@ -204,9 +303,11 @@ export default function VoiceCommand() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [conversationHistory, setConversationHistory] = useState<{ role: string; content: string }[]>([]);
   const [showTranscript, setShowTranscript] = useState(false);
+  const [showActions, setShowActions] = useState(false);
   const recognitionRef = useRef<any>(null);
   const feedbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isListeningRef = useRef(false);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (window.speechSynthesis) {
@@ -261,7 +362,6 @@ export default function VoiceCommand() {
           setFeedback(msg);
           speak(msg, voiceEnabled);
         } else if (event.error === "no-speech") {
-          // Silently restart if no speech detected
           if (isListeningRef.current) {
             try { recognition.start(); } catch {}
           }
@@ -273,7 +373,6 @@ export default function VoiceCommand() {
       };
 
       recognition.onend = () => {
-        // Auto-restart if still in listening mode
         if (isListeningRef.current) {
           try {
             recognition.start();
@@ -299,6 +398,33 @@ export default function VoiceCommand() {
       if (window.speechSynthesis) window.speechSynthesis.cancel();
     };
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === "m") {
+        e.preventDefault();
+        toggleListening();
+      }
+      if (e.key === "Escape") {
+        setShowHelp(false);
+        setShowActions(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isListening]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setShowActions(false);
+      }
+    };
+    if (showActions) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showActions]);
 
   const fetchAIResponse = async (question: string): Promise<string> => {
     try {
@@ -333,7 +459,6 @@ export default function VoiceCommand() {
       const match = findCommand(text);
 
       if (!match) {
-        // Fallback: send any unrecognized speech to AI
         setIsProcessing(true);
         setFeedback(`Thinking about "${text.substring(0, 50)}${text.length > 50 ? "..." : ""}"...`);
         speak("Let me think about that.", voiceEnabled);
@@ -382,7 +507,7 @@ export default function VoiceCommand() {
         case "help":
           setShowHelp(true);
           setFeedback("Here are your voice commands.");
-          speak("Here are the available voice commands. You can say things like: go to courses, open dashboard, search for React, ask AI a question, scroll down, or go back.", voiceEnabled);
+          speak("Here are the available voice commands.", voiceEnabled);
           break;
 
         case "scroll":
@@ -478,8 +603,8 @@ export default function VoiceCommand() {
       isListeningRef.current = true;
       recognitionRef.current.start();
       setIsListening(true);
-      setFeedback("Listening... speak naturally, I'll understand.");
-      speak("I'm listening. Say anything — ask a question, navigate, or give a command.", voiceEnabled);
+      setFeedback("Listening...");
+      speak("I'm listening.", voiceEnabled);
     } catch {
       const msg = "Failed to start. Please try again.";
       setFeedback(msg);
@@ -508,9 +633,7 @@ export default function VoiceCommand() {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900">Voice unavailable</p>
-              <p className="mt-1 text-xs text-gray-500">
-                Use Chrome, Edge, or Safari for voice commands.
-              </p>
+              <p className="mt-1 text-xs text-gray-500">Use Chrome, Edge, or Safari for voice commands.</p>
             </div>
           </div>
         </div>
@@ -520,50 +643,83 @@ export default function VoiceCommand() {
 
   return (
     <>
-      <div className="fixed bottom-6 left-6 z-50" role="region" aria-label="Voice commands">
-        <div className="relative group">
-          {/* Feedback bubble */}
-          {feedback && (
-            <div
-              className="absolute bottom-full left-0 mb-3 w-80 rounded-xl bg-gray-900 px-4 py-3 text-sm text-white shadow-xl"
-              role="status"
-              aria-live="polite"
-            >
-              <div className="flex items-start gap-2">
-                {isListening ? (
-                  <Loader2 className="h-4 w-4 shrink-0 text-indigo-400 animate-spin mt-0.5" />
-                ) : isProcessing ? (
-                  <Loader2 className="h-4 w-4 shrink-0 text-purple-400 animate-spin mt-0.5" />
-                ) : (
-                  <Volume2 className="h-4 w-4 shrink-0 text-indigo-400 mt-0.5" />
+      <div className="fixed bottom-6 left-6 z-50" ref={panelRef} role="region" aria-label="Voice commands">
+        {/* Status bar */}
+        {isListening && (
+          <div className="absolute bottom-full left-0 mb-3 w-72">
+            <div className="rounded-xl bg-white shadow-xl border border-gray-200 overflow-hidden">
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between mb-2">
+                  <StatusIndicator
+                    isListening={isListening}
+                    isProcessing={isProcessing}
+                    hasPermission={!permissionDenied}
+                    feedback={feedback}
+                  />
+                  <button
+                    onClick={() => {
+                      isListeningRef.current = false;
+                      recognitionRef.current?.stop();
+                      setIsListening(false);
+                      setTranscript("");
+                      setFeedback("");
+                    }}
+                    className="rounded-full p-1 hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label="Stop listening"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                {transcript && (
+                  <div className="text-sm text-gray-700 font-medium truncate">
+                    &quot;{transcript}&quot;
+                  </div>
                 )}
-                <div className="flex-1 min-w-0">
-                  <span className="break-words">{feedback}</span>
-                  {transcript && transcript !== feedback && (
-                    <div className="mt-1.5 border-t border-gray-700 pt-1.5 text-xs text-gray-400 italic">
-                      &quot;{transcript}&quot;
-                    </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Feedback bubble */}
+        {feedback && !isListening && (
+          <div className="absolute bottom-full left-0 mb-3 w-80">
+            <div className="rounded-xl bg-gray-900 shadow-xl overflow-hidden">
+              <div className="px-4 py-3">
+                <div className="flex items-start gap-2">
+                  {isProcessing ? (
+                    <Loader2 className="h-4 w-4 shrink-0 text-purple-400 animate-spin mt-0.5" />
+                  ) : (
+                    <Volume2 className="h-4 w-4 shrink-0 text-indigo-400 mt-0.5" />
                   )}
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm text-white break-words">{feedback}</span>
+                  </div>
                 </div>
               </div>
-              <div className="absolute -bottom-1.5 left-6 h-3 w-3 rotate-45 bg-gray-900" />
             </div>
-          )}
+            <div className="absolute -bottom-1.5 left-6 h-3 w-3 rotate-45 bg-gray-900" />
+          </div>
+        )}
 
-          {/* Tooltip */}
-          {!isListening && !feedback && (
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg">
-              Voice Commands
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-2 w-2 rotate-45 bg-gray-900" />
-            </div>
-          )}
+        {/* Tooltip */}
+        {!isListening && !feedback && (
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg">
+            Voice Commands
+            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-2 w-2 rotate-45 bg-gray-900" />
+          </div>
+        )}
 
-          <div className="flex items-center gap-2">
+        {/* Action buttons */}
+        <div className="relative group">
+          <div className={cn(
+            "flex items-center gap-2 transition-all duration-300",
+            showActions ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto"
+          )}>
             {/* Voice toggle */}
             <button
               onClick={toggleVoice}
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-full shadow-md transition-all",
+                "flex h-10 w-10 items-center justify-center rounded-full shadow-md transition-all duration-200",
                 voiceEnabled
                   ? "bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-200"
                   : "bg-white text-gray-400 hover:bg-gray-50 border border-gray-200"
@@ -574,43 +730,49 @@ export default function VoiceCommand() {
               {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
             </button>
 
-            {/* Main mic button */}
+            {/* Help */}
             <button
-              onClick={toggleListening}
-              className={cn(
-                "relative flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all duration-300",
-                "focus:outline-none focus:ring-4",
-                permissionDenied
-                  ? "bg-gray-400 text-white shadow-gray-400/30 hover:bg-gray-500"
-                  : isListening
-                  ? "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-red-500/30 focus:ring-red-300 animate-pulse"
-                  : "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-indigo-500/30 hover:shadow-xl hover:scale-110 focus:ring-indigo-300"
-              )}
-              aria-label={isListening ? "Stop listening" : "Start voice command"}
-              aria-pressed={isListening}
-            >
-              {isListening && (
-                <span className="absolute inset-0 rounded-full animate-ping bg-indigo-400 opacity-20" />
-              )}
-              {isListening ? (
-                <MicOff className="h-6 w-6 relative z-10" />
-              ) : (
-                <Mic className="h-6 w-6 relative z-10" />
-              )}
-            </button>
-
-            {/* Help button */}
-            <button
-              onClick={() => {
-                setShowHelp(true);
-                speak("Here are examples of what you can say. Try speaking naturally.", voiceEnabled);
-              }}
-              className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-white text-gray-500 shadow-md hover:bg-gray-50 hover:text-gray-700 transition-colors"
+              onClick={() => setShowHelp(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-500 hover:text-gray-700 shadow-md border border-gray-200 hover:bg-gray-50 transition-all duration-200"
               aria-label="Voice command help"
+              title="Help"
             >
               <HelpCircle className="h-4 w-4" />
             </button>
           </div>
+
+          {/* Main mic button */}
+          <button
+            onClick={toggleListening}
+            className={cn(
+              "relative flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all duration-300",
+              "focus:outline-none focus:ring-4 mt-2",
+              permissionDenied
+                ? "bg-gray-400 text-white shadow-gray-400/30 hover:bg-gray-500"
+                : isListening
+                ? "bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-red-500/30 focus:ring-red-300"
+                : "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/30 hover:shadow-xl hover:scale-105 focus:ring-indigo-300"
+            )}
+            aria-label={isListening ? "Stop listening" : "Start voice command"}
+            aria-pressed={isListening}
+          >
+            <PulseRing isActive={isListening} color={isListening ? "red" : "indigo"} />
+            <AudioWaveform isActive={isListening} />
+            {isListening ? (
+              <MicOff className="h-6 w-6 relative z-10" />
+            ) : (
+              <Mic className="h-6 w-6 relative z-10" />
+            )}
+          </button>
+
+          {/* Keyboard shortcut hint */}
+          {!isListening && !feedback && (
+            <div className="absolute -right-1 top-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-gray-100 text-gray-500 rounded border border-gray-200">
+                Ctrl+M
+              </kbd>
+            </div>
+          )}
         </div>
       </div>
 
@@ -629,7 +791,10 @@ export default function VoiceCommand() {
                 <div className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 p-2">
                   <Mic className="h-5 w-5 text-white" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">Voice Assistant</h3>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Voice Assistant</h3>
+                  <p className="text-xs text-gray-500">Speak naturally — I understand conversational language</p>
+                </div>
               </div>
               <button
                 onClick={() => setShowHelp(false)}
@@ -640,14 +805,29 @@ export default function VoiceCommand() {
               </button>
             </div>
 
-            <div className="p-6 max-h-[70vh] overflow-y-auto space-y-5">
-              <p className="text-sm text-gray-600">
-                Tap the mic and speak naturally. I understand conversational language — no need for exact phrases.
-              </p>
+            <div className="p-6 max-h-[70vh] overflow-y-auto space-y-6">
+              {/* Quick start */}
+              <div className="rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 p-4 border border-indigo-100">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-lg bg-indigo-100 p-1.5 mt-0.5">
+                    <Zap className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-indigo-700">Quick Start</p>
+                    <p className="mt-1 text-xs text-indigo-600">
+                      Tap the mic button or press <kbd className="px-1 py-0.5 text-[10px] font-mono bg-indigo-100 rounded">Ctrl+M</kbd> to start.
+                      Speak naturally — no need for exact commands.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
               {/* Navigation */}
               <div>
-                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Navigation</h4>
+                <h4 className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                  <Navigation className="h-3.5 w-3.5" />
+                  Navigation
+                </h4>
                 <div className="space-y-1.5">
                   {[
                     { say: "Go to courses", alt: "I want to see my courses" },
@@ -656,9 +836,14 @@ export default function VoiceCommand() {
                     { say: "Go to my certificates", alt: "Where are my certificates?" },
                     { say: "Open live classes", alt: "I want to join a live session" },
                   ].map((item) => (
-                    <div key={item.say} className="rounded-lg border border-gray-100 p-2.5 hover:bg-gray-50">
-                      <p className="font-mono text-sm font-medium text-indigo-600">&quot;{item.say}&quot;</p>
-                      <p className="text-xs text-gray-400 mt-0.5">Also works: <span className="italic">&quot;{item.alt}&quot;</span></p>
+                    <div key={item.say} className="flex items-center gap-3 rounded-lg border border-gray-100 p-2.5 hover:bg-gray-50 group/item">
+                      <div className="flex-1">
+                        <p className="font-mono text-sm font-medium text-indigo-600">&quot;{item.say}&quot;</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          Also: <span className="italic">&quot;{item.alt}&quot;</span>
+                        </p>
+                      </div>
+                      <ChevronRight className="h-3.5 w-3.5 text-gray-300 group-hover/item:text-gray-500 transition-colors" />
                     </div>
                   ))}
                 </div>
@@ -666,17 +851,25 @@ export default function VoiceCommand() {
 
               {/* AI */}
               <div>
-                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Ask AI Anything</h4>
+                <h4 className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                  <Brain className="h-3.5 w-3.5" />
+                  Ask AI Anything
+                </h4>
                 <div className="space-y-1.5">
                   {[
-                    { say: "Ask AI what courses do you have?", alt: "What courses are available?" },
+                    { say: "What courses do you have?", alt: "Ask AI about available courses" },
                     { say: "How do I reset my password?", alt: "Explain the certificate system" },
                     { say: "Tell me about web development", alt: "What is React?" },
                     { say: "Can you help me with my assignment?", alt: "How do quizzes work?" },
                   ].map((item) => (
-                    <div key={item.say} className="rounded-lg border border-gray-100 p-2.5 hover:bg-gray-50">
-                      <p className="font-mono text-sm font-medium text-indigo-600">&quot;{item.say}&quot;</p>
-                      <p className="text-xs text-gray-400 mt-0.5">Also works: <span className="italic">&quot;{item.alt}&quot;</span></p>
+                    <div key={item.say} className="flex items-center gap-3 rounded-lg border border-gray-100 p-2.5 hover:bg-gray-50 group/item">
+                      <div className="flex-1">
+                        <p className="font-mono text-sm font-medium text-indigo-600">&quot;{item.say}&quot;</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          Also: <span className="italic">&quot;{item.alt}&quot;</span>
+                        </p>
+                      </div>
+                      <ChevronRight className="h-3.5 w-3.5 text-gray-300 group-hover/item:text-gray-500 transition-colors" />
                     </div>
                   ))}
                 </div>
@@ -684,38 +877,58 @@ export default function VoiceCommand() {
 
               {/* Actions */}
               <div>
-                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Actions</h4>
+                <h4 className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                  <Zap className="h-3.5 w-3.5" />
+                  Actions
+                </h4>
                 <div className="space-y-1.5">
                   {[
                     { say: "Search for React", alt: "Find courses about JavaScript" },
                     { say: "Open chat", alt: "I need help" },
-                    { say: "Scroll down", alt: "Page down" },
+                    { say: "Scroll down / up", alt: "Page down / Page up" },
                     { say: "Go back", alt: "Return to previous page" },
                     { say: "Read the page", alt: "What's on this page?" },
                     { say: "Help", alt: "What can you do?" },
                   ].map((item) => (
-                    <div key={item.say} className="rounded-lg border border-gray-100 p-2.5 hover:bg-gray-50">
-                      <p className="font-mono text-sm font-medium text-indigo-600">&quot;{item.say}&quot;</p>
-                      <p className="text-xs text-gray-400 mt-0.5">Also works: <span className="italic">&quot;{item.alt}&quot;</span></p>
+                    <div key={item.say} className="flex items-center gap-3 rounded-lg border border-gray-100 p-2.5 hover:bg-gray-50 group/item">
+                      <div className="flex-1">
+                        <p className="font-mono text-sm font-medium text-indigo-600">&quot;{item.say}&quot;</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          Also: <span className="italic">&quot;{item.alt}&quot;</span>
+                        </p>
+                      </div>
+                      <ChevronRight className="h-3.5 w-3.5 text-gray-300 group-hover/item:text-gray-500 transition-colors" />
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 p-4 border border-indigo-100">
-                <p className="text-sm font-semibold text-indigo-700">Natural Language</p>
-                <p className="mt-1 text-xs text-indigo-600">
-                  You don&apos;t need exact commands. Just speak naturally — &quot;I want to learn React&quot;,
-                  &quot;where can I find my quizzes?&quot;, or &quot;help me understand certificates&quot; all work.
-                  If I don&apos;t understand a command, I&apos;ll ask the AI for help automatically.
-                </p>
+              {/* Keyboard shortcuts */}
+              <div>
+                <h4 className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                  <Keyboard className="h-3.5 w-3.5" />
+                  Keyboard Shortcuts
+                </h4>
+                <div className="space-y-1.5">
+                  {[
+                    { keys: "Ctrl + M", action: "Toggle voice assistant" },
+                    { keys: "Escape", action: "Close help / stop listening" },
+                  ].map((item) => (
+                    <div key={item.keys} className="flex items-center justify-between rounded-lg border border-gray-100 p-2.5 hover:bg-gray-50">
+                      <span className="text-sm text-gray-600">{item.action}</span>
+                      <kbd className="px-2 py-1 text-xs font-mono bg-gray-100 text-gray-600 rounded border border-gray-200">
+                        {item.keys}
+                      </kbd>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
             <div className="border-t border-gray-100 px-6 py-4">
               <Button
                 onClick={() => setShowHelp(false)}
-                className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white"
+                className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-90"
               >
                 Got it — let&apos;s try it!
               </Button>
