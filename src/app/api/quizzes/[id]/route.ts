@@ -31,6 +31,7 @@ export async function GET(
                 content: true,
                 imageUrl: true,
                 order: true,
+                isCorrect: true,
               },
             },
           },

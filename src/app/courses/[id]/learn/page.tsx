@@ -297,33 +297,39 @@ export default function CourseLearnPage() {
     let incorrectCount = 0;
     let totalPoints = 0;
     let score = 0;
+    let passed = false;
 
-    inlineQuiz.questions.forEach((q: any) => {
-      totalPoints += q.points;
-      const userAnswer = quizAnswers[q.id];
-      const correctAnswer = q.answers.find((a: any) => a.isCorrect);
-      if (!correctAnswer) { incorrectCount++; return; }
+    try {
+      const res = await fetch(`/api/quizzes/${inlineQuiz.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          answers: quizAnswers,
+          timeTaken: null,
+          attemptNumber,
+        }),
+      });
 
-      let isCorrect = false;
-      if (q.type === "TRUE_FALSE") {
-        const userText = String(userAnswer || "").toLowerCase();
-        isCorrect = userText === correctAnswer.content.toLowerCase();
-      } else if (q.type === "FILL_IN_BLANK") {
-        const userText = String(userAnswer || "").trim().toLowerCase();
-        isCorrect = userText === correctAnswer.content.trim().toLowerCase();
+      if (res.ok) {
+        const data = await res.json();
+        score = data.score || 0;
+        totalPoints = data.totalPoints || 0;
+        passed = data.passed || false;
+        correctCount = Object.values(data.results || {}).filter((r: any) => r.isCorrect).length;
+        incorrectCount = Object.keys(data.results || {}).length - correctCount;
       } else {
-        isCorrect = !!userAnswer && userAnswer === correctAnswer.id;
+        inlineQuiz.questions.forEach((q: any) => {
+          totalPoints += q.points;
+          incorrectCount++;
+        });
       }
-
-      if (isCorrect) {
-        correctCount++;
-        score += q.points;
-      } else {
+    } catch (err) {
+      console.error("Failed to submit quiz", err);
+      inlineQuiz.questions.forEach((q: any) => {
+        totalPoints += q.points;
         incorrectCount++;
-      }
-    });
-
-    const passed = totalPoints > 0 ? (score / totalPoints) * 100 >= inlineQuiz.passingScore : false;
+      });
+    }
 
     setInlineQuizResult({
       score,
@@ -339,20 +345,6 @@ export default function CourseLearnPage() {
       ...prev,
       { score, passed, completedAt: new Date().toISOString() },
     ]);
-
-    try {
-      await fetch(`/api/quizzes/${inlineQuiz.id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          answers: quizAnswers,
-          timeTaken: null,
-          attemptNumber,
-        }),
-      });
-    } catch (err) {
-      console.error("Failed to save attempt", err);
-    }
 
     if (passed && currentLesson) {
       handleQuizComplete(currentLesson.id, true);
