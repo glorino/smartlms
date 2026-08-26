@@ -530,11 +530,28 @@ export default function CertificateView({
               </div>
             </div>
 
-            {/* Verification ID */}
-            <div className="mt-4 w-full text-center">
-              <p className="text-[10px]" style={{ color: "#999" }}>
-                Certificate ID: {verificationId} | Verify at: smartlms-bay.vercel.app/verify-certificate?id={verificationId}
+            {/* QR Code + Verification Row */}
+            <div className="mt-6 flex w-full items-center justify-between">
+              <p className="text-[9px] max-w-[200px] leading-tight" style={{ color: "#999" }}>
+                View at: smartlms-bay.vercel.app/certificate/{verificationId}
+                <br />
+                This certificate was issued by SmartLMS Platform
               </p>
+
+              <div className="flex flex-col items-center">
+                <div className="rounded-lg border p-2 shadow-sm" style={{ borderColor: "#B8D4E8", backgroundColor: "white" }}>
+                  <QRCodeSVG data={verificationUrl} size={70} />
+                </div>
+                <p className="mt-1 text-[8px] font-semibold uppercase tracking-wider" style={{ color: "#0068C8" }}>
+                  Scan to Verify
+                </p>
+              </div>
+
+              <div className="flex flex-col items-end">
+                <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "#00A67E" }}>
+                  Verified
+                </p>
+              </div>
             </div>
           </div>
         </div>
