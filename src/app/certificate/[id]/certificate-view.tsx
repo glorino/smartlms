@@ -1,67 +1,30 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck, ChevronDown, Copy, Check } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import QRCode from "qrcode";
 
-function QRCodeSVG({ data, size = 100 }: { data: string; size?: number }) {
-  const modules = 25;
-  const cellSize = size / modules;
-  const cells: { x: number; y: number }[] = [];
+function QRCodeImage({ data, size = 80 }: { data: string; size?: number }) {
+  const [src, setSrc] = useState("");
 
-  let hash = 0;
-  for (let i = 0; i < data.length; i++) {
-    hash = ((hash << 5) - hash + data.charCodeAt(i)) | 0;
+  useEffect(() => {
+    QRCode.toDataURL(data, {
+      width: size * 2,
+      margin: 1,
+      color: { dark: "#1a1a2e", light: "#ffffff" },
+      errorCorrectionLevel: "M",
+    }).then(setSrc);
+  }, [data, size]);
+
+  if (!src) {
+    return <div style={{ width: size, height: size }} className="animate-pulse bg-gray-100 rounded" />;
   }
 
-  for (let row = 0; row < modules; row++) {
-    for (let col = 0; col < modules; col++) {
-      const isFinderPattern =
-        (row < 7 && col < 7) ||
-        (row < 7 && col >= modules - 7) ||
-        (row >= modules - 7 && col < 7);
-
-      if (isFinderPattern) {
-        const innerRow = row < 7 ? row : row - (modules - 7);
-        const innerCol = col < 7 ? col : col - (modules - 7);
-        const isBorder =
-          innerRow === 0 ||
-          innerRow === 6 ||
-          innerCol === 0 ||
-          innerCol === 6;
-        const isInner =
-          innerRow >= 2 && innerRow <= 4 && innerCol >= 2 && innerCol <= 4;
-        if (isBorder || isInner) {
-          cells.push({ x: col, y: row });
-        }
-      } else {
-        const seed = (hash + row * 31 + col * 17) & 0xffff;
-        if (seed % 3 === 0) {
-          cells.push({ x: col, y: row });
-        }
-      }
-    }
-  }
-
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <rect width={size} height={size} fill="white" rx="4" />
-      {cells.map((cell, i) => (
-        <rect
-          key={i}
-          x={cell.x * cellSize}
-          y={cell.y * cellSize}
-          width={cellSize}
-          height={cellSize}
-          fill="#1a1a2e"
-          rx="0.5"
-        />
-      ))}
-    </svg>
-  );
+  return <img src={src} alt="QR Code" width={size} height={size} style={{ imageRendering: "pixelated" }} />;
 }
 
 function CertifiedBadge() {
@@ -532,25 +495,36 @@ export default function CertificateView({
 
             {/* QR Code + Verification Row */}
             <div className="mt-6 flex w-full items-center justify-between">
-              <p className="text-[9px] max-w-[200px] leading-tight" style={{ color: "#999" }}>
-                View at: smartlms-bay.vercel.app/certificate/{verificationId}
-                <br />
-                This certificate was issued by SmartLMS Platform
-              </p>
+              <div className="flex flex-col">
+                <p className="text-[9px] leading-tight" style={{ color: "#999" }}>
+                  View at: smartlms-bay.vercel.app/certificate/{verificationId}
+                </p>
+                <p className="text-[9px] leading-tight" style={{ color: "#999" }}>
+                  This certificate was issued by SmartLMS Platform
+                </p>
+              </div>
 
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center gap-2">
                 <div className="rounded-lg border p-2 shadow-sm" style={{ borderColor: "#B8D4E8", backgroundColor: "white" }}>
-                  <QRCodeSVG data={verificationUrl} size={70} />
+                  <QRCodeImage data={verificationUrl} size={70} />
                 </div>
-                <p className="mt-1 text-[8px] font-semibold uppercase tracking-wider" style={{ color: "#0068C8" }}>
+                <p className="text-[8px] font-semibold uppercase tracking-wider" style={{ color: "#0068C8" }}>
                   Scan to Verify
                 </p>
               </div>
 
-              <div className="flex flex-col items-end">
+              <div className="flex flex-col items-end gap-1">
                 <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "#00A67E" }}>
                   Verified
                 </p>
+                <div className="text-right">
+                  <p className="text-[8px] font-semibold uppercase tracking-wider" style={{ color: "#666" }}>
+                    Certificate No.
+                  </p>
+                  <p className="text-xs font-bold tracking-wider" style={{ color: "#333", fontFamily: "monospace" }}>
+                    {verificationId}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
