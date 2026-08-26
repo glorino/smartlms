@@ -259,7 +259,7 @@ const coursesData: CourseData[] = [
         },
         {
           content: "Fill in the blank: In React, the ________ hook is used to add state to functional components.",
-          type: "FILL_BLANK",
+          type: "FILL_IN_BLANK",
           points: 10,
           explanation: "The useState hook is the primary way to add state to functional components in React. It returns a stateful value and a function to update it.",
           difficulty: QuestionDifficulty.EASY,
@@ -394,7 +394,7 @@ const coursesData: CourseData[] = [
         },
         {
           content: "Fill in the blank: The ________ activation function outputs values between 0 and 1, making it popular for binary classification.",
-          type: "FILL_BLANK",
+          type: "FILL_IN_BLANK",
           points: 10,
           explanation: "The sigmoid function σ(x) = 1/(1+e^(-x)) squashes any input to a value between 0 and 1, which can be interpreted as a probability for binary classification.",
           difficulty: QuestionDifficulty.MEDIUM,
@@ -644,7 +644,7 @@ const coursesData: CourseData[] = [
         },
         {
           content: "Fill in the blank: In Python, ________ is a built-in function that returns an iterator that produces items from an iterable until it is exhausted.",
-          type: "FILL_BLANK",
+          type: "FILL_IN_BLANK",
           points: 10,
           explanation: "iter() returns an iterator from an iterable object. Combined with next(), it allows step-by-step iteration. itertools provides extended iteration utilities like chain, islice, and cycle.",
           difficulty: QuestionDifficulty.MEDIUM,
@@ -894,7 +894,7 @@ const coursesData: CourseData[] = [
         },
         {
           content: "Fill in the blank: The ________ is a network scanning tool used to discover hosts, services, and vulnerabilities on a network.",
-          type: "FILL_BLANK",
+          type: "FILL_IN_BLANK",
           points: 10,
           explanation: "Nmap (Network Mapper) is the industry-standard tool for network discovery and security auditing. It supports port scanning, service detection, OS fingerprinting, and vulnerability scripting.",
           difficulty: QuestionDifficulty.MEDIUM,
@@ -1258,7 +1258,7 @@ const coursesData: CourseData[] = [
         },
         {
           content: "Fill in the blank: ________ is a state management library for React Native that provides a minimal API without requiring providers.",
-          type: "FILL_BLANK",
+          type: "FILL_IN_BLANK",
           points: 10,
           explanation: "Zustand is a lightweight state management library that works outside React components, requires no Context providers, and has a simple API using create() with selectors for efficient re-renders.",
           difficulty: QuestionDifficulty.MEDIUM,

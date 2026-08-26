@@ -300,9 +300,22 @@ export default function CourseLearnPage() {
 
     inlineQuiz.questions.forEach((q: any) => {
       totalPoints += q.points;
-      const selectedAnswerId = quizAnswers[q.id] as string;
+      const userAnswer = quizAnswers[q.id];
       const correctAnswer = q.answers.find((a: any) => a.isCorrect);
-      if (selectedAnswerId && correctAnswer && selectedAnswerId === correctAnswer.id) {
+      if (!correctAnswer) { incorrectCount++; return; }
+
+      let isCorrect = false;
+      if (q.type === "TRUE_FALSE") {
+        const userText = String(userAnswer || "").toLowerCase();
+        isCorrect = userText === correctAnswer.content.toLowerCase();
+      } else if (q.type === "FILL_IN_BLANK") {
+        const userText = String(userAnswer || "").trim().toLowerCase();
+        isCorrect = userText === correctAnswer.content.trim().toLowerCase();
+      } else {
+        isCorrect = !!userAnswer && userAnswer === correctAnswer.id;
+      }
+
+      if (isCorrect) {
         correctCount++;
         score += q.points;
       } else {

@@ -52,7 +52,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The HTML5 ________ element is used to embed vector graphics directly into the document.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The <svg> element allows embedding SVG graphics inline in HTML.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -99,7 +99,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ element represents self-contained content that is independently distributable.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The <article> element represents content that makes sense on its own.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -146,7 +146,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The CSS property ________ is used to align items along the cross axis in Flexbox.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The align-items property aligns flex items along the cross axis.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -193,7 +193,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The JavaScript ________ operator safely accesses nested object properties without throwing an error.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The optional chaining operator (?.) returns undefined if a property is null or undefined.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -240,7 +240,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: To create a new HTML element and add it to the DOM, you use document.createElement() followed by ________.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "After creating an element, use appendChild(), prepend(), or insertBefore() to add it to the DOM.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -287,7 +287,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: Destructuring assignment in JavaScript allows you to extract values from objects using ________.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Destructuring uses curly braces or square brackets to extract values.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -334,7 +334,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: In React, ________ is the entry point for rendering a React app into the DOM.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "ReactDOM.createRoot() in React 18+ is used to render a React component tree.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -381,7 +381,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ hook is used when state logic is complex and involves multiple sub-values.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "useReducer is an alternative to useState for complex state logic.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -428,7 +428,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ hook creates a mutable ref object whose .current property persists across renders.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "useRef returns a mutable ref object that persists for the life of the component.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -475,7 +475,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: In Express, ________ is used to parse incoming request bodies in JSON format.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "express.json() is middleware that parses incoming JSON request bodies.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -522,7 +522,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The HTTP status code ________ indicates that the requested resource could not be found.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "404 Not Found is returned when the server cannot find the requested resource.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -569,7 +569,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: In MongoDB, ________ is used to query documents based on pattern matching with regular expressions.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "MongoDB supports regular expressions for pattern matching using the  operator.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -616,7 +616,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The process of dividing data into training and ________ sets is essential for evaluating model performance.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Train-test split divides data so the model is evaluated on unseen data.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -663,7 +663,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: In machine learning, matrix ________ is used to transform input features into a new feature space.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Matrix multiplication is fundamental to ML feature transformations.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -710,7 +710,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ distribution is commonly used as an approximation of the binomial distribution for large sample sizes.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The normal (Gaussian) distribution approximates the binomial when np and n(1-p) are both large.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -757,7 +757,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ function maps any real-valued number to a value between 0 and 1 in logistic regression.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The sigmoid function squashes inputs to the 0 to 1 range.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -804,7 +804,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: In sklearn, the ________ parameter in RandomForestClassifier controls the number of trees.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "n_estimators specifies how many trees to build in the forest.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -851,7 +851,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ measures the proportion of actual positive cases that the model correctly identified.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Recall (sensitivity) = TP/(TP+FN). It measures how well the model finds all positive cases.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -898,7 +898,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ metric measures how similar a data point is to its own cluster compared to other clusters.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The silhouette score ranges from -1 to 1. A high score indicates well-matched clustering.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -945,7 +945,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: In sklearn, the ________ attribute of a fitted PCA object shows how much variance each component explains.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "explained_variance_ratio_ shows the proportion of variance explained by each component.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -992,7 +992,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: ________ is a density-based algorithm that detects anomalies as points in low-density regions.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "DBSCAN labels points in low-density regions as noise/outliers.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -1039,7 +1039,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ function is the most commonly used activation function in hidden layers.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "ReLU (Rectified Linear Unit) is the default choice for hidden layers.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -1086,7 +1086,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ measures the difference between the predicted and actual output of the network.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The loss function quantifies the error between predictions and actual values.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -1133,7 +1133,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ layer in a CNN converts 2D feature maps into a 1D vector for classification.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The flatten layer reshapes 2D output into a 1D vector.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -1180,7 +1180,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ is the list of all pages a search engine has discovered and stored.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The search index is a massive database used to quickly retrieve relevant results.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -1227,7 +1227,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: ________ keywords are used to exclude your ads from showing for certain search terms.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Negative keywords prevent content from appearing for irrelevant queries.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -1274,7 +1274,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ tag defines the main heading of a page and should include your primary keyword.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The H1 tag is the most important heading for SEO.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -1321,7 +1321,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: ________ rate measures the percentage of people who engaged with your post out of those who saw it.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Engagement rate is calculated by dividing total engagements by impressions.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -1368,7 +1368,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: A ________ helps ensure you have a balanced mix of content types across platforms.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "A content calendar maps out what content to publish and when.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -1415,7 +1415,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ is the percentage of people who clicked your ad after seeing it.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "CTR (Click-Through Rate) indicates how effective ad creative is.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -1462,7 +1462,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: A ________ is a free resource offered in exchange for a visitor email address.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Lead magnets like ebooks, checklists, or templates provide value and incentivize signups.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -1509,7 +1509,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ rate measures the percentage of recipients who clicked a link in your email.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Click-Through Rate (CTR) indicates how engaging your email content is.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -1556,7 +1556,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ metric shows the average amount of time users spend on your site per session.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Average session duration indicates how engaged visitors are.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -1603,7 +1603,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: Python decorators often use the ________ module for convenience.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "functools.wraps preserves the metadata of the original function.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -1650,7 +1650,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The itertools.chain() function is used to ________ multiple iterables into a single sequence.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "itertools.chain() concatenates iterables end-to-end.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -1697,7 +1697,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ method is called when exiting the with block, handling cleanup and exceptions.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The __exit__ method handles cleanup when leaving the with block.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -1744,7 +1744,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: To specify a metaclass, you use the ________ parameter in the class definition.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The metaclass keyword argument tells Python which metaclass to use.",
       difficulty: QuestionDifficulty.HARD,
       answers: [
@@ -1791,7 +1791,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The __set_name__ method is automatically called when a descriptor is defined in a class body.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "__set_name__ allows descriptors to know the name they were assigned to.",
       difficulty: QuestionDifficulty.HARD,
       answers: [
@@ -1838,7 +1838,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ function compiles a string into a code object that can be executed later.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "compile() converts Python code into a code object for later execution.",
       difficulty: QuestionDifficulty.HARD,
       answers: [
@@ -1885,7 +1885,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ function runs multiple coroutines concurrently and returns their results.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "asyncio.gather() takes multiple awaitables and runs them concurrently.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -1932,7 +1932,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The asyncio ________ runs the event loop until the given coroutine completes.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "asyncio.run() is the main entry point for running asyncio programs.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -1979,7 +1979,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: An async ________ manages connection pooling for HTTP requests.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "aiohttp.ClientSession manages connection pooling and provides async request context.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2026,7 +2026,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: In Python, a common Singleton implementation uses __new__ to control ________ creation.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Overriding __new__ allows intercepting instance creation.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2073,7 +2073,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: Python uses ________ functions or events to implement the Observer pattern.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Python often uses callback functions for observer-like behavior.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2120,7 +2120,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: FastAPI provides automatic interactive API documentation at ________ and ________.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "FastAPI serves Swagger UI at /docs and ReDoc at /redoc.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2167,7 +2167,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ color scheme uses colors that are adjacent on the color wheel.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Analogous color schemes use colors next to each other on the color wheel.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2214,7 +2214,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ principle states that humans tend to see complete figures even when parts are missing.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The closure principle describes how the brain fills in gaps.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2261,7 +2261,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The WCAG standard has three levels of conformance: A, AA, and ________.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "WCAG defines A (minimum), AA (standard), and AAA (highest) levels.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2308,7 +2308,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ is the moment of highest frustration in a user journey.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The pain point is where users experience the most friction.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2355,7 +2355,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: A ________ wireframe uses simple shapes and placeholder text.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Low-fidelity wireframes use grayscale and simple shapes.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -2402,7 +2402,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: A ________ matrix compares competitors across multiple feature categories.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "A feature comparison matrix maps competitor features.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2449,7 +2449,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: A ________ prototype shows only the key interactions needed to validate the design concept.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "A concept prototype focuses on core flows for validation.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2496,7 +2496,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: A well-built design system reduces ________ and speeds up development.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "A design system reduces design debt and improves efficiency.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2543,7 +2543,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: Design specifications should include measurements for spacing, ________, and color values.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Complete specs include spacing, typography, and color values.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2590,7 +2590,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The I in the CIA triad stands for ________.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Integrity ensures data has not been tampered with.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -2637,7 +2637,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: ________ attacks inject malicious scripts into trusted websites.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "XSS (Cross-Site Scripting) injects malicious scripts into web pages.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2684,7 +2684,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: ________ is an international standard for information security management systems.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "ISO 27001 specifies requirements for an ISMS.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2731,7 +2731,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: A ________ firewall inspects traffic at the application layer of the OSI model.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "A WAF (Web Application Firewall) operates at the application layer.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2778,7 +2778,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: TLS/SSL secures web traffic, making the protocol ________.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "TLS/SSL encrypts HTTP traffic, creating HTTPS.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2825,7 +2825,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: WPA3 uses ________ for stronger authentication.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "WPA3 uses Simultaneous Authentication of Equals (SAE).",
       difficulty: QuestionDifficulty.HARD,
       answers: [
@@ -2872,7 +2872,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: AES is a widely used ________ encryption algorithm.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "AES (Advanced Encryption Standard) is a symmetric block cipher.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2919,7 +2919,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: SHA-256 produces a ________-bit hash value.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "SHA-256 produces a 256-bit (32-byte) hash digest.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -2966,7 +2966,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ Protocol is the foundation of TLS/SSL encryption.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "TLS (Transport Layer Security) secures communications over networks.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3013,7 +3013,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ phase involves documenting findings and providing remediation recommendations.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The reporting phase documents all findings and provides actionable recommendations.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3060,7 +3060,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The Nmap ________ flag runs vulnerability detection scripts.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The --script vuln flag runs Nmap's vulnerability detection scripts.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3107,7 +3107,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ phase involves restoring systems to normal operations after an incident.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The recovery phase restores affected systems and validates they are secure.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3154,7 +3154,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: An AMI (________ Machine Image) provides the software configuration for an EC2 instance.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "An AMI includes the operating system, application server, and applications.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3201,7 +3201,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: S3 ________ allow automatic migration of objects between storage classes.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Lifecycle policies automatically transition objects between storage classes.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3248,7 +3248,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: A ________ Gateway enables communication between your VPC and the internet.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "An Internet Gateway allows VPC resources to communicate with the internet.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -3295,7 +3295,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: Amazon ________ creates, publishes, and secures APIs at any scale.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "API Gateway handles API requests, throttling, and authentication for Lambda functions.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3342,7 +3342,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: DynamoDB uses ________ keys for even data distribution across partitions.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Partition keys determine how data is distributed across DynamoDB partitions.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3389,7 +3389,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: AWS ________ provides a fully managed NoSQL database for serverless applications.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "DynamoDB is the standard NoSQL choice for serverless architectures on AWS.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3436,7 +3436,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: A CloudFormation ________ defines the AWS resources to be created and their configurations.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "A template defines all resources, parameters, and outputs for a stack.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3483,7 +3483,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: AWS ________ automates code deployments to EC2, Lambda, and on-premises servers.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "CodeDeploy automates application deployments across compute services.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3530,7 +3530,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: CloudWatch ________ provides real-time monitoring of AWS resources with visual dashboards.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "CloudWatch Dashboards provide customizable visualizations of metrics and logs.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3577,7 +3577,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: Each block in a blockchain contains a ________ that links it to the previous block.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The hash creates a chain by linking each block to the previous one.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3624,7 +3624,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: In Proof of Stake, validators are chosen based on the amount of ________ they stake.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Validators lock up cryptocurrency as collateral to participate in block validation.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3671,7 +3671,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ is the reward miners receive for adding a new block to the Bitcoin blockchain.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The block reward (currently 6.25 BTC) incentivizes miners to secure the network.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3718,7 +3718,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: Solidity files have the ________ file extension.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Solidity source files use the .sol extension.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -3765,7 +3765,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ function allows a third party to spend tokens on behalf of the token holder.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The approve() function sets a spending allowance for a designated address.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3812,7 +3812,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: ________ are fees paid to process transactions on the Ethereum network.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Gas fees compensate miners/validators for computing resources used to process transactions.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3859,7 +3859,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: TVL stands for ________ Value Locked, a key metric in DeFi.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "TVL measures the total assets deposited in DeFi protocols.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3906,7 +3906,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: Always check a DeFi protocol's ________ status before depositing funds.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Smart contract audits assess security and identify vulnerabilities.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -3953,7 +3953,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ ratio determines the rate at which new tokens are released.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Emission or release rate controls how quickly tokens enter circulation.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4000,7 +4000,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: React Native uses a ________ thread to run JavaScript code separately from the UI thread.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "The JavaScript thread runs your app logic while the UI thread handles rendering.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4047,7 +4047,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ component is used to display text in React Native.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Text is a core component for displaying strings and nested text elements.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -4094,7 +4094,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: Expo provides access to native APIs through ________ without ejecting.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Expo SDK provides JavaScript wrappers for native device features.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4141,7 +4141,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ method navigates to a new screen and pushes it onto the stack.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "navigation.push() adds a new screen to the navigation stack.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4188,7 +4188,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: For async state, combine Zustand with React ________ for caching and refetching.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "React Query (TanStack Query) handles server state, caching, and refetching.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4235,7 +4235,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The route.params object contains ________ passed from the previous screen.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "route.params holds all the data passed via navigation.navigate() params.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4282,7 +4282,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: expo-secure-store uses ________ on iOS and EncryptedSharedPreferences on Android.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Keychain is iOS's secure storage mechanism for sensitive data.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4329,7 +4329,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: expo-location provides APIs for GPS ________ and geocoding.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "expo-location handles foreground and background location access with proper permissions.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4376,7 +4376,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: ________ notifications are delivered in real-time when the app is in the foreground.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Foreground notifications require special handling since they don't show a system notification by default.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4423,7 +4423,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ function renders a component for testing purposes.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "render() from Testing Library mounts a component and provides query methods.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4470,7 +4470,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: For Android, you generate a signed ________ or AAB for Play Console submission.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "An APK or Android App Bundle (AAB) is the packaged file uploaded to Play Console.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4517,7 +4517,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ prop in FlatList controls how many items are rendered ahead of time.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "windowSize controls the number of items rendered ahead and behind the visible area.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4564,7 +4564,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ function combines text from multiple cells into one.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "CONCATENATE or the & operator joins text strings together.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -4611,7 +4611,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: You should use Excel ________ for structured data that pivot tables can reference.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Excel Tables provide structured references that automatically expand with new data.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4658,7 +4658,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: A ________ chart shows the relationship between two numerical variables.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Scatter plots display individual data points to show correlations between variables.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4705,7 +4705,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ clause is used to sort the result set in ascending or descending order.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "ORDER BY sorts results. Use ASC (default) or DESC for descending order.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -4752,7 +4752,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: Use ________ aliases (like o, c) to make JOIN queries more readable.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Table aliases shorten table names in queries, especially with JOINs.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4799,7 +4799,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ function returns the average value of a numeric column.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "AVG() calculates the mean of all values in a numeric column.",
       difficulty: QuestionDifficulty.EASY,
       answers: [
@@ -4846,7 +4846,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The WITH keyword is used to define a ________ before the main SELECT statement.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "WITH creates a CTE that can be referenced by the main query and other CTEs.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4893,7 +4893,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: The ________ clause defines how rows are divided for window function calculations.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "PARTITION BY divides the result set into partitions for the window function to operate on.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [
@@ -4940,7 +4940,7 @@ const quizContentByTitle: Record<string, QuestionData[]> = {
     },
     {
       content: "Fill in the blank: ________ validation ensures data conforms to expected formats and ranges.",
-      type: "FILL_BLANK",
+      type: "FILL_IN_BLANK",
       explanation: "Data validation checks that values meet business rules and format requirements.",
       difficulty: QuestionDifficulty.MEDIUM,
       answers: [

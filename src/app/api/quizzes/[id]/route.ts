@@ -4,6 +4,15 @@ import { auth } from "@/lib/auth";
 import { awardAchievement } from "@/lib/achievements";
 import { sendEmail, quizResult } from "@/lib/email";
 
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> }
@@ -22,7 +31,6 @@ export async function GET(
                 content: true,
                 imageUrl: true,
                 order: true,
-                isCorrect: true,
               },
             },
           },
@@ -34,6 +42,14 @@ export async function GET(
     if (!quiz) {
       return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }
+
+    const safeQuiz = {
+      ...quiz,
+      questions: quiz.questions.map((q) => ({
+        ...q,
+        answers: shuffleArray(q.answers),
+      })),
+    };
 
     const session = await auth();
 
@@ -62,7 +78,7 @@ export async function GET(
       : [];
 
     return NextResponse.json({
-      quiz,
+      quiz: safeQuiz,
       attemptCount,
       previousAttempts,
       maxAttempts: quiz.maxAttempts,
@@ -269,18 +285,30 @@ export async function POST(
 
     for (const question of quiz.questions) {
       totalPoints += question.points;
-      const userAnswerId = answers[question.id];
+      const userAnswer = answers[question.id];
 
-      if (userAnswerId) {
+      if (userAnswer) {
         const correctAnswer = question.answers.find((a: any) => a.isCorrect);
-        const isCorrect = correctAnswer?.id === userAnswerId;
+        let isCorrect = false;
+
+        if (correctAnswer) {
+          if (question.type === "TRUE_FALSE") {
+            const userText = String(userAnswer || "").toLowerCase();
+            isCorrect = userText === correctAnswer.content.toLowerCase();
+          } else if (question.type === "FILL_IN_BLANK") {
+            const userText = String(userAnswer || "").trim().toLowerCase();
+            isCorrect = userText === correctAnswer.content.trim().toLowerCase();
+          } else {
+            isCorrect = correctAnswer.id === userAnswer;
+          }
+        }
 
         if (isCorrect) {
           totalScore += question.points;
         }
 
         results[question.id] = {
-          selectedAnswerId: userAnswerId,
+          selectedAnswerId: userAnswer,
           isCorrect,
           correctAnswerId: correctAnswer?.id,
           explanation: question.explanation,

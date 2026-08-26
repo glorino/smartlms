@@ -144,6 +144,7 @@ function mapDbQuestionType(dbType: string): string {
     SINGLE_CHOICE: "multiple-choice",
     TRUE_FALSE: "true-false",
     FILL_IN_BLANK: "fill-blank",
+    FILL_BLANK: "fill-blank",
     MATCHING: "matching",
     MULTI_SELECT: "multi-select",
     SHORT_ANSWER: "short-answer",
