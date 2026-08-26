@@ -21,6 +21,16 @@ export async function GET() {
             title: true,
             slug: true,
             thumbnail: true,
+            instructor: {
+              select: { name: true },
+            },
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
           },
         },
       },
