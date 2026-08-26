@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   ShieldCheck,
   Search,
@@ -27,81 +28,23 @@ type CertificateResult = {
   verificationUrl: string;
 };
 
-function QRCodeSVG({ data, size = 80 }: { data: string; size?: number }) {
-  const modules = 21;
-  const cellSize = size / modules;
-  const cells: { x: number; y: number }[] = [];
-
-  let hash = 0;
-  for (let i = 0; i < data.length; i++) {
-    hash = ((hash << 5) - hash + data.charCodeAt(i)) | 0;
-  }
-
-  for (let row = 0; row < modules; row++) {
-    for (let col = 0; col < modules; col++) {
-      const isFinderPattern =
-        (row < 7 && col < 7) ||
-        (row < 7 && col >= modules - 7) ||
-        (row >= modules - 7 && col < 7);
-
-      if (isFinderPattern) {
-        const innerRow = row < 7 ? row : row - (modules - 7);
-        const innerCol = col < 7 ? col : col - (modules - 7);
-        const isBorder =
-          innerRow === 0 ||
-          innerRow === 6 ||
-          innerCol === 0 ||
-          innerCol === 6;
-        const isInner =
-          innerRow >= 2 && innerRow <= 4 && innerCol >= 2 && innerCol <= 4;
-        if (isBorder || isInner) {
-          cells.push({ x: col, y: row });
-        }
-      } else {
-        const seed = (hash + row * 31 + col * 17) & 0xffff;
-        if (seed % 3 === 0) {
-          cells.push({ x: col, y: row });
-        }
-      }
-    }
-  }
-
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <rect width={size} height={size} fill="white" />
-      {cells.map((cell, i) => (
-        <rect
-          key={i}
-          x={cell.x * cellSize}
-          y={cell.y * cellSize}
-          width={cellSize}
-          height={cellSize}
-          fill="#1a1a2e"
-        />
-      ))}
-    </svg>
-  );
-}
-
-export default function VerifyCertificatePage() {
+function VerifyCertificateContent() {
+  const searchParams = useSearchParams();
   const [verificationId, setVerificationId] = useState("");
   const [result, setResult] = useState<CertificateResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const id = verificationId.trim();
-    if (!id) return;
-
+  const doVerify = useCallback(async (id: string) => {
+    if (!id.trim()) return;
     setLoading(true);
     setSearched(false);
     setError("");
     setResult(null);
 
     try {
-      const res = await fetch(`/api/certificates/verify?id=${encodeURIComponent(id)}`);
+      const res = await fetch(`/api/certificates/verify?id=${encodeURIComponent(id.trim())}`);
       if (res.ok) {
         const data = await res.json();
         setResult(data.certificate);
@@ -114,6 +57,19 @@ export default function VerifyCertificatePage() {
       setLoading(false);
       setSearched(true);
     }
+  }, []);
+
+  useEffect(() => {
+    const idFromUrl = searchParams.get("id");
+    if (idFromUrl) {
+      setVerificationId(idFromUrl);
+      doVerify(idFromUrl);
+    }
+  }, [searchParams, doVerify]);
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    doVerify(verificationId);
   };
 
   return (
@@ -288,16 +244,6 @@ export default function VerifyCertificatePage() {
                     Verified by SmartLMS
                   </div>
                 </div>
-
-                <div className="flex flex-col items-center">
-                  <div className="rounded-lg border border-gray-200 bg-white p-2 shadow-sm">
-                    <QRCodeSVG
-                      data={result.verificationUrl}
-                      size={80}
-                    />
-                  </div>
-                  <p className="mt-1 text-[10px] text-gray-400">Scan to verify</p>
-                </div>
               </div>
 
               {/* View Certificate */}
@@ -339,5 +285,25 @@ export default function VerifyCertificatePage() {
     </div>
     <Footer />
   </>
+  );
+}
+
+export default function VerifyCertificatePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+        <Navbar />
+        <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center py-20">
+            <svg className="h-8 w-8 animate-spin text-blue-600" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    }>
+      <VerifyCertificateContent />
+    </Suspense>
   );
 }
