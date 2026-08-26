@@ -64,6 +64,23 @@ function QRCodeSVG({ data, size = 100 }: { data: string; size?: number }) {
   );
 }
 
+function CertifiedBadge() {
+  return (
+    <svg width="80" height="95" viewBox="0 0 80 95" fill="none">
+      {/* Shield shape */}
+      <path d="M40 5L70 20V55C70 72 55 85 40 90C25 85 10 72 10 55V20L40 5Z" fill="#0056A4" />
+      <path d="M40 10L65 23V55C65 69.5 52 81 40 85.5C28 81 15 69.5 15 55V23L40 10Z" fill="#0068C8" />
+      {/* Inner shield */}
+      <path d="M40 18L58 28V52C58 63 50 72 40 75.5C30 72 22 63 22 52V28L40 18Z" fill="white" />
+      {/* Star */}
+      <path d="M40 28L43.5 37H53L45.5 43L48 52L40 46L32 52L34.5 43L27 37H36.5L40 28Z" fill="#0056A4" />
+      {/* Text */}
+      <text x="40" y="64" textAnchor="middle" fill="#0056A4" fontSize="5.5" fontWeight="bold" fontFamily="Arial">SmartLMS</text>
+      <text x="40" y="71" textAnchor="middle" fill="#0056A4" fontSize="4.5" fontWeight="600" fontFamily="Arial">CERTIFIED</text>
+    </svg>
+  );
+}
+
 function CertificateActions({
   certificateId,
   certificateRef,
@@ -85,7 +102,7 @@ function CertificateActions({
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: "#FDFCf5",
+        backgroundColor: "#ffffff",
       });
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
@@ -320,225 +337,204 @@ export default function CertificateView({
         {/* Certificate */}
         <div
           ref={certificateRef}
-          className="relative overflow-hidden rounded-sm bg-[#FDFCf5] shadow-2xl print:shadow-none min-h-[700px]"
+          className="relative overflow-hidden rounded-sm bg-white shadow-2xl print:shadow-none"
+          style={{ minHeight: "700px" }}
         >
-          {/* Outer gold border */}
-          <div className="absolute inset-0 border-[14px] border-double" style={{ borderColor: "#8B7355" }} />
-          <div className="absolute inset-2 border-2" style={{ borderColor: "#C4A265" }} />
-          <div className="absolute inset-3 border" style={{ borderColor: "#D4C5A0" }} />
-
-          {/* Corner ornaments */}
-          {[
-            "left-4 top-4 border-l-2 border-t-2",
-            "right-4 top-4 border-r-2 border-t-2",
-            "left-4 bottom-4 border-l-2 border-b-2",
-            "right-4 bottom-4 border-r-2 border-b-2",
-          ].map((pos, i) => (
-            <div key={i} className={`absolute h-14 w-14 ${pos}`} style={{ borderColor: "#8B7355" }} />
-          ))}
-
-          {/* Decorative corner diamonds */}
-          {[
-            "left-5 top-5",
-            "right-5 top-5",
-            "left-5 bottom-5",
-            "right-5 bottom-5",
-          ].map((pos, i) => (
-            <div key={i} className={`absolute ${pos}`}>
-              <svg width="12" height="12" viewBox="0 0 12 12">
-                <rect x="3" y="0" width="6" height="6" transform="rotate(45 6 3)" fill="#C4A265" />
-              </svg>
-            </div>
-          ))}
-
-          {/* Background pattern */}
-          <div className="absolute inset-0 opacity-[0.02]" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%238B7355' fill-opacity='1'%3E%3Cpath d='M20 0L40 20L20 40L0 20z' fill-opacity='0.15'/%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
+          {/* Blue double border - outer */}
+          <div
+            className="absolute inset-0"
+            style={{
+              border: "12px solid #B8D4E8",
+              boxSizing: "border-box",
+            }}
+          />
+          {/* Blue double border - inner */}
+          <div
+            className="absolute"
+            style={{
+              inset: "16px",
+              border: "2px solid #B8D4E8",
+              boxSizing: "border-box",
+            }}
+          />
 
           {/* Content */}
-          <div className="relative flex h-full flex-col items-center justify-between px-8 py-8 sm:px-16 sm:py-10">
-
-            {/* Top Section: Logo + Title */}
-            <div className="text-center w-full">
-              {/* Logo */}
-              <div className="flex justify-center mb-2">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full shadow-lg" style={{ backgroundColor: "#1a1a2e" }}>
-                  <svg className="h-9 w-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div
+            className="relative flex h-full flex-col items-center"
+            style={{ padding: "50px 60px 40px" }}
+          >
+            {/* Top row: Logo left, Badge right */}
+            <div className="flex w-full items-start justify-between">
+              {/* Logo + Brand */}
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full" style={{ backgroundColor: "#0068C8" }}>
+                  <svg className="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
+                <span className="text-lg font-bold" style={{ color: "#0068C8", fontFamily: "Arial, sans-serif" }}>
+                  SmartLMS
+                </span>
               </div>
 
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em]" style={{ color: "#8B7355" }}>
-                SmartLMS Online Learning Platform
-              </p>
-
-              <h1
-                className="mt-2 text-3xl font-light tracking-wide sm:text-4xl"
-                style={{ fontFamily: "'Georgia', 'Palatino Linotype', 'Book Antiqua', serif", color: "#1a1a2e" }}
-              >
-                Certificate of Completion
-              </h1>
-
-              {/* Decorative divider */}
-              <div className="mx-auto mt-3 flex items-center justify-center gap-3">
-                <div className="h-px w-16" style={{ backgroundColor: "#C4A265" }} />
-                <svg width="16" height="16" viewBox="0 0 16 16">
-                  <rect x="4" y="0" width="8" height="8" transform="rotate(45 8 4)" fill="#C4A265" />
-                </svg>
-                <div className="h-px w-16" style={{ backgroundColor: "#C4A265" }} />
-              </div>
+              {/* Certified Badge */}
+              <CertifiedBadge />
             </div>
 
-            {/* Middle Section: Certification Text */}
-            <div className="text-center flex-1 flex flex-col items-center justify-center w-full max-w-2xl">
-              <p className="text-sm" style={{ color: "#6B5B4F" }}>
-                This is to certify that
+            {/* Title Section */}
+            <div className="mt-6 text-center">
+              <p className="text-sm font-medium tracking-wide" style={{ color: "#0068C8" }}>
+                SmartLMS Presents
               </p>
+              <h1
+                className="mt-3 text-5xl font-bold tracking-wide sm:text-6xl"
+                style={{
+                  fontFamily: "'Georgia', 'Palatino Linotype', 'Book Antiqua', serif",
+                  color: "#1a1a1a",
+                }}
+              >
+                CERTIFICATE
+              </h1>
+              <p
+                className="mt-1 text-lg font-semibold tracking-widest uppercase"
+                style={{ color: "#333333", fontFamily: "Arial, sans-serif" }}
+              >
+                of Completion
+              </p>
+            </div>
 
+            {/* Presented to */}
+            <div className="mt-8 text-center">
+              <p className="text-sm" style={{ color: "#444444" }}>
+                This Certificate is Proudly Presented to
+              </p>
+            </div>
+
+            {/* Student Name */}
+            <div className="mt-4 w-full max-w-xl text-center">
               <h2
-                className="mt-1 text-4xl font-bold sm:text-5xl"
-                style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif", color: "#1a1a2e" }}
+                className="text-3xl font-bold sm:text-4xl"
+                style={{
+                  fontFamily: "'Georgia', 'Palatino Linotype', serif",
+                  color: "#1a1a1a",
+                  paddingBottom: "8px",
+                  borderBottom: "2px solid #0068C8",
+                }}
               >
                 {studentName}
               </h2>
+            </div>
 
-              <div className="mt-2 h-px w-72" style={{ backgroundColor: "#C4A265" }} />
-
-              <p className="mt-2 max-w-lg text-sm leading-relaxed" style={{ color: "#6B5B4F" }}>
-                has successfully completed the course of study in
+            {/* Course completion text */}
+            <div className="mt-6 text-center">
+              <p className="text-sm" style={{ color: "#444444" }}>
+                for successfully completing the course on
               </p>
-
               <h3
-                className="mt-1 text-xl font-semibold sm:text-2xl"
-                style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif", color: "#1a1a2e" }}
+                className="mt-2 text-xl font-bold sm:text-2xl"
+                style={{
+                  fontFamily: "'Georgia', 'Palatino Linotype', serif",
+                  color: "#1a1a1a",
+                }}
               >
                 {courseName}
               </h3>
 
               {/* Course details */}
-              <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-xs" style={{ color: "#8B7355" }}>
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
                 {courseLevel && (
-                  <span className="rounded border px-2.5 py-1 font-semibold" style={{ borderColor: "#D4C5A0", backgroundColor: "rgba(196,162,101,0.08)" }}>
+                  <span
+                    className="rounded-full border px-3 py-1 text-xs font-semibold"
+                    style={{ borderColor: "#B8D4E8", color: "#0068C8", backgroundColor: "rgba(0,104,200,0.05)" }}
+                  >
                     {courseLevel}
                   </span>
                 )}
                 {courseDuration && (
-                  <span className="rounded border px-2.5 py-1 font-semibold" style={{ borderColor: "#D4C5A0", backgroundColor: "rgba(196,162,101,0.08)" }}>
+                  <span
+                    className="rounded-full border px-3 py-1 text-xs font-semibold"
+                    style={{ borderColor: "#B8D4E8", color: "#0068C8", backgroundColor: "rgba(0,104,200,0.05)" }}
+                  >
                     {courseDuration} Hours
                   </span>
                 )}
               </div>
-
-              {/* Skills covered */}
-              {courseTags.length > 0 && (
-                <div className="mt-2 text-center">
-                  <p className="text-[10px] uppercase tracking-wider" style={{ color: "#8B7355" }}>
-                    Skills Covered
-                  </p>
-                  <p className="mt-0.5 text-xs" style={{ color: "#6B5B4F" }}>
-                    {courseTags.slice(0, 5).join(" · ")}
-                  </p>
-                </div>
-              )}
-
-              {/* Description */}
-              {certificate.course?.description && (
-                <p className="mt-2 max-w-md text-[11px] leading-relaxed" style={{ color: "#8B7355" }}>
-                  {certificate.course.description.replace(/<[^>]*>/g, "").slice(0, 150)}
-                  {certificate.course.description.length > 150 ? "..." : ""}
-                </p>
-              )}
-
-              {/* Date issued */}
-              <div className="mt-3 flex items-center gap-6 text-xs" style={{ color: "#6B5B4F" }}>
-                <div className="text-center">
-                  <p className="font-semibold">{issuedDate}</p>
-                  <p className="text-[10px] uppercase tracking-wider" style={{ color: "#8B7355" }}>Date of Issue</p>
-                </div>
-                {expiryDate && (
-                  <div className="text-center">
-                    <p className="font-semibold">{expiryDate}</p>
-                    <p className="text-[10px] uppercase tracking-wider" style={{ color: "#8B7355" }}>Valid Until</p>
-                  </div>
-                )}
-              </div>
             </div>
 
-            {/* Bottom Section: Signatures + QR + Verification */}
-            <div className="w-full">
-              {/* Signatures Row */}
+            {/* Bottom Section: Date - Badges - Signature */}
+            <div className="mt-auto w-full pt-10">
               <div className="flex items-end justify-between">
-                {/* Instructor Signature */}
+                {/* Date */}
                 <div className="flex flex-col items-center">
-                  <div className="w-36 border-b pb-1" style={{ borderColor: "#8B7355" }}>
+                  <div className="w-32 border-b pb-2" style={{ borderColor: "#333" }}>
+                    <p className="text-center text-sm font-semibold" style={{ color: "#333" }}>
+                      {issuedDate}
+                    </p>
+                  </div>
+                  <p className="mt-1 text-xs font-medium" style={{ color: "#666" }}>
+                    Date
+                  </p>
+                </div>
+
+                {/* Certification Badges */}
+                <div className="flex items-center gap-4">
+                  {/* ISO Badge */}
+                  <div className="flex flex-col items-center">
+                    <div className="h-14 w-14 rounded-full border-2 flex items-center justify-center" style={{ borderColor: "#0068C8" }}>
+                      <div className="text-center">
+                        <p className="text-[7px] font-bold" style={{ color: "#0068C8" }}>CERTIFIED</p>
+                        <p className="text-[9px] font-bold" style={{ color: "#0068C8" }}>COMPANY</p>
+                        <p className="text-[6px]" style={{ color: "#0068C8" }}>ISO</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AICPA SOC Badge */}
+                  <div className="flex flex-col items-center">
+                    <div className="h-14 w-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "#0068C8" }}>
+                      <div className="text-center">
+                        <p className="text-[7px] font-bold text-white">AICPA</p>
+                        <p className="text-[9px] font-bold text-white">SOC</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ISO 37001 Badge */}
+                  <div className="flex flex-col items-center">
+                    <div className="h-14 w-14 rounded-full border-2 flex items-center justify-center" style={{ borderColor: "#0068C8" }}>
+                      <div className="text-center">
+                        <p className="text-[6px] font-bold" style={{ color: "#0068C8" }}>ISO</p>
+                        <p className="text-[8px] font-bold" style={{ color: "#0068C8" }}>37001</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Signature */}
+                <div className="flex flex-col items-center">
+                  <div className="w-32 border-b pb-2" style={{ borderColor: "#333" }}>
                     <p
                       className="text-center text-sm italic"
-                      style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif", color: "#1a1a2e" }}
+                      style={{
+                        fontFamily: "'Georgia', 'Palatino Linotype', serif",
+                        color: "#333",
+                      }}
                     >
                       {instructorName}
                     </p>
                   </div>
-                  <p className="mt-1 text-[9px] font-semibold uppercase tracking-wider" style={{ color: "#8B7355" }}>
-                    Course Instructor
-                  </p>
-                </div>
-
-                {/* QR Code + Verification */}
-                <div className="flex flex-col items-center gap-1.5">
-                  <div className="rounded-lg border-2 p-2 shadow-md" style={{ borderColor: "#C4A265", backgroundColor: "white" }}>
-                    <QRCodeSVG
-                      data={verificationUrl}
-                      size={80}
-                    />
-                  </div>
-                  <p className="text-[8px] font-semibold uppercase tracking-wider" style={{ color: "#8B7355" }}>
-                    Scan to Verify
-                  </p>
-                  <p className="max-w-[120px] text-center text-[7px] leading-tight" style={{ color: "#6B5B4F" }}>
-                    Scan QR code or visit the verification URL to confirm authenticity
-                  </p>
-                </div>
-
-                {/* Platform Signature */}
-                <div className="flex flex-col items-center">
-                  <div className="w-36 border-b pb-1" style={{ borderColor: "#8B7355" }}>
-                    <p
-                      className="text-center text-sm italic"
-                      style={{ fontFamily: "'Georgia', 'Palatino Linotype', serif", color: "#1a1a2e" }}
-                    >
-                      SmartLMS
-                    </p>
-                  </div>
-                  <p className="mt-1 text-[9px] font-semibold uppercase tracking-wider" style={{ color: "#8B7355" }}>
-                    Platform Authority
+                  <p className="mt-1 text-xs font-medium" style={{ color: "#666" }}>
+                    Founder and CEO
                   </p>
                 </div>
               </div>
+            </div>
 
-              {/* Verification Strip */}
-              <div className="mt-4 flex items-center justify-between rounded-lg border px-4 py-2.5" style={{ borderColor: "#D4C5A0", backgroundColor: "rgba(196,162,101,0.05)" }}>
-                <div className="flex items-center gap-3">
-                  <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold" style={{ backgroundColor: "#E8F5E9", color: "#2E7D32" }}>
-                    <ShieldCheck className="h-3 w-3" />
-                    Verified Authentic
-                  </div>
-                  <span className="text-[10px] font-mono" style={{ color: "#6B5B4F" }}>
-                    Certificate ID: {verificationId}
-                  </span>
-                </div>
-                <p className="text-[9px]" style={{ color: "#8B7355" }}>
-                  smartlms-bay.vercel.app/verify-certificate
-                </p>
-              </div>
-
-              {/* Bottom fine print */}
-              <div className="mt-2 text-center">
-                <p className="text-[8px]" style={{ color: "#8B7355" }}>
-                  This certificate was issued by SmartLMS Platform. It can be verified by scanning the QR code or visiting the verification URL above.
-                </p>
-              </div>
+            {/* Verification ID */}
+            <div className="mt-4 w-full text-center">
+              <p className="text-[10px]" style={{ color: "#999" }}>
+                Certificate ID: {verificationId} | Verify at: smartlms-bay.vercel.app/verify-certificate?id={verificationId}
+              </p>
             </div>
           </div>
         </div>
