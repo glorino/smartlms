@@ -169,7 +169,7 @@ const coursesData: CourseData[] = [
         lessons: [
           { title: "Introduction to HTML5", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=UB1O30fR-EE", videoType: "youtube", duration: 25, isPreview: true },
           { title: "Semantic HTML Elements", type: "TEXT", content: "HTML5 introduced semantic elements like <header>, <nav>, <main>, <article>, and <footer>. These elements give meaning to your markup, making it easier for browsers, screen readers, and search engines to understand the structure of your page. Instead of using generic <div> tags everywhere, use semantic elements to improve accessibility and SEO.", duration: 15 },
-          { title: "CSS Flexbox & Grid Layout", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=fYq5pzgRUdw", videoType: "youtube", duration: 30 },
+          { title: "CSS Flexbox & Grid Layout", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=-4dxKViid5Y", videoType: "youtube", duration: 30 },
         ],
       },
       {
@@ -177,7 +177,7 @@ const coursesData: CourseData[] = [
         description: "Master the programming language of the web",
         lessons: [
           { title: "Variables, Types & Functions", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=W6NZfCO5SIk", videoType: "youtube", duration: 35 },
-          { title: "DOM Manipulation", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=0ik6X_hDfCk", videoType: "youtube", duration: 40 },
+          { title: "DOM Manipulation", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=y17RuWkWdn8", videoType: "youtube", duration: 40 },
           { title: "ES6+ Features & Arrow Functions", type: "TEXT", content: "ES6 introduced arrow functions, template literals, destructuring, spread/rest operators, and modules. Arrow functions provide a shorter syntax: const add = (a, b) => a + b. Destructuring lets you extract values from objects: const { name, age } = person. Spread operator (...) expands arrays and objects: const newArr = [...arr1, ...arr2].", duration: 20 },
         ],
       },
@@ -196,7 +196,7 @@ const coursesData: CourseData[] = [
         lessons: [
           { title: "Express.js Fundamentals", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=CnH3kAXSrmU", videoType: "youtube", duration: 35 },
           { title: "RESTful API Design", type: "TEXT", content: "REST APIs use HTTP methods (GET, POST, PUT, DELETE) to perform CRUD operations. Resources are identified by URLs like /api/users/:id. Status codes indicate results: 200 OK, 201 Created, 404 Not Found, 500 Server Error. Use proper naming conventions, versioning (/api/v1/), and pagination for large datasets.", duration: 20 },
-          { title: "Database Integration with MongoDB", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=-0X8kHTtRZ0", videoType: "youtube", duration: 40 },
+          { title: "Database Integration with MongoDB", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=GV9VBwH_h1U", videoType: "youtube", duration: 40 },
         ],
       },
     ],
@@ -304,7 +304,7 @@ const coursesData: CourseData[] = [
         lessons: [
           { title: "What is Machine Learning?", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=GwIo3gDZCVQ", videoType: "youtube", duration: 20, isPreview: true },
           { title: "Linear Algebra for ML", type: "TEXT", content: "Linear algebra is the backbone of machine learning. Vectors represent data points, matrices represent datasets, and matrix multiplication is used in transformations. Key concepts include dot products, eigenvalues, and matrix decomposition. NumPy provides efficient implementations: np.dot(a, b) for dot products, np.linalg.eig() for eigenvalues.", duration: 30 },
-          { title: "Probability & Statistics Review", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=uzkcQnRs8KA", videoType: "youtube", duration: 25 },
+          { title: "Probability & Statistics Review", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=FAO1bIyZnaw", videoType: "youtube", duration: 25 },
         ],
       },
       {
@@ -313,7 +313,7 @@ const coursesData: CourseData[] = [
         lessons: [
           { title: "Linear & Logistic Regression", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=7eh4d6sabA0", videoType: "youtube", duration: 40 },
           { title: "Decision Trees & Random Forests", type: "TEXT", content: "Decision trees split data using feature thresholds to minimize impurity (Gini or entropy). Random forests ensemble multiple trees, reducing overfitting through bagging. In sklearn: from sklearn.ensemble import RandomForestClassifier; model = RandomForestClassifier(n_estimators=100); model.fit(X_train, y_train). Key metrics: accuracy, precision, recall, F1-score.", duration: 25 },
-          { title: "Model Evaluation & Cross-Validation", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=fSxE35O0fNQ", videoType: "youtube", duration: 35 },
+          { title: "Model Evaluation & Cross-Validation", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=nYN1lzi57DY", videoType: "youtube", duration: 35 },
         ],
       },
       {
@@ -322,7 +322,7 @@ const coursesData: CourseData[] = [
         lessons: [
           { title: "K-Means & Hierarchical Clustering", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=4b5d3muPQmA", videoType: "youtube", duration: 30 },
           { title: "Principal Component Analysis (PCA)", type: "TEXT", content: "PCA reduces dimensionality by projecting data onto principal components — orthogonal axes of maximum variance. Use sklearn: from sklearn.decomposition import PCA; pca = PCA(n_components=2); X_reduced = pca.fit_transform(X). Explained variance ratio shows how much information each component retains. PCA is useful for visualization and reducing computational cost.", duration: 20 },
-          { title: "Anomaly Detection Techniques", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=9hE4sQV2LqU", videoType: "youtube", duration: 25 },
+          { title: "Anomaly Detection Techniques", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=AYap1FTvR9E", videoType: "youtube", duration: 25 },
         ],
       },
       {
@@ -331,7 +331,7 @@ const coursesData: CourseData[] = [
         lessons: [
           { title: "Neural Network Architecture", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=aircAruvnKk", videoType: "youtube", duration: 45 },
           { title: "Training with Backpropagation", type: "TEXT", content: "Backpropagation computes gradients of the loss function with respect to each weight using the chain rule. The optimizer (SGD, Adam, RMSprop) updates weights: w = w - lr * gradient. TensorFlow/Keras: model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy']); model.fit(X_train, y_train, epochs=50, batch_size=32).", duration: 30 },
-          { title: "CNNs for Image Recognition", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=2-Ol7G_BbeY", videoType: "youtube", duration: 40 },
+          { title: "CNNs for Image Recognition", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=shVKhOmT0HE", videoType: "youtube", duration: 40 },
         ],
       },
     ],
@@ -438,27 +438,27 @@ const coursesData: CourseData[] = [
         title: "SEO & Content Strategy",
         description: "Rank higher on search engines with proven techniques",
         lessons: [
-          { title: "How Search Engines Work", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=hPjkGfzBj3I", videoType: "youtube", duration: 20, isPreview: true },
+          { title: "How Search Engines Work", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=5MIAugQ17ks", videoType: "youtube", duration: 20, isPreview: true },
           { title: "Keyword Research Methods", type: "TEXT", content: "Keyword research identifies the terms your audience searches for. Use tools like Google Keyword Planner, Ahrefs, or SEMrush. Focus on search volume, keyword difficulty, and user intent. Long-tail keywords (e.g., 'best running shoes for flat feet') have lower competition and higher conversion rates. Map keywords to content: informational -> blog posts, transactional -> product pages.", duration: 25 },
-          { title: "On-Page SEO Best Practices", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=GFO_starW9fU", videoType: "youtube", duration: 30 },
+          { title: "On-Page SEO Best Practices", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=NS0v8JbRjho", videoType: "youtube", duration: 30 },
         ],
       },
       {
         title: "Social Media Marketing",
         description: "Build and engage audiences across platforms",
         lessons: [
-          { title: "Platform Strategy: Instagram, LinkedIn & TikTok", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=AQ8WrNhEfXQ", videoType: "youtube", duration: 35 },
+          { title: "Platform Strategy: Instagram, LinkedIn & TikTok", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=cQjYux-1H3E", videoType: "youtube", duration: 35 },
           { title: "Content Calendar Planning", type: "TEXT", content: "A content calendar ensures consistent posting and strategic content mix. Plan 4 weeks ahead with categories: educational (40%), entertaining (30%), promotional (20%), user-generated (10%). Use tools like Buffer, Hootsuite, or Notion. Batch-create content weekly. Track best posting times using platform analytics. Include hashtags, captions, and visual assets in your calendar.", duration: 20 },
-          { title: "Social Media Advertising", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=JQ9fZ3h8Zb0", videoType: "youtube", duration: 30 },
+          { title: "Social Media Advertising", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=dAJyqo6wnq4", videoType: "youtube", duration: 30 },
         ],
       },
       {
         title: "Email Marketing & Analytics",
         description: "Convert leads with email campaigns and measure ROI",
         lessons: [
-          { title: "Building an Email List", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=Oj8nJEcJVNM", videoType: "youtube", duration: 25 },
+          { title: "Building an Email List", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=dPA7643lbk4", videoType: "youtube", duration: 25 },
           { title: "Email Campaign Design", type: "TEXT", content: "Effective emails have four key elements: compelling subject lines (40-60 characters), personalized content, clear CTAs, and mobile-responsive design. Segment your list by behavior, demographics, and engagement level. A/B test subject lines, send times, and content. Key metrics: open rate (20-25% average), click-through rate (2-5%), conversion rate.", duration: 20 },
-          { title: "Google Analytics Setup & Reports", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=6wf8pDQ1mGI", videoType: "youtube", duration: 35 },
+          { title: "Google Analytics Setup & Reports", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=u_ECkoHVlZ8", videoType: "youtube", duration: 35 },
         ],
       },
     ],
@@ -554,16 +554,16 @@ const coursesData: CourseData[] = [
         lessons: [
           { title: "Decorators & Closures", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=FsAPt_9Bf3U", videoType: "youtube", duration: 35, isPreview: true },
           { title: "Generators & Itertools", type: "TEXT", content: "Generators produce values lazily using yield: def fibonacci(): a, b = 0, 1; while True: yield a; a, b = b, a + b. This is memory-efficient for large sequences. itertools provides powerful iteration tools: chain, product, permutations, combinations, groupby. Use generator expressions for memory-efficient list operations: sum(x**2 for x in range(1000000)).", duration: 30 },
-          { title: "Context Managers & the 'with' Statement", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=DbK3GMYYQbY", videoType: "youtube", duration: 25 },
+          { title: "Context Managers & the 'with' Statement", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=Lv1treHIckI", videoType: "youtube", duration: 25 },
         ],
       },
       {
         title: "Metaprogramming",
         description: "Dynamic classes, descriptors, and metaclasses",
         lessons: [
-          { title: "Metaclasses Explained", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=UmfkVQ5z3yo", videoType: "youtube", duration: 40 },
+          { title: "Metaclasses Explained", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=Ix_PZc2I9QI", videoType: "youtube", duration: 40 },
           { title: "Descriptors & Properties", type: "TEXT", content: "Descriptors implement __get__, __set__, or __delete__ to customize attribute access. @property is syntactic sugar for descriptors: class Circle: @property; def area(self): return 3.14 * self._radius ** 2. Custom descriptors enable validation, caching, and computed attributes. __slots__ restricts attribute creation for memory efficiency.", duration: 25 },
-          { title: "Dynamic Code Execution", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=GQfJpRZ3a5E", videoType: "youtube", duration: 30 },
+          { title: "Dynamic Code Execution", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=2jFNLULlUxQ", videoType: "youtube", duration: 30 },
         ],
       },
       {
@@ -572,16 +572,16 @@ const coursesData: CourseData[] = [
         lessons: [
           { title: "asyncio Fundamentals", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=2IW-ZEui4h4", videoType: "youtube", duration: 35 },
           { title: "Coroutines & Tasks", type: "TEXT", content: "Coroutines are defined with async def and awaited with await. asyncio.gather() runs multiple coroutines concurrently: await asyncio.gather(fetch(url1), fetch(url2)). Tasks wrap coroutines for concurrent execution: task = asyncio.create_task(coro()). Event loops manage scheduling. Use asyncio.Queue for producer-consumer patterns.", duration: 30 },
-          { title: "Building Async Web Scrapers", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=867HnM01kGI", videoType: "youtube", duration: 40 },
+          { title: "Building Async Web Scrapers", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=6ow7xloFy5s", videoType: "youtube", duration: 40 },
         ],
       },
       {
         title: "Design Patterns in Python",
         description: "Implementing Gang of Four patterns Pythonically",
         lessons: [
-          { title: "Singleton & Factory Patterns", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=hOnfUjv0hBs", videoType: "youtube", duration: 30 },
+          { title: "Singleton & Factory Patterns", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=Awoh5-Yr6SE", videoType: "youtube", duration: 30 },
           { title: "Observer & Strategy Patterns", type: "TEXT", content: "The Observer pattern defines a one-to-many dependency: when one object changes state, all dependents are notified. Python uses callback functions or events. The Strategy pattern defines a family of algorithms and makes them interchangeable: class SortStrategy: def sort(data). Use composition over inheritance. Python's duck typing makes many GoF patterns simpler or unnecessary.", duration: 25 },
-          { title: "Building a REST API with FastAPI", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=0sOvBWFbOH8", videoType: "youtube", duration: 45 },
+          { title: "Building a REST API with FastAPI", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=iWS9ogMPOI0", videoType: "youtube", duration: 45 },
         ],
       },
     ],
@@ -690,16 +690,16 @@ const coursesData: CourseData[] = [
         lessons: [
           { title: "Color Theory & Typography", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=YqQx75OPRa0", videoType: "youtube", duration: 30, isPreview: true },
           { title: "Visual Hierarchy & Layout", type: "TEXT", content: "Visual hierarchy guides users through content using size, color, contrast, and spacing. The F-pattern and Z-pattern are common reading patterns for web pages. Use the 8px grid system for consistent spacing. Gestalt principles (proximity, similarity, closure, continuity) explain how humans perceive visual elements as organized groups.", duration: 20 },
-          { title: "Accessibility in Design (WCAG)", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=Gm7B3rE7EEo", videoType: "youtube", duration: 25 },
+          { title: "Accessibility in Design (WCAG)", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=NEK3aMPs1Us", videoType: "youtube", duration: 25 },
         ],
       },
       {
         title: "User Research & Wireframing",
         description: "Understand users and create effective wireframes",
         lessons: [
-          { title: "User Personas & Journey Maps", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=Ovj4hFxQ7vg", videoType: "youtube", duration: 25 },
+          { title: "User Personas & Journey Maps", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=hMpMmv9MU4s", videoType: "youtube", duration: 25 },
           { title: "Low-Fidelity Wireframing", type: "TEXT", content: "Wireframes are skeletal layouts showing page structure without visual design. Low-fidelity wireframes use simple shapes and placeholder text. Start with paper sketches for rapid ideation. Key elements: navigation, content blocks, CTAs, and footer. Tools: paper, Balsamiq, Figma (wireframe kit). Iterate quickly — wireframes are cheap to change compared to high-fidelity mockups.", duration: 20 },
-          { title: "Competitive Analysis Techniques", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=dB4bDvjj9HQ", videoType: "youtube", duration: 20 },
+          { title: "Competitive Analysis Techniques", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=EqMjWU7vF2o", videoType: "youtube", duration: 20 },
         ],
       },
       {
@@ -708,7 +708,7 @@ const coursesData: CourseData[] = [
         lessons: [
           { title: "Interactive Prototyping in Figma", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=FTFaQWZBqQ8", videoType: "youtube", duration: 35 },
           { title: "Design System Components", type: "TEXT", content: "A design system is a collection of reusable components, patterns, and guidelines. Build a component library with variants in Figma: buttons (primary, secondary, ghost), input fields, cards, and modals. Use auto-layout for responsive components. Document spacing, colors (with semantic names), and typography scales. A well-built design system reduces design debt and speeds up development.", duration: 25 },
-          { title: "Developer Handoff Best Practices", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=ci4BAX9h4uo", videoType: "youtube", duration: 20 },
+          { title: "Developer Handoff Best Practices", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=ALkqhXv0GPk", videoType: "youtube", duration: 20 },
         ],
       },
     ],
@@ -802,36 +802,36 @@ const coursesData: CourseData[] = [
         title: "Security Fundamentals",
         description: "Core concepts of information security",
         lessons: [
-          { title: "CIA Triad & Security Principles", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=U_gy1W3t0z4", videoType: "youtube", duration: 20, isPreview: true },
+          { title: "CIA Triad & Security Principles", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=SBcDGb9l6yo", videoType: "youtube", duration: 20, isPreview: true },
           { title: "Common Attack Vectors", type: "TEXT", content: "Attack vectors include phishing (social engineering via email), SQL injection (malicious database queries), XSS (injecting scripts into web pages), man-in-the-middle (intercepting communications), and brute force (automated password guessing). Understanding these vectors is essential for building defenses. The OWASP Top 10 lists the most critical web application security risks.", duration: 25 },
-          { title: "Security Frameworks (NIST, ISO 27001)", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=2W1gPgMNYyQ", videoType: "youtube", duration: 30 },
+          { title: "Security Frameworks (NIST, ISO 27001)", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=WlmOI_rNRZw", videoType: "youtube", duration: 30 },
         ],
       },
       {
         title: "Network Security",
         description: "Protecting network infrastructure and communications",
         lessons: [
-          { title: "Firewalls & Intrusion Detection", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=nS_4p1p1b7U", videoType: "youtube", duration: 35 },
+          { title: "Firewalls & Intrusion Detection", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=fB0uFyxNMbE", videoType: "youtube", duration: 35 },
           { title: "VPNs & Encryption Protocols", type: "TEXT", content: "VPNs create encrypted tunnels for secure remote access. IPSec operates at the network layer with two modes: Transport (encrypts payload) and Tunnel (encrypts entire packet). TLS/SSL secures web traffic (HTTPS). VPN protocols include WireGuard (modern, fast), OpenVPN (flexible), and IPSec (enterprise). Always use strong encryption: AES-256, RSA-2048+.", duration: 25 },
-          { title: "Wireless Network Security (WPA3)", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=8yIMnVHkKQA", videoType: "youtube", duration: 25 },
+          { title: "Wireless Network Security (WPA3)", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=bMQ3W0Vxy3o", videoType: "youtube", duration: 25 },
         ],
       },
       {
         title: "Cryptography",
         description: "Mathematical foundations of data protection",
         lessons: [
-          { title: "Symmetric vs Asymmetric Encryption", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=AQ8WrNhEfXQ", videoType: "youtube", duration: 30 },
+          { title: "Symmetric vs Asymmetric Encryption", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=cQjYux-1H3E", videoType: "youtube", duration: 30 },
           { title: "Hashing & Digital Signatures", type: "TEXT", content: "Hash functions (SHA-256, SHA-3) produce fixed-size digests from input data. They are one-way and collision-resistant. Use cases: password storage (with salt + bcrypt), file integrity (checksums), blockchain. Digital signatures combine hashing with asymmetric encryption: sign with private key, verify with public key. Certificates (X.509) bind public keys to identities, forming the backbone of PKI/TLS.", duration: 30 },
-          { title: "Public Key Infrastructure (PKI)", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=UxVfLkGmMkA", videoType: "youtube", duration: 35 },
+          { title: "Public Key Infrastructure (PKI)", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=0ctat6RBrFo", videoType: "youtube", duration: 35 },
         ],
       },
       {
         title: "Ethical Hacking & Incident Response",
         description: "Hands-on penetration testing and breach response",
         lessons: [
-          { title: "Penetration Testing Methodology", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=fM1RnW0tVqc", videoType: "youtube", duration: 40 },
+          { title: "Penetration Testing Methodology", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=iE5BebSraGU", videoType: "youtube", duration: 40 },
           { title: "Vulnerability Scanning with Nmap", type: "TEXT", content: "Nmap (Network Mapper) discovers hosts and services on a network. Basic scan: nmap -sV target.com. Service version detection: nmap -sV -sC target.com. OS detection: nmap -O target.com. Vulnerability scripts: nmap --script vuln target.com. Combine with Nessus or OpenVAS for comprehensive vulnerability assessment. Always get written authorization before scanning.", duration: 30 },
-          { title: "Incident Response Playbook", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=CdFZ1w8VjSs", videoType: "youtube", duration: 35 },
+          { title: "Incident Response Playbook", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=9X069Ez_hFg", videoType: "youtube", duration: 35 },
         ],
       },
     ],
@@ -938,27 +938,27 @@ const coursesData: CourseData[] = [
         title: "AWS Core Services",
         description: "Compute, storage, and networking fundamentals",
         lessons: [
-          { title: "EC2 Instances & Security Groups", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=tlhrehUdAdo", videoType: "youtube", duration: 30, isPreview: true },
+          { title: "EC2 Instances & Security Groups", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=uvK4c3FOW5w", videoType: "youtube", duration: 30, isPreview: true },
           { title: "S3 Bucket Management", type: "TEXT", content: "Amazon S3 provides object storage with 11 9's of durability. Create buckets: aws s3 mb s3://my-bucket. Upload files: aws s3 cp file.txt s3://my-bucket/. S3 supports versioning, lifecycle policies (auto-archive to Glacier), and cross-region replication. Bucket policies use IAM-like JSON to control access. Server-side encryption (SSE-S3, SSE-KMS) protects data at rest.", duration: 25 },
-          { title: "VPC & Networking Basics", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=s2MFyHNvzGs", videoType: "youtube", duration: 35 },
+          { title: "VPC & Networking Basics", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=3FumWkHSusY", videoType: "youtube", duration: 35 },
         ],
       },
       {
         title: "Serverless & Databases",
         description: "Build without managing servers",
         lessons: [
-          { title: "AWS Lambda & API Gateway", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=eOBqPHhHICg", videoType: "youtube", duration: 35 },
+          { title: "AWS Lambda & API Gateway", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=M91vXdjve7A", videoType: "youtube", duration: 35 },
           { title: "RDS & DynamoDB", type: "TEXT", content: "RDS provides managed relational databases (MySQL, PostgreSQL, Aurora). Enable Multi-AZ for high availability and Read Replicas for scaling reads. DynamoDB is a serverless NoSQL database with single-digit millisecond latency. Use partition keys for even distribution and sort keys for range queries. DynamoDB Streams enable event-driven architectures.", duration: 30 },
-          { title: "Building Serverless APIs", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=3LHERpFPXeU", videoType: "youtube", duration: 40 },
+          { title: "Building Serverless APIs", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=cxgAN7T3rq8", videoType: "youtube", duration: 40 },
         ],
       },
       {
         title: "DevOps & Deployment",
         description: "CI/CD, infrastructure as code, and monitoring",
         lessons: [
-          { title: "CloudFormation & Infrastructure as Code", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=8Z9oVQaHQ5Y", videoType: "youtube", duration: 30 },
+          { title: "CloudFormation & Infrastructure as Code", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=8lyCJozsO74", videoType: "youtube", duration: 30 },
           { title: "CI/CD with CodePipeline", type: "TEXT", content: "AWS CodePipeline automates your release process with stages: Source (CodeCommit/GitHub), Build (CodeBuild), Deploy (CodeDeploy/CloudFormation). Each stage contains actions that run in parallel or sequence. Use artifacts to pass data between stages. Integrate with SNS for notifications. Pipeline triggers: CloudWatch events, manual approval, or webhook from source.", duration: 25 },
-          { title: "Monitoring with CloudWatch", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=i65UMFPBzEI", videoType: "youtube", duration: 25 },
+          { title: "Monitoring with CloudWatch", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=37aGsWMrlDY", videoType: "youtube", duration: 25 },
         ],
       },
     ],
@@ -1054,7 +1054,7 @@ const coursesData: CourseData[] = [
         lessons: [
           { title: "How Blockchain Works", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=SSo_EIwHSd4", videoType: "youtube", duration: 25, isPreview: true },
           { title: "Consensus Mechanisms", type: "TEXT", content: "Consensus mechanisms ensure all nodes agree on the blockchain state. Proof of Work (PoW) requires miners to solve cryptographic puzzles — energy-intensive but secure. Proof of Stake (PoS) selects validators based on staked tokens — more energy-efficient. Other mechanisms: Delegated PoS, Proof of Authority, Proof of History. Ethereum transitioned from PoW to PoS in 'The Merge' (2022).", duration: 25 },
-          { title: "Bitcoin vs Ethereum", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=K8Y44fNn7Fw", videoType: "youtube", duration: 30 },
+          { title: "Bitcoin vs Ethereum", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=whRujBYqydk", videoType: "youtube", duration: 30 },
         ],
       },
       {
@@ -1070,9 +1070,9 @@ const coursesData: CourseData[] = [
         title: "DeFi & Token Economics",
         description: "Decentralized finance protocols and tokenomics",
         lessons: [
-          { title: "DeFi Protocols Explained", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=k9ZoUpxkEbY", videoType: "youtube", duration: 30 },
+          { title: "DeFi Protocols Explained", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=CRpRGZCNgwE", videoType: "youtube", duration: 30 },
           { title: "Yield Farming & Liquidity Pools", type: "TEXT", content: "Liquidity pools are smart contracts holding token pairs that enable decentralized trading (AMMs like Uniswap). Liquidity providers (LPs) earn trading fees proportional to their share. Yield farming involves moving assets between protocols to maximize returns. Risks: impermanent loss (when pool price diverges from market price), smart contract exploits, and rug pulls. Always assess TVL (Total Value Locked) and audit status.", duration: 25 },
-          { title: "Tokenomics Design Principles", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=K9ZoUpxkEbY", videoType: "youtube", duration: 25 },
+          { title: "Tokenomics Design Principles", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=CRpRGZCNgwE", videoType: "youtube", duration: 25 },
         ],
       },
     ],
@@ -1166,36 +1166,36 @@ const coursesData: CourseData[] = [
         title: "React Native Fundamentals",
         description: "Core concepts and project setup",
         lessons: [
-          { title: "React Native vs Native: When to Choose What", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=NcM7TtUphhY", videoType: "youtube", duration: 20, isPreview: true },
+          { title: "React Native vs Native: When to Choose What", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=f8Z9JyB2EIE", videoType: "youtube", duration: 20, isPreview: true },
           { title: "Core Components & Styling", type: "TEXT", content: "React Native components map to native UI elements: View (div), Text (p), ScrollView, FlatList, TextInput, TouchableOpacity. Styles use a subset of CSS with camelCase: { backgroundColor: '#fff', padding: 16, borderRadius: 8 }. Flexbox is the default layout system with flexDirection defaulting to 'column'. Use StyleSheet.create() for performance optimization.", duration: 25 },
-          { title: "Expo CLI & Project Setup", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=0Y2J0JDPWqM", videoType: "youtube", duration: 30 },
+          { title: "Expo CLI & Project Setup", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=ox13W_9CWtw", videoType: "youtube", duration: 30 },
         ],
       },
       {
         title: "Navigation & State",
         description: "React Navigation and state management patterns",
         lessons: [
-          { title: "React Navigation Stack & Tabs", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=nKlGR-aJfbg", videoType: "youtube", duration: 35 },
+          { title: "React Navigation Stack & Tabs", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=RcGyu351YoM", videoType: "youtube", duration: 35 },
           { title: "State Management with Context & Zustand", type: "TEXT", content: "For simple state, use React's useState/useReducer with Context. For complex apps, Zustand provides a minimal API: import { create } from 'zustand'; const useStore = create(set => ({ count: 0, inc: () => set(s => ({ count: s.count + 1 })) })). Zustand requires no providers and works outside components. For async state, combine with React Query or SWR for caching and refetching.", duration: 30 },
-          { title: "Passing Data Between Screens", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=B6wfbqRMkFY", videoType: "youtube", duration: 25 },
+          { title: "Passing Data Between Screens", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=okeNLE5DlbU", videoType: "youtube", duration: 25 },
         ],
       },
       {
         title: "Native APIs & Storage",
         description: "Access device features and persist data",
         lessons: [
-          { title: "AsyncStorage & Secure Storage", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=RppL1m5kFJQ", videoType: "youtube", duration: 25 },
+          { title: "AsyncStorage & Secure Storage", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=2OoiL3rBzLc", videoType: "youtube", duration: 25 },
           { title: "Camera, Location & Permissions", type: "TEXT", content: "Expo provides APIs for device features: expo-camera for photos/video, expo-location for GPS, expo-notifications for push notifications. Always request permissions: const { status } = await ImagePicker.requestCameraPermissionsAsync(). Handle denied permissions gracefully with fallback UI. Use expo-secure-store for sensitive data (tokens, passwords) — it uses Keychain (iOS) and EncryptedSharedPreferences (Android).", duration: 30 },
-          { title: "Push Notifications Setup", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=QIrbbrdM-3k", videoType: "youtube", duration: 35 },
+          { title: "Push Notifications Setup", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=p4KP-hXuDyI", videoType: "youtube", duration: 35 },
         ],
       },
       {
         title: "Testing & Deployment",
         description: "Prepare your app for production",
         lessons: [
-          { title: "Testing with Jest & React Native Testing Library", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=MY_Sggg8T7M", videoType: "youtube", duration: 30 },
+          { title: "Testing with Jest & React Native Testing Library", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=wExSqFuor8k", videoType: "youtube", duration: 30 },
           { title: "App Store Submission Guide", type: "TEXT", content: "iOS: Create an App Store Connect listing, configure provisioning profiles in Xcode, run `eas build --platform ios`, then submit via Transporter or EAS Submit. Android: Create a Play Console listing, generate a signed APK/AAB with `eas build --platform android`, upload to Play Console. Both stores require: screenshots, description, privacy policy, and age rating. Use EAS Build and EAS Submit for streamlined CI/CD.", duration: 25 },
-          { title: "Performance Optimization Tips", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=B6wfbqRMkFY", videoType: "youtube", duration: 35 },
+          { title: "Performance Optimization Tips", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=okeNLE5DlbU", videoType: "youtube", duration: 35 },
         ],
       },
     ],
@@ -1302,9 +1302,9 @@ const coursesData: CourseData[] = [
         title: "Excel for Data Analysis",
         description: "Master Excel's powerful data analysis features",
         lessons: [
-          { title: "Essential Excel Formulas", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=IrRhy8jDl0w", videoType: "youtube", duration: 25, isPreview: true },
+          { title: "Essential Excel Formulas", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=r5fXft08dVY", videoType: "youtube", duration: 25, isPreview: true },
           { title: "Pivot Tables & Data Summarization", type: "TEXT", content: "Pivot tables aggregate large datasets into summary reports. Create one: select your data range > Insert > Pivot Table. Drag fields to Rows, Columns, Values, and Filters areas. Use Value Field Settings to change from SUM to COUNT, AVERAGE, etc. Group dates by month/year. Add slicers for interactive filtering. Refresh pivot tables when source data changes. Recommended: use structured references with Excel Tables.", duration: 30 },
-          { title: "Data Visualization with Charts", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=4R6mPcNnbV0", videoType: "youtube", duration: 20 },
+          { title: "Data Visualization with Charts", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=VV8iRJ-DS0A", videoType: "youtube", duration: 20 },
         ],
       },
       {
@@ -1313,16 +1313,16 @@ const coursesData: CourseData[] = [
         lessons: [
           { title: "SELECT, WHERE & ORDER BY", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=HXV3zeQKqGY", videoType: "youtube", duration: 30 },
           { title: "JOIN Operations", type: "TEXT", content: "JOINs combine rows from multiple tables. INNER JOIN returns matching rows in both tables. LEFT JOIN returns all rows from the left table and matching from the right. RIGHT JOIN is the opposite. FULL OUTER JOIN returns all rows from both. CROSS JOIN creates a Cartesian product. Example: SELECT o.id, c.name FROM orders o INNER JOIN customers c ON o.customer_id = c.id. Use aliases (o, c) for readability.", duration: 25 },
-          { title: "GROUP BY & Aggregate Functions", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=Q2IjOzgUkQI", videoType: "youtube", duration: 25 },
+          { title: "GROUP BY & Aggregate Functions", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=dz7VnYL9QhM", videoType: "youtube", duration: 25 },
         ],
       },
       {
         title: "Advanced Analytics",
         description: "Complex queries and data transformation",
         lessons: [
-          { title: "Subqueries & CTEs", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=BsuZGfCzMOs", videoType: "youtube", duration: 30 },
+          { title: "Subqueries & CTEs", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=_GbOTMoAPLw", videoType: "youtube", duration: 30 },
           { title: "Window Functions", type: "TEXT", content: "Window functions perform calculations across sets of rows without collapsing them. ROW_NUMBER() assigns sequential integers. RANK() handles ties with gaps. DENSE_RANK() handles ties without gaps. SUM() OVER (PARTITION BY region ORDER BY date) creates running totals. LAG() and LEAD() access previous/next rows. Window functions are processed after WHERE but before LIMIT.", duration: 30 },
-          { title: "Data Cleaning Techniques", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=BsuZGfCzMOs", videoType: "youtube", duration: 25 },
+          { title: "Data Cleaning Techniques", type: "VIDEO", videoUrl: "https://www.youtube.com/watch?v=_GbOTMoAPLw", videoType: "youtube", duration: 25 },
         ],
       },
     ],

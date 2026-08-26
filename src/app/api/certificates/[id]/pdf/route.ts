@@ -93,169 +93,214 @@ export async function GET(
 
     const pw = doc.internal.pageSize.getWidth();
     const ph = doc.internal.pageSize.getHeight();
-
-    doc.setFillColor(255, 253, 245);
-    doc.rect(0, 0, pw, ph, "F");
-
-    doc.setFillColor(45, 40, 30);
-    doc.rect(0, 0, pw, 2.5, "F");
-    doc.rect(0, ph - 2.5, pw, 2.5, "F");
-
-    doc.setDrawColor(185, 165, 110);
-    doc.setLineWidth(1);
-    doc.roundedRect(8, 8, pw - 16, ph - 16, 2, 2, "S");
-
-    doc.setDrawColor(210, 195, 150);
-    doc.setLineWidth(0.25);
-    doc.roundedRect(12, 12, pw - 24, ph - 24, 1.5, 1.5, "S");
-
     const cx = pw / 2;
 
-    doc.setDrawColor(185, 165, 110);
-    doc.setLineWidth(0.15);
-    doc.line(cx - 10, 22, cx - 2.5, 22);
-    doc.line(cx + 2.5, 22, cx + 10, 22);
-    doc.setFillColor(185, 165, 110);
-    doc.circle(cx, 22, 1.2, "F");
-
-    doc.setFont("times", "bold");
-    doc.setFontSize(7.5);
-    doc.setTextColor(165, 145, 90);
-    doc.text("SMARTLMS", cx, 18, { align: "center" });
-
-    doc.setFont("times", "bold");
-    doc.setFontSize(22);
-    doc.setTextColor(55, 45, 30);
-    doc.text("Certificate of Completion", cx, 32, { align: "center" });
-
-    doc.setDrawColor(185, 165, 110);
-    doc.setLineWidth(0.4);
-    doc.line(cx - 55, 36, cx + 55, 36);
-
-    doc.setFillColor(185, 165, 110);
-    doc.circle(cx - 57, 36, 0.8, "F");
-    doc.circle(cx + 57, 36, 0.8, "F");
-
-    doc.setFont("times", "italic");
-    doc.setFontSize(11);
-    doc.setTextColor(130, 120, 100);
-    doc.text("This is to certify that", cx, 46, { align: "center" });
-
-    doc.setFont("times", "bolditalic");
-    doc.setFontSize(32);
-    doc.setTextColor(35, 30, 20);
-    const studentName = certificate.user.name || "Student";
-    doc.text(studentName, cx, 60, { align: "center" });
-
-    const nameW = doc.getTextWidth(studentName);
-    doc.setDrawColor(185, 165, 110);
-    doc.setLineWidth(0.5);
-    doc.line(cx - nameW / 2 - 15, 65, cx + nameW / 2 + 15, 65);
-
-    doc.setFont("times", "italic");
-    doc.setFontSize(11);
-    doc.setTextColor(130, 120, 100);
-    doc.text("has successfully completed the course", cx, 74, {
-      align: "center",
-    });
-
-    doc.setFont("times", "bold");
-    doc.setFontSize(17);
-    doc.setTextColor(140, 115, 50);
-    doc.text(certificate.course.title, cx, 85, { align: "center" });
-
-    let detailY = 92;
-    const detailParts: string[] = [];
-    detailParts.push(`Level: ${courseLevel}`);
-    if (durationHours) detailParts.push(`Duration: ${durationHours} hours`);
-    if (courseTags.length > 0)
-      detailParts.push(`Skills: ${courseTags.slice(0, 5).join(" | ")}`);
-
-    doc.setFont("times", "italic");
-    doc.setFontSize(8);
-    doc.setTextColor(130, 120, 100);
-    doc.text(detailParts.join("   |   "), cx, detailY, { align: "center" });
-    detailY += 5;
-
-    if (courseDesc) {
-      doc.setFont("times", "normal");
-      doc.setFontSize(7);
-      doc.setTextColor(140, 130, 110);
-      const descLines = doc.splitTextToSize(courseDesc, pw - 100);
-      doc.text(descLines.slice(0, 2), cx, detailY, { align: "center" });
-      detailY += descLines.length > 1 ? 10 : 6;
-    }
-
-    doc.setDrawColor(210, 195, 150);
-    doc.setLineWidth(0.2);
-    doc.line(35, detailY, pw - 35, detailY);
-
-    const sigY = detailY + 10;
-    const drawSig = (x: number, label: string, value: string) => {
-      doc.setFont("times", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(80, 70, 50);
-      doc.text(value, x, sigY - 4, { align: "center" });
-      doc.setDrawColor(180, 170, 150);
-      doc.setLineWidth(0.2);
-      doc.line(x - 22, sigY, x + 22, sigY);
-      doc.setFont("times", "normal");
-      doc.setFontSize(6);
-      doc.setTextColor(160, 150, 130);
-      doc.text(label.toUpperCase(), x, sigY + 4, { align: "center" });
-    };
-
-    drawSig(pw * 0.22, "Instructor", instructorName);
-    drawSig(pw * 0.42, "Date of Issue", issuedDate);
-    drawSig(pw * 0.62, "Certificate No.", certificate.certificateId);
-
-    const qrX = pw - 50;
-    const qrY = ph - 48;
+    // White background
     doc.setFillColor(255, 255, 255);
-    doc.roundedRect(qrX - 2, qrY - 2, 28, 28, 1, 1, "F");
+    doc.rect(0, 0, pw, ph, "F");
+
+    // Blue outer border
+    doc.setDrawColor(184, 212, 232);
+    doc.setLineWidth(4);
+    doc.rect(4, 4, pw - 8, ph - 8, "S");
+
+    // Blue inner border
+    doc.setDrawColor(184, 212, 232);
+    doc.setLineWidth(0.5);
+    doc.rect(7, 7, pw - 14, ph - 14, "S");
+
+    // Top-left: SmartLMS logo + brand
+    doc.setFillColor(0, 104, 200);
+    doc.circle(18, 16, 5, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(255, 255, 255);
+    doc.text("SmartLMS", 18, 18, { align: "center" });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(0, 104, 200);
+    doc.text("SmartLMS", 26, 18);
+
+    // Top-right: CERTIFIED badge (shield shape)
+    const badgeX = pw - 20;
+    const badgeY = 12;
+    doc.setFillColor(0, 86, 164);
+    doc.triangle(badgeX, badgeY - 6, badgeX - 7, badgeY, badgeX + 7, badgeY, "F");
+    doc.triangle(badgeX, badgeY + 6, badgeX - 7, badgeY, badgeX + 7, badgeY, "F");
+    doc.setFillColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(4);
+    doc.setTextColor(0, 86, 164);
+    doc.text("SmartLMS", badgeX, badgeY - 1, { align: "center" });
+    doc.setFontSize(3.5);
+    doc.text("CERTIFIED", badgeX, badgeY + 3, { align: "center" });
+
+    // Title: "SmartLMS Presents"
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(0, 104, 200);
+    doc.text("SmartLMS Presents", cx, 30, { align: "center" });
+
+    // "CERTIFICATE" large
+    doc.setFont("times", "bold");
+    doc.setFontSize(36);
+    doc.setTextColor(26, 26, 26);
+    doc.text("CERTIFICATE", cx, 44, { align: "center" });
+
+    // "OF COMPLETION"
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.setTextColor(51, 51, 51);
+    doc.text("OF COMPLETION", cx, 52, { align: "center" });
+
+    // "This Certificate is Proudly Presented to"
+    doc.setFont("times", "italic");
+    doc.setFontSize(10);
+    doc.setTextColor(68, 68, 68);
+    doc.text("This Certificate is Proudly Presented to", cx, 62, { align: "center" });
+
+    // Student name with blue underline
+    const studentName = certificate.user.name || "Student";
+    doc.setFont("times", "bold");
+    doc.setFontSize(28);
+    doc.setTextColor(26, 26, 26);
+    doc.text(studentName, cx, 76, { align: "center" });
+    const nameW = doc.getTextWidth(studentName);
+    doc.setDrawColor(0, 104, 200);
+    doc.setLineWidth(0.5);
+    doc.line(cx - nameW / 2 - 10, 80, cx + nameW / 2 + 10, 80);
+
+    // "for successfully completing the course on"
+    doc.setFont("times", "italic");
+    doc.setFontSize(10);
+    doc.setTextColor(68, 68, 68);
+    doc.text("for successfully completing the course on", cx, 88, { align: "center" });
+
+    // Course name
+    doc.setFont("times", "bold");
+    doc.setFontSize(15);
+    doc.setTextColor(26, 26, 26);
+    doc.text(certificate.course.title, cx, 97, { align: "center" });
+
+    // Bottom section: Date - Badges - Signature
+    const bottomY = ph - 30;
+
+    // Date (left)
+    doc.setFont("times", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(51, 51, 51);
+    doc.text(issuedDate, pw * 0.22, bottomY, { align: "center" });
+    doc.setDrawColor(51, 51, 51);
+    doc.setLineWidth(0.3);
+    doc.line(pw * 0.22 - 20, bottomY + 2, pw * 0.22 + 20, bottomY + 2);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    doc.setTextColor(102, 102, 102);
+    doc.text("DATE", pw * 0.22, bottomY + 6, { align: "center" });
+
+    // ISO badge (center-left)
+    const badge1X = cx - 25;
+    doc.setDrawColor(0, 104, 200);
+    doc.setLineWidth(0.4);
+    doc.circle(badge1X, bottomY - 2, 6, "S");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(4);
+    doc.setTextColor(0, 104, 200);
+    doc.text("CERTIFIED", badge1X, bottomY - 3.5, { align: "center" });
+    doc.setFontSize(4.5);
+    doc.text("COMPANY", badge1X, bottomY - 1, { align: "center" });
+    doc.setFontSize(3.5);
+    doc.text("ISO", badge1X, bottomY + 1.5, { align: "center" });
+
+    // AICPA SOC badge (center)
+    doc.setFillColor(0, 104, 200);
+    doc.circle(cx, bottomY - 2, 6, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(4);
+    doc.setTextColor(255, 255, 255);
+    doc.text("AICPA", cx, bottomY - 3.5, { align: "center" });
+    doc.setFontSize(4.5);
+    doc.text("SOC", cx, bottomY - 1, { align: "center" });
+
+    // ISO 37001 badge (center-right)
+    const badge3X = cx + 25;
+    doc.setDrawColor(0, 104, 200);
+    doc.setLineWidth(0.4);
+    doc.circle(badge3X, bottomY - 2, 6, "S");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(3.5);
+    doc.setTextColor(0, 104, 200);
+    doc.text("ISO", badge3X, bottomY - 3.5, { align: "center" });
+    doc.setFontSize(4);
+    doc.text("37001", badge3X, bottomY - 1, { align: "center" });
+
+    // Signature (right)
+    doc.setFont("times", "italic");
+    doc.setFontSize(9);
+    doc.setTextColor(51, 51, 51);
+    doc.text(instructorName, pw * 0.78, bottomY, { align: "center" });
+    doc.setDrawColor(51, 51, 51);
+    doc.setLineWidth(0.3);
+    doc.line(pw * 0.78 - 20, bottomY + 2, pw * 0.78 + 20, bottomY + 2);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    doc.setTextColor(102, 102, 102);
+    doc.text("FOUNDER AND CEO", pw * 0.78, bottomY + 6, { align: "center" });
+
+    // QR Code (bottom center)
+    const qrSize = 18;
+    const qrX = cx - qrSize / 2;
+    const qrY = ph - 25;
 
     if (qrMatrix) {
-      const size = qrMatrix.length;
-      const cellSize = 24 / size;
+      const modules = qrMatrix.length;
+      const cellSize = qrSize / modules;
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(qrX - 1.5, qrY - 1.5, qrSize + 3, qrSize + 3, 1, 1, "F");
+      doc.setDrawColor(184, 212, 232);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(qrX - 1.5, qrY - 1.5, qrSize + 3, qrSize + 3, 1, 1, "S");
       doc.setFillColor(26, 26, 46);
-      for (let row = 0; row < size; row++) {
-        for (let col = 0; col < size; col++) {
+      for (let row = 0; row < modules; row++) {
+        for (let col = 0; col < modules; col++) {
           if (qrMatrix[row][col]) {
-            doc.rect(
-              qrX + col * cellSize,
-              qrY + row * cellSize,
-              cellSize + 0.1,
-              cellSize + 0.1,
-              "F"
-            );
+            doc.rect(qrX + col * cellSize, qrY + row * cellSize, cellSize + 0.08, cellSize + 0.08, "F");
           }
         }
       }
     }
-    doc.setFont("times", "normal");
-    doc.setFontSize(5.5);
-    doc.setTextColor(140, 130, 110);
-    doc.text("Scan to view certificate", qrX + 12, qrY + 27, { align: "center" });
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(4.5);
+    doc.setTextColor(0, 104, 200);
+    doc.text("SCAN TO VERIFY", cx, qrY + qrSize + 4, { align: "center" });
 
-    doc.setFont("times", "bold");
-    doc.setFontSize(6.5);
-    doc.setTextColor(60, 130, 80);
-    doc.text("VERIFIED", qrX + 12, ph - 17, { align: "center" });
+    // Verified badge (bottom-right)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(0, 166, 126);
+    doc.text("VERIFIED", pw - 20, qrY + qrSize + 4, { align: "center" });
 
-    doc.setFont("times", "normal");
+    // Certificate number (bottom-right above verified)
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(5);
+    doc.setTextColor(102, 102, 102);
+    doc.text("CERTIFICATE NO.", pw - 20, qrY - 4, { align: "center" });
+    doc.setFont("courier", "bold");
     doc.setFontSize(5.5);
-    doc.setTextColor(160, 150, 130);
+    doc.setTextColor(51, 51, 51);
+    doc.text(certificate.certificateId, pw - 20, qrY + 1, { align: "center" });
+
+    // Footer (bottom-left)
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(4.5);
+    doc.setTextColor(153, 153, 153);
     doc.text(
-      "View certificate at: smartlms-bay.vercel.app/certificate/" +
-        certificate.certificateId,
-      35,
-      ph - 15
+      "View at: smartlms-bay.vercel.app/certificate/" + certificate.certificateId,
+      14,
+      ph - 12
     );
-    doc.text(
-      "This certificate was issued by SmartLMS Platform",
-      35,
-      ph - 11
-    );
+    doc.text("This certificate was issued by SmartLMS Platform", 14, ph - 9);
 
     const pdfArrayBuffer = doc.output("arraybuffer");
     const pdfBuffer = Buffer.from(pdfArrayBuffer);
