@@ -273,10 +273,11 @@ function HiddenCertificate({
     month: "long",
     day: "numeric",
   });
-  const studentName = "Student";
+  const studentName = cert.user?.name || "Student";
   const courseName = cert.course.title;
-  const instructorName = "Instructor";
+  const instructorName = cert.course?.instructor?.name || "SmartLMS Team";
   const verificationId = cert.certificateId;
+  const verificationUrl = `https://smartlms-bay.vercel.app/verify-certificate?id=${verificationId}`;
 
   return (
     <div
@@ -287,186 +288,314 @@ function HiddenCertificate({
         top: 0,
         width: "1122px",
         height: "794px",
-        background: "#FFFEF7",
+        background: "#ffffff",
         fontFamily: "'Georgia', 'Palatino Linotype', serif",
         overflow: "hidden",
       }}
     >
+      {/* Blue double border - outer */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          border: "4px double #b9a56e",
-          borderRadius: "8px",
-          margin: "10px",
+          border: "40px solid #B8D4E8",
+          boxSizing: "border-box",
         }}
       />
+      {/* Blue double border - inner */}
       <div
         style={{
           position: "absolute",
-          inset: 0,
-          border: "1.5px solid #d2c396",
-          borderRadius: "6px",
-          margin: "16px",
+          inset: "50px",
+          border: "2px solid #B8D4E8",
+          boxSizing: "border-box",
         }}
       />
-      <div style={{ textAlign: "center", padding: "30px 60px", position: "relative", zIndex: 1 }}>
+
+      {/* Content */}
+      <div
+        style={{
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          height: "100%",
+          padding: "60px 80px 50px",
+          boxSizing: "border-box",
+          zIndex: 1,
+        }}
+      >
+        {/* Top row: Logo left, Badge right */}
         <div
           style={{
-            fontSize: "8px",
-            fontWeight: 700,
-            letterSpacing: "3px",
-            color: "#a5915a",
-            marginBottom: "4px",
-          }}
-        >
-          SMARTLMS
-        </div>
-        <div
-          style={{
-            width: "100%",
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "12px",
-            marginBottom: "6px",
+            width: "100%",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
           }}
         >
-          <div style={{ height: "1px", width: "60px", background: "#b9a56e" }} />
+          {/* Logo + Brand */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "50%",
+                background: "#0068C8",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span style={{ color: "white", fontSize: "18px" }}>📚</span>
+            </div>
+            <span
+              style={{
+                fontSize: "18px",
+                fontWeight: "bold",
+                color: "#0068C8",
+                fontFamily: "Arial, sans-serif",
+              }}
+            >
+              SmartLMS
+            </span>
+          </div>
+
+          {/* Certified Badge */}
           <div
             style={{
-              width: "8px",
-              height: "8px",
-              borderRadius: "50%",
-              background: "#b9a56e",
+              width: "70px",
+              height: "82px",
+              position: "relative",
+              textAlign: "center",
             }}
-          />
-          <div style={{ height: "1px", width: "60px", background: "#b9a56e" }} />
+          >
+            <svg width="70" height="82" viewBox="0 0 70 82" fill="none">
+              <path d="M35 4L62 17V48C62 62 49 73 35 77C21 73 8 62 8 48V17L35 4Z" fill="#0056A4" />
+              <path d="M35 8L58 19V48C58 60 47 69 35 73C23 69 12 60 12 48V19L35 8Z" fill="#0068C8" />
+              <path d="M35 15L50 24V46C50 55 43 62 35 65C27 62 20 55 20 46V24L35 15Z" fill="white" />
+              <text x="35" y="38" textAnchor="middle" fill="#0056A4" fontSize="14" fontWeight="bold" fontFamily="Arial">★</text>
+              <text x="35" y="52" textAnchor="middle" fill="#0056A4" fontSize="5" fontWeight="bold" fontFamily="Arial">SmartLMS</text>
+              <text x="35" y="59" textAnchor="middle" fill="#0056A4" fontSize="4.5" fontWeight="600" fontFamily="Arial">CERTIFIED</text>
+            </svg>
+          </div>
         </div>
-        <div
-          style={{
-            fontSize: "26px",
-            fontWeight: 700,
-            color: "#372d1e",
-            marginBottom: "8px",
-          }}
-        >
-          Certificate of Completion
+
+        {/* Title Section */}
+        <div style={{ textAlign: "center", marginTop: "20px" }}>
+          <p style={{ fontSize: "14px", color: "#0068C8", fontWeight: "medium", letterSpacing: "1px" }}>
+            SmartLMS Presents
+          </p>
+          <h1
+            style={{
+              fontSize: "52px",
+              fontWeight: "bold",
+              color: "#1a1a1a",
+              margin: "8px 0 0",
+              letterSpacing: "2px",
+            }}
+          >
+            CERTIFICATE
+          </h1>
+          <p style={{ fontSize: "16px", fontWeight: "600", color: "#333", letterSpacing: "3px", textTransform: "uppercase", margin: "4px 0 0" }}>
+            of Completion
+          </p>
         </div>
-        <div
-          style={{
-            height: "2px",
-            width: "50%",
-            margin: "0 auto 12px",
-            background: "#b9a56e",
-          }}
-        />
-        <div
-          style={{
-            fontSize: "12px",
-            fontStyle: "italic",
-            color: "#827864",
-            marginBottom: "8px",
-          }}
-        >
-          This is to certify that
+
+        {/* Presented to */}
+        <div style={{ textAlign: "center", marginTop: "30px" }}>
+          <p style={{ fontSize: "13px", color: "#444" }}>
+            This Certificate is Proudly Presented to
+          </p>
         </div>
-        <div
-          style={{
-            fontSize: "36px",
-            fontWeight: 700,
-            fontStyle: "italic",
-            color: "#231e14",
-            marginBottom: "6px",
-            borderBottom: "2px solid #b9a56e",
-            display: "inline-block",
-            paddingBottom: "4px",
-          }}
-        >
-          {studentName}
+
+        {/* Student Name */}
+        <div style={{ textAlign: "center", marginTop: "16px", width: "60%" }}>
+          <h2
+            style={{
+              fontSize: "36px",
+              fontWeight: "bold",
+              color: "#1a1a1a",
+              paddingBottom: "8px",
+              borderBottom: "2px solid #0068C8",
+              margin: 0,
+            }}
+          >
+            {studentName}
+          </h2>
         </div>
-        <div
-          style={{
-            fontSize: "12px",
-            fontStyle: "italic",
-            color: "#827864",
-            marginTop: "12px",
-            marginBottom: "6px",
-          }}
-        >
-          has successfully completed the course
+
+        {/* Course completion text */}
+        <div style={{ textAlign: "center", marginTop: "24px" }}>
+          <p style={{ fontSize: "13px", color: "#444" }}>
+            for successfully completing the course on
+          </p>
+          <h3
+            style={{
+              fontSize: "22px",
+              fontWeight: "bold",
+              color: "#1a1a1a",
+              margin: "6px 0 0",
+            }}
+          >
+            {courseName}
+          </h3>
         </div>
+
+        {/* Bottom section: Date - Badges - Signature */}
         <div
           style={{
-            fontSize: "20px",
-            fontWeight: 700,
-            color: "#8c7332",
-            marginBottom: "8px",
-          }}
-        >
-          {courseName}
-        </div>
-        <div
-          style={{
-            height: "1px",
-            width: "80%",
-            margin: "0 auto 10px",
-            background: "#d2c396",
-          }}
-        />
-        <div
-          style={{
+            marginTop: "auto",
+            width: "100%",
             display: "flex",
-            justifyContent: "space-around",
-            maxWidth: "80%",
-            margin: "0 auto",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
           }}
         >
-          {[
-            { label: "INSTRUCTOR", value: instructorName },
-            { label: "DATE OF ISSUE", value: issuedDate },
-            { label: "CERTIFICATE NO.", value: verificationId },
-          ].map((item) => (
-            <div key={item.label} style={{ textAlign: "center", minWidth: "140px" }}>
-              <div style={{ fontSize: "11px", color: "#504632", fontWeight: 400 }}>
-                {item.value}
-              </div>
-              <div
-                style={{
-                  height: "1px",
-                  background: "#b4aa96",
-                  margin: "6px auto",
-                  width: "120px",
-                }}
-              />
-              <div style={{ fontSize: "7px", letterSpacing: "1px", color: "#a09682" }}>
-                {item.label}
+          {/* Date */}
+          <div style={{ textAlign: "center", minWidth: "140px" }}>
+            <div
+              style={{
+                borderBottom: "1px solid #333",
+                paddingBottom: "6px",
+                marginBottom: "4px",
+              }}
+            >
+              <span style={{ fontSize: "12px", fontWeight: "600", color: "#333" }}>
+                {issuedDate}
+              </span>
+            </div>
+            <span style={{ fontSize: "10px", color: "#666" }}>Date</span>
+          </div>
+
+          {/* Certification Badges */}
+          <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+            {/* ISO Badge */}
+            <div
+              style={{
+                width: "50px",
+                height: "50px",
+                borderRadius: "50%",
+                border: "2px solid #0068C8",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: "5px", fontWeight: "bold", color: "#0068C8" }}>CERTIFIED</div>
+                <div style={{ fontSize: "6px", fontWeight: "bold", color: "#0068C8" }}>COMPANY</div>
+                <div style={{ fontSize: "5px", color: "#0068C8" }}>ISO</div>
               </div>
             </div>
-          ))}
+
+            {/* AICPA SOC Badge */}
+            <div
+              style={{
+                width: "50px",
+                height: "50px",
+                borderRadius: "50%",
+                background: "#0068C8",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: "5px", fontWeight: "bold", color: "white" }}>AICPA</div>
+                <div style={{ fontSize: "6px", fontWeight: "bold", color: "white" }}>SOC</div>
+              </div>
+            </div>
+
+            {/* ISO 37001 Badge */}
+            <div
+              style={{
+                width: "50px",
+                height: "50px",
+                borderRadius: "50%",
+                border: "2px solid #0068C8",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: "5px", fontWeight: "bold", color: "#0068C8" }}>ISO</div>
+                <div style={{ fontSize: "6px", fontWeight: "bold", color: "#0068C8" }}>37001</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Signature */}
+          <div style={{ textAlign: "center", minWidth: "140px" }}>
+            <div
+              style={{
+                borderBottom: "1px solid #333",
+                paddingBottom: "6px",
+                marginBottom: "4px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "12px",
+                  fontStyle: "italic",
+                  color: "#333",
+                }}
+              >
+                {instructorName}
+              </span>
+            </div>
+            <span style={{ fontSize: "10px", color: "#666" }}>Founder and CEO</span>
+          </div>
         </div>
+
+        {/* QR Code + Verification Row */}
         <div
           style={{
-            position: "absolute",
-            bottom: "20px",
-            left: "40px",
-            fontSize: "7px",
-            color: "#a09682",
+            marginTop: "24px",
+            width: "100%",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          <div>View at: smartlms-bay.vercel.app/certificate/{verificationId}</div>
-          <div style={{ marginTop: "3px" }}>This certificate was issued by SmartLMS Platform</div>
-        </div>
-        <div
-          style={{
-            position: "absolute",
-            bottom: "20px",
-            right: "40px",
-            textAlign: "center",
-          }}
-        >
-          <div style={{ fontSize: "8px", fontWeight: 700, color: "#3c8250" }}>
-            VERIFIED
+          <div>
+            <div style={{ fontSize: "8px", color: "#999" }}>
+              View at: smartlms-bay.vercel.app/certificate/{verificationId}
+            </div>
+            <div style={{ fontSize: "8px", color: "#999" }}>
+              This certificate was issued by SmartLMS Platform
+            </div>
+          </div>
+
+          <div style={{ textAlign: "center" }}>
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=${encodeURIComponent(verificationUrl)}`}
+              alt="QR Code"
+              width={70}
+              height={70}
+              crossOrigin="anonymous"
+            />
+            <div style={{ fontSize: "7px", fontWeight: "bold", color: "#0068C8", textTransform: "uppercase", letterSpacing: "1px", marginTop: "4px" }}>
+              Scan to Verify
+            </div>
+          </div>
+
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: "8px", fontWeight: "bold", color: "#00A67E", textTransform: "uppercase" }}>
+              Verified
+            </div>
+            <div style={{ marginTop: "4px" }}>
+              <div style={{ fontSize: "7px", fontWeight: "600", color: "#666", textTransform: "uppercase", letterSpacing: "1px" }}>
+                Certificate No.
+              </div>
+              <div style={{ fontSize: "11px", fontWeight: "bold", color: "#333", fontFamily: "monospace", letterSpacing: "1px" }}>
+                {verificationId}
+              </div>
+            </div>
           </div>
         </div>
       </div>

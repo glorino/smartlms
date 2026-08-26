@@ -60,8 +60,13 @@ export default function MessagesPage() {
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [showCompose, setShowCompose] = useState(false);
   const [composeRecipient, setComposeRecipient] = useState("");
+  const [composeRecipientName, setComposeRecipientName] = useState("");
   const [composeContent, setComposeContent] = useState("");
   const [sending, setSending] = useState(false);
+  const [userSearchQuery, setUserSearchQuery] = useState("");
+  const [userSearchResults, setUserSearchResults] = useState<MessageUser[]>([]);
+  const [userSearchLoading, setUserSearchLoading] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   const fetchMessages = async () => {
     setLoading(true);
@@ -75,6 +80,27 @@ export default function MessagesPage() {
       setMessages([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const searchUsers = async (query: string) => {
+    if (query.length < 2) {
+      setUserSearchResults([]);
+      setShowUserDropdown(false);
+      return;
+    }
+    setUserSearchLoading(true);
+    try {
+      const res = await fetch(`/api/messages/users?q=${encodeURIComponent(query)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setUserSearchResults(data.users || []);
+        setShowUserDropdown(true);
+      }
+    } catch {
+      setUserSearchResults([]);
+    } finally {
+      setUserSearchLoading(false);
     }
   };
 
@@ -153,7 +179,11 @@ export default function MessagesPage() {
         setMessages((prev) => [data.message, ...prev]);
         setShowCompose(false);
         setComposeRecipient("");
+        setComposeRecipientName("");
         setComposeContent("");
+        setUserSearchQuery("");
+        setUserSearchResults([]);
+        setShowUserDropdown(false);
         setSelectedConversation(null);
       }
     } catch {
@@ -215,14 +245,17 @@ export default function MessagesPage() {
           )}
           <Button
             onClick={() => {
-              setShowCompose(!showCompose);
-              setSelectedConversation(null);
-            }}
-            className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Compose
-          </Button>
+        setShowCompose(false);
+        setSelectedConversation(null);
+        setUserSearchQuery("");
+        setUserSearchResults([]);
+        setShowUserDropdown(false);
+      }}
+      className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700"
+    >
+      <Plus className="mr-2 h-4 w-4" />
+      Compose
+    </Button>
         </div>
       </div>
 
@@ -239,12 +272,57 @@ export default function MessagesPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Recipient ID</label>
-              <Input
-                placeholder="Enter user ID"
-                value={composeRecipient}
-                onChange={(e) => setComposeRecipient(e.target.value)}
-              />
+              <label className="text-sm font-medium text-gray-700">Recipient</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Search by name or email..."
+                  value={userSearchQuery}
+                  onChange={(e) => {
+                    setUserSearchQuery(e.target.value);
+                    setComposeRecipient("");
+                    setComposeRecipientName("");
+                    searchUsers(e.target.value);
+                  }}
+                  onFocus={() => {
+                    if (userSearchResults.length > 0) setShowUserDropdown(true);
+                  }}
+                  className="pl-10"
+                />
+                {userSearchLoading && (
+                  <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-gray-400" />
+                )}
+                {showUserDropdown && userSearchResults.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg">
+                    {userSearchResults.map((user) => (
+                      <button
+                        key={user.id}
+                        onClick={() => {
+                          setComposeRecipient(user.id);
+                          setComposeRecipientName(user.name || user.email);
+                          setUserSearchQuery(user.name || user.email);
+                          setShowUserDropdown(false);
+                          setUserSearchResults([]);
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                          <User className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{user.name || "Unnamed"}</p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {composeRecipient && (
+                <p className="text-xs text-green-600">
+                  Sending to: {composeRecipientName}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Message</label>
@@ -258,14 +336,19 @@ export default function MessagesPage() {
             <div className="flex justify-end gap-3 pt-2">
               <Button
                 variant="outline"
-                onClick={() => setShowCompose(false)}
+                onClick={() => {
+                  setShowCompose(false);
+                  setUserSearchQuery("");
+                  setUserSearchResults([]);
+                  setShowUserDropdown(false);
+                }}
                 disabled={sending}
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleSend}
-                disabled={!composeRecipient.trim() || !composeContent.trim() || sending}
+                disabled={!composeRecipient || !composeContent.trim() || sending}
                 className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700"
               >
                 {sending ? (
