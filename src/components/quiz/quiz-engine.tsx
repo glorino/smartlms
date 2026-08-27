@@ -186,6 +186,14 @@ export default function QuizEngine({
   const [showConfirm, setShowConfirm] = useState(false);
   const [showTimesUp, setShowTimesUp] = useState(false);
   const totalTime = useRef((quiz.timeLimit || 0) * 60);
+  const timedOutRef = useRef(false);
+  const answersRef = useRef(answers);
+  const onSubmitRef = useRef(onSubmit);
+  const currentAttemptRef = useRef(currentAttempt);
+
+  answersRef.current = answers;
+  onSubmitRef.current = onSubmit;
+  currentAttemptRef.current = currentAttempt;
 
   const dbQuestion = quiz.questions[currentQuestionIndex];
   const mappedType = dbQuestion ? mapDbQuestionType(dbQuestion.type) : "multiple-choice";
@@ -197,23 +205,21 @@ export default function QuizEngine({
 
   const handleSubmit = useCallback(() => {
     if (isSubmitted) return;
-    setShowTimesUp(true);
+    if (timedOutRef.current) {
+      setShowTimesUp(true);
+    }
     setIsSubmitted(true);
     setShowConfirm(false);
-    onSubmit?.(answers, currentAttempt);
-  }, [answers, onSubmit, isSubmitted, currentAttempt]);
+    onSubmitRef.current?.(answersRef.current, currentAttemptRef.current);
+  }, [isSubmitted]);
 
   useEffect(() => {
-    if (isSubmitted) return;
-    if (timeLeft <= 0) {
-      handleSubmit();
-      return;
-    }
+    if (isSubmitted || timeLeft <= 0) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          handleSubmit();
+          clearInterval(timer);
           return 0;
         }
         return prev - 1;
@@ -221,7 +227,13 @@ export default function QuizEngine({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isSubmitted, handleSubmit, timeLeft]);
+  }, [isSubmitted]);
+
+  useEffect(() => {
+    if (isSubmitted || timeLeft > 0 || totalTime.current <= 0) return;
+    timedOutRef.current = true;
+    handleSubmit();
+  }, [timeLeft, isSubmitted]);
 
   const handleAnswer = (questionId: string, answer: string | string[] | Record<string, string>) => {
     if (isSubmitted) return;
