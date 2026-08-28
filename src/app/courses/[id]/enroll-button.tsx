@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Loader2, ShoppingCart, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ interface EnrollButtonProps {
   courseName?: string;
   price?: number;
   currency?: string;
+  isEnrolled?: boolean;
 }
 
 export default function EnrollButton({
@@ -18,12 +19,17 @@ export default function EnrollButton({
   courseName = "",
   price = 0,
   currency = "NGN",
+  isEnrolled: initialEnrolled = false,
 }: EnrollButtonProps) {
   const router = useRouter();
   const [isEnrolling, setIsEnrolling] = useState(false);
-  const [enrolled, setEnrolled] = useState(false);
+  const [enrolled, setEnrolled] = useState(initialEnrolled);
   const [error, setError] = useState("");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  useEffect(() => {
+    setEnrolled(initialEnrolled);
+  }, [initialEnrolled]);
 
   const isFree = price === 0 || price === undefined;
 
@@ -57,21 +63,14 @@ export default function EnrollButton({
 
   if (enrolled) {
     return (
-      <div className="space-y-2">
-        <Button className="w-full text-base" size="lg" disabled>
-          <Check className="mr-2 h-4 w-4" />
-          Enrolled Successfully
-        </Button>
-        <Button
-          className="w-full text-base"
-          size="lg"
-          variant="outline"
-          onClick={() => router.push(`/courses/${courseId}/learn`)}
-        >
-          <Play className="mr-2 h-4 w-4" />
-          Start Learning
-        </Button>
-      </div>
+      <Button
+        className="w-full text-base"
+        size="lg"
+        onClick={() => router.push(`/courses/${courseId}/learn`)}
+      >
+        <Play className="mr-2 h-4 w-4" />
+        Start Course
+      </Button>
     );
   }
 

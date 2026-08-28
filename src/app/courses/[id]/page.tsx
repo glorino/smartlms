@@ -503,6 +503,7 @@ export default function CourseDetailPage() {
                         courseName={course.title}
                         price={course.salePrice || course.price}
                         currency="NGN"
+                        isEnrolled={isEnrolled}
                       />
 
                       <p className="mt-3 text-center text-xs text-gray-500">
