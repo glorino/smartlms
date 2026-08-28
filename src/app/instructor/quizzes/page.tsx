@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import {
   FileCheck,
@@ -75,8 +74,6 @@ const defaultQuestion: QuizQuestion = {
 };
 
 export default function InstructorQuizzesPage() {
-  const { data: session } = useSession();
-  const userId = (session?.user as any)?.id;
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,7 +100,7 @@ export default function InstructorQuizzesPage() {
     async function fetchData() {
       try {
         const [quizzesRes, coursesRes] = await Promise.all([
-          fetch("/api/quizzes"),
+          fetch("/api/quizzes?my=true"),
           fetch("/api/courses?allStatus=true&limit=100"),
         ]);
         if (quizzesRes.ok) {
@@ -124,10 +121,9 @@ export default function InstructorQuizzesPage() {
   }, []);
 
   const filtered = quizzes.filter((q) => {
-    const isOwner = !userId || q.instructorId === userId;
     const matchesSearch = q.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCourse = filterCourse === "all" || q.courseId === filterCourse;
-    return isOwner && matchesSearch && matchesCourse;
+    return matchesSearch && matchesCourse;
   });
 
   const resetForm = () => {
@@ -338,7 +334,7 @@ export default function InstructorQuizzesPage() {
 
       if (res.ok) {
         const data = await res.json();
-        setQuizzes([
+        setQuizzes((prev) => [
           {
             id: data.quiz.id,
             title: data.quiz.title,
@@ -352,7 +348,7 @@ export default function InstructorQuizzesPage() {
             courseName: courses.find((c) => c.id === data.quiz.courseId)?.title || "",
             totalQuestions: data.quiz.questions?.length || 0,
           },
-          ...quizzes,
+          ...prev,
         ]);
         setShowForm(false);
         resetForm();

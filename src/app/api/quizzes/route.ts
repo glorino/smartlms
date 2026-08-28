@@ -6,11 +6,14 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get("courseId");
+    const myOnly = searchParams.get("my") === "true";
     const session = await auth();
 
     const where: any = {};
 
-    if (session?.user?.id && ((session.user as any).role === "INSTRUCTOR" || (session.user as any).role === "ADMIN")) {
+    if (myOnly && session?.user?.id) {
+      where.course = { instructorId: session.user.id };
+    } else if (session?.user?.id && ((session.user as any).role === "INSTRUCTOR" || (session.user as any).role === "ADMIN")) {
       where.OR = [
         { isPublished: true },
         { course: { instructorId: session.user.id } },
