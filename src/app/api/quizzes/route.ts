@@ -53,6 +53,7 @@ export async function GET(request: Request) {
       points: q.points,
       courseId: q.courseId,
       isPublished: q.isPublished,
+      instructorId: q.course?.instructorId || null,
       totalQuestions: q._count.questions,
       courseName: q.course?.title || "Unknown Course",
     }));

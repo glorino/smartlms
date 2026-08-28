@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import {
   FileCheck,
@@ -51,6 +52,7 @@ interface Quiz {
   courseName: string;
   totalQuestions: number;
   isPublished?: boolean;
+  instructorId?: string | null;
 }
 
 interface Course {
@@ -73,6 +75,8 @@ const defaultQuestion: QuizQuestion = {
 };
 
 export default function InstructorQuizzesPage() {
+  const { data: session } = useSession();
+  const userId = (session?.user as any)?.id;
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,9 +124,10 @@ export default function InstructorQuizzesPage() {
   }, []);
 
   const filtered = quizzes.filter((q) => {
+    const isOwner = !userId || q.instructorId === userId;
     const matchesSearch = q.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCourse = filterCourse === "all" || q.courseId === filterCourse;
-    return matchesSearch && matchesCourse;
+    return isOwner && matchesSearch && matchesCourse;
   });
 
   const resetForm = () => {
@@ -368,7 +373,7 @@ export default function InstructorQuizzesPage() {
     try {
       const res = await fetch(`/api/quizzes/${quizId}`, { method: "DELETE" });
       if (res.ok) {
-        setQuizzes(quizzes.filter((q) => q.id !== quizId));
+        setQuizzes((prev) => prev.filter((q) => q.id !== quizId));
         toast.success("Quiz deleted");
       } else {
         const data = await res.json().catch(() => ({ error: "Failed to delete quiz" }));
