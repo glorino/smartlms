@@ -23,53 +23,6 @@ interface ActivityItem {
   color: string;
 }
 
-const fallbackActivity: ActivityItem[] = [
-  {
-    id: "1",
-    type: "course_progress",
-    title: "Completed Lesson 5: Advanced React Patterns",
-    description: "React Masterclass 2024 - You scored 92% on the lesson quiz",
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    icon: "book",
-    color: "bg-blue-500",
-  },
-  {
-    id: "2",
-    type: "certificate",
-    title: "Certificate Earned",
-    description: "You received a certificate for completing Web Development 101",
-    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    icon: "award",
-    color: "bg-amber-500",
-  },
-  {
-    id: "3",
-    type: "quiz",
-    title: "Quiz Completed: JavaScript Fundamentals",
-    description: "Scored 88% (Passing score: 70%)",
-    timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-    icon: "file",
-    color: "bg-emerald-500",
-  },
-  {
-    id: "4",
-    type: "enrollment",
-    title: "Enrolled in Python for Data Science",
-    description: "Started a new course with Dr. Emily Chen",
-    timestamp: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
-    icon: "trending",
-    color: "bg-purple-500",
-  },
-  {
-    id: "5",
-    type: "message",
-    title: "New message from instructor",
-    description: "Sarah Johnson replied to your question about React Hooks",
-    timestamp: new Date(Date.now() - 96 * 60 * 60 * 1000).toISOString(),
-    icon: "message",
-    color: "bg-indigo-500",
-  },
-];
 
 export default function DashboardActivityPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
@@ -81,16 +34,10 @@ export default function DashboardActivityPage() {
         const res = await fetch("/api/activity");
         if (res.ok) {
           const data = await res.json();
-          if (data.activities?.length > 0) {
-            setActivities(data.activities);
-          } else {
-            setActivities(fallbackActivity);
-          }
-        } else {
-          setActivities(fallbackActivity);
+          setActivities(data.activities || []);
         }
       } catch {
-        setActivities(fallbackActivity);
+        setActivities([]);
       }
     }
     fetchActivity();

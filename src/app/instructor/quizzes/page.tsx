@@ -370,6 +370,9 @@ export default function InstructorQuizzesPage() {
       if (res.ok) {
         setQuizzes(quizzes.filter((q) => q.id !== quizId));
         toast.success("Quiz deleted");
+      } else {
+        const data = await res.json().catch(() => ({ error: "Failed to delete quiz" }));
+        toast.error(data.error || "Failed to delete quiz");
       }
     } catch {
       toast.error("Failed to delete quiz");
@@ -705,10 +708,8 @@ export default function InstructorQuizzesPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Link href={`/courses/${quiz.courseId}/learn`}>
-                      <Button variant="ghost" size="icon" title="Preview">
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                    <Link href={`/quiz/${quiz.id}`} className="text-gray-500 hover:text-gray-700">
+                      <Eye className="h-4 w-4" />
                     </Link>
                     <Button
                       variant="ghost"

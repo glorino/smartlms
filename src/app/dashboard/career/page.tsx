@@ -10,6 +10,8 @@ import {
   Loader2,
   Target,
   Clock,
+  BookOpen,
+  ExternalLink,
 } from "lucide-react";
 
 interface RoadmapStep {
@@ -34,8 +36,18 @@ interface CareerPathItem {
   createdAt: string;
 }
 
+interface MatchingCourse {
+  id: string;
+  title: string;
+  category: string;
+  level: string;
+  tags: string[];
+  passingScore: number;
+}
+
 export default function CareerPage() {
   const [careers, setCareers] = useState<CareerPathItem[]>([]);
+  const [matchingCourses, setMatchingCourses] = useState<MatchingCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -47,6 +59,7 @@ export default function CareerPage() {
       if (res.ok) {
         const data = await res.json();
         setCareers(data.careerPaths || []);
+        setMatchingCourses(data.matchingCourses || []);
       }
     } catch {}
     setLoading(false);
@@ -63,6 +76,9 @@ export default function CareerPage() {
       if (res.ok) {
         const data = await res.json();
         setCareers((prev) => [...(data.careerPaths || []), ...prev]);
+        if (data.matchingCourses?.length > 0) {
+          setMatchingCourses(data.matchingCourses);
+        }
       }
     } catch {}
     setGenerating(false);
@@ -92,7 +108,7 @@ export default function CareerPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Career Paths</h1>
           <p className="text-gray-500">
-            AI-powered career recommendations based on your learning
+            AI-powered career recommendations matched to your enrolled courses
           </p>
         </div>
         <button
@@ -130,6 +146,33 @@ export default function CareerPage() {
         <div className="flex flex-col items-center justify-center py-16">
           <Loader2 className="h-10 w-10 animate-spin text-indigo-500" />
           <p className="mt-4 text-gray-500">Analyzing your learning profile...</p>
+        </div>
+      )}
+
+      {matchingCourses.length > 0 && (
+        <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-6">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-indigo-900">
+            <BookOpen className="h-5 w-5" />
+            Recommended Courses for Your Career Goals
+          </h2>
+          <p className="mt-1 text-sm text-indigo-700">
+            These courses will help you develop the skills needed for your career paths.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {matchingCourses.map((course) => (
+              <Link
+                key={course.id}
+                href={`/courses/${course.id}`}
+                className="flex items-center justify-between rounded-lg border border-indigo-200 bg-white p-3 text-sm transition hover:border-indigo-400 hover:shadow-sm"
+              >
+                <div>
+                  <p className="font-medium text-gray-900">{course.title}</p>
+                  <p className="text-xs text-gray-500">{course.category} &middot; {course.level}</p>
+                </div>
+                <ExternalLink className="h-4 w-4 shrink-0 text-indigo-400" />
+              </Link>
+            ))}
+          </div>
         </div>
       )}
 

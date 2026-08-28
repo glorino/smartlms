@@ -244,13 +244,13 @@ export default function MessagesPage() {
             </Button>
           )}
           <Button
-            onClick={() => {
-        setShowCompose(false);
-        setSelectedConversation(null);
-        setUserSearchQuery("");
-        setUserSearchResults([]);
-        setShowUserDropdown(false);
-      }}
+  onClick={() => {
+    setShowCompose(true);
+    setSelectedConversation(null);
+    setUserSearchQuery("");
+    setUserSearchResults([]);
+    setShowUserDropdown(false);
+  }}
       className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700"
     >
       <Plus className="mr-2 h-4 w-4" />

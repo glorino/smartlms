@@ -345,14 +345,21 @@ export default function DashboardPage() {
                       <stat.icon className="h-6 w-6 text-white" />
                     </div>
                   </div>
-                  <div className="mt-4 flex items-end gap-0.5 h-8">
-                    {[40, 65, 45, 80, 55, 90, 70].map((h, i) => (
-                      <div
-                        key={i}
-                        className={`flex-1 rounded-sm bg-gradient-to-t ${gradients[index] || gradients[0]} opacity-30`}
-                        style={{ height: `${h}%` }}
-                      />
-                    ))}
+                   <div className="mt-4 flex items-end gap-0.5 h-8">
+                    {(() => {
+                      const numVal = typeof stat.value === "number" ? stat.value : parseInt(String(stat.value)) || 50;
+                      const seed = numVal + index * 17;
+                      return Array.from({ length: 7 }, (_, i) => {
+                        const h = 20 + Math.abs(Math.sin(seed * (i + 1) * 0.7)) * 80;
+                        return (
+                          <div
+                            key={i}
+                            className={`flex-1 rounded-sm bg-gradient-to-t ${gradients[index] || gradients[0]} opacity-30`}
+                            style={{ height: `${h}%` }}
+                          />
+                        );
+                      });
+                    })()}
                   </div>
                 </CardContent>
               </Card>
@@ -557,13 +564,20 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="mt-4 flex items-end gap-0.5 h-8">
-                  {[35, 60, 42, 75, 50, 85, 65].map((h, i) => (
-                    <div
-                      key={i}
-                      className={`flex-1 rounded-sm bg-gradient-to-t ${gradients[index] || gradients[0]} opacity-30`}
-                      style={{ height: `${h}%` }}
-                    />
-                  ))}
+                  {(() => {
+                    const numVal = typeof stat.value === "number" ? stat.value : parseInt(String(stat.value)) || 50;
+                    const seed = numVal + index * 13 + 7;
+                    return Array.from({ length: 7 }, (_, i) => {
+                      const h = 20 + Math.abs(Math.sin(seed * (i + 1) * 0.6)) * 80;
+                      return (
+                        <div
+                          key={i}
+                          className={`flex-1 rounded-sm bg-gradient-to-t ${gradients[index] || gradients[0]} opacity-30`}
+                          style={{ height: `${h}%` }}
+                        />
+                      );
+                    });
+                  })()}
                 </div>
               </CardContent>
             </Card>

@@ -91,7 +91,7 @@ export default function PerformancePage() {
       ? Math.round(quizAttempts.reduce((acc, a) => acc + a.score, 0) / quizAttempts.length)
       : 0;
 
-  const totalHours = 0;
+  const totalHours = enrollments.reduce((acc, e) => acc + (e.progress / 100) * 10, 0);
 
   const completedCourses = enrollments.filter((e) => e.status === "COMPLETED").length;
   const totalCourses = enrollments.length;
@@ -112,15 +112,24 @@ export default function PerformancePage() {
     passed: a.passed,
   }));
 
-  const learningData = [
-    { day: "Mon", hours: 2.5 },
-    { day: "Tue", hours: 1.8 },
-    { day: "Wed", hours: 3.2 },
-    { day: "Thu", hours: 0.5 },
-    { day: "Fri", hours: 2.0 },
-    { day: "Sat", hours: 4.1 },
-    { day: "Sun", hours: 1.5 },
-  ];
+  const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const recentAttempts = quizAttempts.filter((a) => new Date(a.completedAt) >= weekAgo);
+  const dailyCounts = daysOfWeek.map((_, i) => {
+    const dayStart = new Date(weekAgo.getTime() + i * 24 * 60 * 60 * 1000);
+    const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+    const count = recentAttempts.filter((a) => {
+      const d = new Date(a.completedAt);
+      return d >= dayStart && d < dayEnd;
+    }).length;
+    return count;
+  });
+  const activeDays = enrollments.filter((e) => e.status === "ACTIVE").length;
+  const learningData = daysOfWeek.map((day, i) => ({
+    day,
+    hours: dailyCounts[i] > 0 ? dailyCounts[i] * 0.5 + activeDays * 0.3 : activeDays * 0.1,
+  }));
 
   const maxHours = Math.max(...learningData.map((d) => d.hours));
 
@@ -374,60 +383,106 @@ export default function PerformancePage() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-xl border border-indigo-200 bg-white p-5 transition-shadow hover:shadow-md">
-              <Badge variant="warning" className="mb-3">
-                medium priority
-              </Badge>
-              <h3 className="text-sm font-semibold text-gray-900">
-                Keep Learning
-              </h3>
-              <p className="mt-1.5 text-xs text-gray-600">
-                Continue making progress on your enrolled courses.
-              </p>
-              <a
-                href="/courses"
-                className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
-              >
-                Browse Courses
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </a>
-            </div>
-            <div className="rounded-xl border border-indigo-200 bg-white p-5 transition-shadow hover:shadow-md">
-              <Badge variant="warning" className="mb-3">
-                medium priority
-              </Badge>
-              <h3 className="text-sm font-semibold text-gray-900">
-                Try a New Course
-              </h3>
-              <p className="mt-1.5 text-xs text-gray-600">
-                Explore new topics to expand your skill set.
-              </p>
-              <a
-                href="/courses"
-                className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
-              >
-                Browse Courses
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </a>
-            </div>
-            <div className="rounded-xl border border-indigo-200 bg-white p-5 transition-shadow hover:shadow-md">
-              <Badge variant="warning" className="mb-3">
-                medium priority
-              </Badge>
-              <h3 className="text-sm font-semibold text-gray-900">
-                Take a Quiz
-              </h3>
-              <p className="mt-1.5 text-xs text-gray-600">
-                Test your knowledge with quizzes in your courses.
-              </p>
-              <a
-                href="/dashboard/quizzes"
-                className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
-              >
-                View Quizzes
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </a>
-            </div>
+            {averageScore < 70 && quizAttempts.length > 0 && (
+              <div className="rounded-xl border border-indigo-200 bg-white p-5 transition-shadow hover:shadow-md">
+                <Badge variant="danger" className="mb-3">
+                  high priority
+                </Badge>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Improve Quiz Scores
+                </h3>
+                <p className="mt-1.5 text-xs text-gray-600">
+                  Your average score is {averageScore}%. Review course materials to improve.
+                </p>
+                <a
+                  href="/dashboard/quizzes"
+                  className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                >
+                  View Quizzes
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            )}
+            {completedCourses < totalCourses && totalCourses > 0 && (
+              <div className="rounded-xl border border-indigo-200 bg-white p-5 transition-shadow hover:shadow-md">
+                <Badge variant="warning" className="mb-3">
+                  medium priority
+                </Badge>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Complete Enrolled Courses
+                </h3>
+                <p className="mt-1.5 text-xs text-gray-600">
+                  You have {totalCourses - completedCourses} course{totalCourses - completedCourses !== 1 ? "s" : ""} in progress. Keep going!
+                </p>
+                <a
+                  href="/dashboard/courses"
+                  className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                >
+                  My Courses
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            )}
+            {completedCourses >= 2 && (
+              <div className="rounded-xl border border-indigo-200 bg-white p-5 transition-shadow hover:shadow-md">
+                <Badge variant="success" className="mb-3">
+                  suggestion
+                </Badge>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Explore New Topics
+                </h3>
+                <p className="mt-1.5 text-xs text-gray-600">
+                  You have completed {completedCourses} course{completedCourses !== 1 ? "s" : ""}. Try something new!
+                </p>
+                <a
+                  href="/courses"
+                  className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                >
+                  Browse Courses
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            )}
+            {quizAttempts.length === 0 && (
+              <div className="rounded-xl border border-indigo-200 bg-white p-5 transition-shadow hover:shadow-md">
+                <Badge variant="warning" className="mb-3">
+                  medium priority
+                </Badge>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Take a Quiz
+                </h3>
+                <p className="mt-1.5 text-xs text-gray-600">
+                  Test your knowledge with quizzes in your courses.
+                </p>
+                <a
+                  href="/dashboard/quizzes"
+                  className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                >
+                  View Quizzes
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            )}
+            {averageScore >= 70 && completedCourses > 0 && (
+              <div className="rounded-xl border border-indigo-200 bg-white p-5 transition-shadow hover:shadow-md">
+                <Badge variant="success" className="mb-3">
+                  great progress
+                </Badge>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Great Work!
+                </h3>
+                <p className="mt-1.5 text-xs text-gray-600">
+                  Your average score is {averageScore}%. Keep up the excellent work!
+                </p>
+                <a
+                  href="/dashboard/certificates"
+                  className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                >
+                  View Certificates
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

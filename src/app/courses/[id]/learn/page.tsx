@@ -293,6 +293,9 @@ export default function CourseLearnPage() {
   ) => {
     if (!inlineQuiz) return;
 
+    console.log("[QUIZ FRONTEND] Submitting answers:", JSON.stringify(quizAnswers));
+    console.log("[QUIZ FRONTEND] Quiz ID:", inlineQuiz.id, "Attempt:", attemptNumber);
+
     let correctCount = 0;
     let incorrectCount = 0;
     let totalPoints = 0;
@@ -310,21 +313,26 @@ export default function CourseLearnPage() {
         }),
       });
 
+      console.log("[QUIZ FRONTEND] API response status:", res.status);
+
       if (res.ok) {
         const data = await res.json();
+        console.log("[QUIZ FRONTEND] API response data:", JSON.stringify({ score: data.score, totalPoints: data.totalPoints, passed: data.passed, results: data.results }));
         score = data.score || 0;
         totalPoints = data.totalPoints || 0;
         passed = data.passed || false;
         correctCount = Object.values(data.results || {}).filter((r: any) => r.isCorrect).length;
         incorrectCount = Object.keys(data.results || {}).length - correctCount;
       } else {
+        const errorData = await res.json().catch(() => ({ error: "Unknown error" }));
+        console.log("[QUIZ FRONTEND] API error:", errorData);
         inlineQuiz.questions.forEach((q: any) => {
           totalPoints += q.points;
           incorrectCount++;
         });
       }
     } catch (err) {
-      console.error("Failed to submit quiz", err);
+      console.error("[QUIZ FRONTEND] Failed to submit quiz", err);
       inlineQuiz.questions.forEach((q: any) => {
         totalPoints += q.points;
         incorrectCount++;

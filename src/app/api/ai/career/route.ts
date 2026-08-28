@@ -184,7 +184,29 @@ Return JSON: { "careers": [{ ... }] }`;
       )
     );
 
-    return NextResponse.json({ careerPaths: savedPaths });
+    const allGapSkills = (result.careers || []).flatMap((c) => c.gapSkills || []);
+    const matchingCourses = allGapSkills.length > 0
+      ? await prisma.course.findMany({
+          where: {
+            status: "PUBLISHED",
+            OR: [
+              { category: { in: allGapSkills } },
+              { tags: { hasSome: allGapSkills } },
+              { title: { contains: allGapSkills[0], mode: "insensitive" } },
+            ],
+          },
+          select: {
+            id: true,
+            title: true,
+            category: true,
+            level: true,
+            tags: true,
+          },
+          take: 10,
+        })
+      : [];
+
+    return NextResponse.json({ careerPaths: savedPaths, matchingCourses });
   } catch (error) {
     console.error("Career path generation error:", error);
     return NextResponse.json(
