@@ -6,10 +6,6 @@ export interface User {
   role: "STUDENT" | "INSTRUCTOR" | "ADMIN";
   bio: string | null;
   phone: string | null;
-  expertise: string[];
-  experience: string | null;
-  portfolioUrl: string | null;
-  linkedinUrl: string | null;
 }
 
 export interface Course {
@@ -33,7 +29,6 @@ export interface Course {
   category: string | null;
   isFeatured: boolean;
   revenue: number;
-  requirements: string[];
   prerequisites: string[];
   instructor: User;
   sections?: CourseSection[];
@@ -69,7 +64,6 @@ export interface Quiz {
   id: string;
   title: string;
   description: string | null;
-  type: "QUIZ" | "ASSESSMENT" | "PRACTICE";
   timeLimit: number | null;
   passingScore: number;
   maxAttempts: number | null;
@@ -115,7 +109,6 @@ export interface QuizAttempt {
   passed: boolean;
   answers: Record<string, string>;
   timeTaken: number | null;
-  attemptNumber: number;
   startedAt: string;
   completedAt: string | null;
 }

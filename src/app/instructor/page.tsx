@@ -167,14 +167,21 @@ export default function InstructorDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="flex h-48 items-end gap-2">
-              {[40, 65, 45, 80, 55, 90, 70, 85, 60, 95, 75, 100].map((h, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center">
-                  <div
-                    className="w-full rounded-t-md bg-gradient-to-t from-indigo-500 to-indigo-400 transition-all hover:from-indigo-600 hover:to-indigo-500"
-                    style={{ height: `${h}%` }}
-                  />
-                </div>
-              ))}
+              {Array.from({ length: 12 }, (_, i) => {
+                const month = new Date();
+                month.setMonth(month.getMonth() - 11 + i);
+                const label = month.toLocaleString("default", { month: "short" });
+                const h = 20 + Math.abs(Math.sin((i + 1) * 0.7)) * 80;
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center">
+                    <div
+                      className="w-full rounded-t-md bg-gradient-to-t from-indigo-500 to-indigo-400 transition-all hover:from-indigo-600 hover:to-indigo-500"
+                      style={{ height: `${h}%` }}
+                    />
+                    <span className="mt-2 text-[10px] text-gray-400">{label}</span>
+                  </div>
+                );
+              })}
             </div>
             <div className="mt-4 flex justify-between text-xs text-gray-500">
               {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((m) => (

@@ -163,7 +163,7 @@ export default function AboutPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="relative -mt-12 z-10 px-4">
+      <section className="relative z-10 px-4 pt-4">
         <div className="mx-auto max-w-5xl">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {stats.map((stat) => {

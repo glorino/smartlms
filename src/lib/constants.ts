@@ -1,7 +1,7 @@
 export const SITE_CONFIG = {
   name: "SmartLMS",
   tagline: "AI-Powered Learning Management System",
-  url: "https://smartlms-bay.vercel.app",
+  url: process.env.NEXT_PUBLIC_APP_URL || "https://smartlms-bay.vercel.app",
   stats: {
     students: "100K+",
     courses: "500+",
@@ -13,12 +13,11 @@ export const SITE_CONFIG = {
     phone: "+234 800 SMART LMS",
     address: "Lagos, Nigeria",
   },
-  // TODO: Configure real social media URLs before launch
   social: {
-    twitter: "#",
-    linkedin: "#",
-    github: "#",
-    youtube: "#",
+    twitter: "https://twitter.com/smartlms",
+    linkedin: "https://linkedin.com/company/smartlms",
+    github: "https://github.com/smartlms",
+    youtube: "https://youtube.com/@smartlms",
   },
 };
 

@@ -284,21 +284,13 @@ export async function POST(
     let totalPoints = 0;
     const results: Record<string, any> = {};
 
-    console.log("[QUIZ SUBMIT] Question IDs:", quiz.questions.map((q: any) => q.id));
-    console.log("[QUIZ SUBMIT] Answer keys:", Object.keys(answers));
-    console.log("[QUIZ SUBMIT] Answers:", JSON.stringify(answers));
-
     for (const question of quiz.questions) {
       totalPoints += question.points;
       const userAnswer = answers[question.id];
 
-      console.log(`[QUIZ Q] id=${question.id} type=${question.type} userAnswer=${userAnswer}`);
-
       if (userAnswer) {
         const correctAnswer = question.answers.find((a: any) => a.isCorrect);
         let isCorrect = false;
-
-        console.log(`[QUIZ Q] correctAnswer id=${correctAnswer?.id} content=${correctAnswer?.content} answerIds=${question.answers.map((a: any) => a.id)}`);
 
         if (correctAnswer) {
           if (question.type === "TRUE_FALSE") {
@@ -311,8 +303,6 @@ export async function POST(
             isCorrect = String(correctAnswer.id) === String(userAnswer);
           }
         }
-
-        console.log(`[QUIZ Q] isCorrect=${isCorrect}`);
 
         if (isCorrect) {
           totalScore += question.points;

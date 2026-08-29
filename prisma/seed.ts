@@ -1888,7 +1888,7 @@ async function main() {
         currency: "NGN",
         status: PaymentStatus.COMPLETED,
         paymentMethod: "card",
-        stripePaymentId: `pi_demo_${Math.random().toString(36).substring(2, 15)}`,
+        flutterwavePaymentId: `pi_demo_${Math.random().toString(36).substring(2, 15)}`,
       },
     });
   }
@@ -2002,11 +2002,11 @@ async function main() {
   console.log(`Blog Posts:    ${blogPosts.length}`);
   console.log(`Job Listings:  ${jobListings.length}`);
   console.log("\n--- Demo Credentials ---");
-  console.log("Admin:       admin@smartlms.com / password123");
-  console.log("Instructor1: instructor1@smartlms.com / password123");
-  console.log("Instructor2: instructor2@smartlms.com / password123");
-  console.log("Student1:    student1@smartlms.com / password123");
-  console.log("Student2:    student2@smartlms.com / password123");
+  console.log("Admin:       admin@smartlms.com / (see .env.example for password pattern)");
+  console.log("Instructor1: instructor1@smartlms.com / (see .env.example for password pattern)");
+  console.log("Instructor2: instructor2@smartlms.com / (see .env.example for password pattern)");
+  console.log("Student1:    student1@smartlms.com / (see .env.example for password pattern)");
+  console.log("Student2:    student2@smartlms.com / (see .env.example for password pattern)");
   console.log("\nSeed completed successfully!");
 }
 

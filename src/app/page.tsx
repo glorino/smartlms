@@ -612,7 +612,7 @@ export default function HomePage() {
               {[...testimonials, ...testimonials].map((testimonial, i) => (
                 <div
                   key={`${testimonial.name}-${i}`}
-                  className="flex w-[380px] flex-shrink-0 flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-7 backdrop-blur-sm"
+                  className="flex w-[340px] sm:w-[380px] flex-shrink-0 flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-7 backdrop-blur-sm"
                 >
                   <div className="mb-4 flex gap-1">
                     {Array.from({ length: testimonial.rating }).map((_, j) => (

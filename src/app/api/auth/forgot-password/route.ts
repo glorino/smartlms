@@ -3,11 +3,9 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import prisma from "@/lib/prisma";
 import crypto from "crypto";
 
-const passwordResetTokens = new Map<string, { userId: string; expiresAt: number }>();
-
 export async function POST(request: Request) {
   try {
-    if (!checkRateLimit("forgot-password", 3, 3600000)) {
+    if (!await checkRateLimit("forgot-password", 3, 3600000)) {
       return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
     }
     const body = await request.json();
@@ -37,9 +35,12 @@ export async function POST(request: Request) {
     }
 
     const token = crypto.randomBytes(24).toString("hex");
-    const expiresAt = Date.now() + 60 * 60 * 1000;
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
-    passwordResetTokens.set(token, { userId: user.id, expiresAt });
+    await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
+    await prisma.passwordResetToken.create({
+      data: { token, userId: user.id, expiresAt },
+    });
 
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || "http://localhost:3000"}/reset-password?token=${token}`;
 
@@ -53,18 +54,4 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-}
-
-export function getResetToken(token: string) {
-  const data = passwordResetTokens.get(token);
-  if (!data) return null;
-  if (Date.now() > data.expiresAt) {
-    passwordResetTokens.delete(token);
-    return null;
-  }
-  return data;
-}
-
-export function deleteResetToken(token: string) {
-  passwordResetTokens.delete(token);
 }

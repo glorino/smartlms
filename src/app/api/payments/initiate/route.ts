@@ -7,7 +7,7 @@ const FLUTTERWAVE_SECRET = process.env.FLUTTERWAVE_SECRET_KEY;
 
 export async function POST(request: Request) {
   try {
-    if (!checkRateLimit("payments-initiate", 10, 3600000)) {
+    if (!await checkRateLimit("payments-initiate", 10, 3600000)) {
       return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
     }
     const session = await auth();

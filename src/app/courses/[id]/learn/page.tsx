@@ -455,7 +455,7 @@ export default function CourseLearnPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar - Curriculum */}
         <aside
-          className={`fixed inset-y-0 left-0 z-40 w-80 shrink-0 overflow-hidden border-r border-gray-800 bg-gray-900 transition-all duration-300 md:relative md:z-auto ${
+          className={`fixed inset-y-0 left-0 z-40 w-72 shrink-0 overflow-hidden border-r border-gray-800 bg-gray-900 transition-all duration-300 md:relative md:z-auto lg:w-80 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full md:w-0 md:border-0 md:overflow-hidden"
           }`}
         >

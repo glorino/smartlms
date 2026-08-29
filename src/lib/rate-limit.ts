@@ -1,15 +1,32 @@
-const rateLimit = new Map<string, { timestamps: number[] }>();
+import prisma from "./prisma";
 
-export function checkRateLimit(key: string, maxRequests: number, windowMs: number): boolean {
+export async function checkRateLimit(key: string, maxRequests: number, windowMs: number): Promise<boolean> {
   const now = Date.now();
   const windowStart = now - windowMs;
-  const entry = rateLimit.get(key);
-  if (!entry) {
-    rateLimit.set(key, { timestamps: [now] });
+
+  try {
+    const entry = await prisma.rateLimitEntry.findUnique({ where: { key } });
+
+    if (!entry) {
+      await prisma.rateLimitEntry.create({
+        data: { key, timestamps: [String(now)] },
+      });
+      return true;
+    }
+
+    const timestamps = entry.timestamps
+      .map(Number)
+      .filter((t) => t > windowStart);
+
+    if (timestamps.length >= maxRequests) return false;
+
+    timestamps.push(now);
+    await prisma.rateLimitEntry.update({
+      where: { key },
+      data: { timestamps: timestamps.map(String) },
+    });
+    return true;
+  } catch {
     return true;
   }
-  entry.timestamps = entry.timestamps.filter((t) => t > windowStart);
-  if (entry.timestamps.length >= maxRequests) return false;
-  entry.timestamps.push(now);
-  return true;
 }

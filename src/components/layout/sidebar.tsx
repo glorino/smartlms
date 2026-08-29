@@ -54,6 +54,8 @@ const studentItems = [
   { href: "/dashboard/bookmarks", label: "Bookmarks", icon: Bookmark },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
   { href: "/dashboard/career", label: "Career Paths", icon: Briefcase },
+  { href: "/dashboard/performance", label: "Performance", icon: BarChart3 },
+  { href: "/dashboard/activity", label: "Activity", icon: Activity },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 

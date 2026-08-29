@@ -85,11 +85,11 @@ export default function CourseCard({ course, variant = "grid" }: CourseCardProps
           <div className="flex flex-col items-end justify-between">
             <div className="text-right">
               <span className="text-xl font-bold text-gray-900 dark:text-white">
-                ${course.price}
+                &#8358;{course.price.toLocaleString()}
               </span>
               {course.originalPrice && (
                 <span className="ml-2 text-sm text-gray-400 line-through">
-                  ${course.originalPrice}
+                  &#8358;{course.originalPrice.toLocaleString()}
                 </span>
               )}
             </div>
@@ -154,11 +154,11 @@ export default function CourseCard({ course, variant = "grid" }: CourseCardProps
           <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-700">
             <div>
               <span className="text-xl font-bold text-gray-900 dark:text-white">
-                ${course.price}
+                &#8358;{course.price.toLocaleString()}
               </span>
               {course.originalPrice && (
                 <span className="ml-2 text-sm text-gray-400 line-through">
-                  ${course.originalPrice}
+                  &#8358;{course.originalPrice.toLocaleString()}
                 </span>
               )}
             </div>

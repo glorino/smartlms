@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { getResetToken, deleteResetToken } from "@/app/api/auth/forgot-password/route";
 
 export async function POST(request: Request) {
   try {
@@ -16,19 +15,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 });
     }
 
-    const resetData = getResetToken(token);
-    if (!resetData) {
+    const resetRecord = await prisma.passwordResetToken.findUnique({ where: { token } });
+    if (!resetRecord || new Date() > resetRecord.expiresAt) {
+      if (resetRecord) {
+        await prisma.passwordResetToken.delete({ where: { token } });
+      }
       return NextResponse.json({ error: "Invalid or expired reset token" }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
     await prisma.user.update({
-      where: { id: resetData.userId },
+      where: { id: resetRecord.userId },
       data: { password: hashedPassword },
     });
 
-    deleteResetToken(token);
+    await prisma.passwordResetToken.delete({ where: { token } });
 
     return NextResponse.json({ success: true, message: "Password reset successfully" });
   } catch {

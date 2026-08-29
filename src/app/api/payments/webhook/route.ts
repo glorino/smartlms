@@ -53,7 +53,7 @@ export async function POST(request: Request) {
       }
 
       const existingPurchase = await prisma.purchase.findFirst({
-        where: { stripePaymentId: tx_ref },
+        where: { flutterwavePaymentId: tx_ref },
       });
 
       if (existingPurchase) {
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
               currency: transaction.currency,
               status: "COMPLETED",
               paymentMethod: "flutterwave",
-              stripePaymentId: tx_ref,
+              flutterwavePaymentId: tx_ref,
             },
           });
 
