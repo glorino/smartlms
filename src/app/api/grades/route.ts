@@ -60,6 +60,25 @@ export async function POST(request: Request) {
       );
     }
 
+    if (courseId) {
+      const course = await prisma.course.findUnique({ where: { id: courseId }, select: { instructorId: true } });
+      if (!course) {
+        return NextResponse.json({ error: "Course not found" }, { status: 404 });
+      }
+      if (userRole !== "ADMIN" && course.instructorId !== userId) {
+        return NextResponse.json({ error: "You can only create grades for your own courses" }, { status: 403 });
+      }
+    }
+
+    if (studentId && courseId) {
+      const enrollment = await prisma.enrollment.findUnique({
+        where: { userId_courseId: { userId: studentId, courseId } },
+      });
+      if (!enrollment) {
+        return NextResponse.json({ error: "Student is not enrolled in this course" }, { status: 400 });
+      }
+    }
+
     const percentage = (score / totalPoints) * 100;
     let letterGrade: string;
 

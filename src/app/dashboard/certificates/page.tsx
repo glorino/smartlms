@@ -564,7 +564,7 @@ function HiddenCertificate({
         >
           <div>
             <div style={{ fontSize: "8px", color: "#999" }}>
-              View at: smartlms-bay.vercel.app/certificate/{verificationId}
+              View at: {process.env.NEXT_PUBLIC_APP_URL || "smartlms-bay.vercel.app"}/certificate/{verificationId}
             </div>
             <div style={{ fontSize: "8px", color: "#999" }}>
               This certificate was issued by SmartLMS Platform

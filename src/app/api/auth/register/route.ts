@@ -5,7 +5,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
-    if (!await checkRateLimit("register", 3, 3600000)) {
+    if (!await checkRateLimit("register", 3, 3600000, request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown")) {
       return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
     }
     const body = await request.json();
@@ -13,13 +13,6 @@ export async function POST(request: Request) {
       name,
       email,
       password,
-      role,
-      professionalHeadline,
-      bio,
-      expertise,
-      experience,
-      portfolioUrl,
-      linkedinUrl,
     } = body;
 
     if (!name || !email || !password) {
@@ -42,26 +35,12 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    let bioField: string | undefined;
-    if (role === "INSTRUCTOR") {
-      const instructorData = {
-        professionalHeadline: professionalHeadline || "",
-        bio: bio || "",
-        expertise: expertise || [],
-        experience: experience || "",
-        portfolioUrl: portfolioUrl || "",
-        linkedinUrl: linkedinUrl || "",
-      };
-      bioField = JSON.stringify(instructorData);
-    }
-
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        role: role || "STUDENT",
-        ...(bioField && { bio: bioField }),
+        role: "STUDENT",
       },
     });
 

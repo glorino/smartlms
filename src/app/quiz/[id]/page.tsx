@@ -28,6 +28,7 @@ interface QuizResult {
   correctCount: number;
   incorrectCount: number;
   answers: Record<string, string>;
+  results?: Record<string, { isCorrect: boolean; correctAnswerId: string; explanation?: string }>;
 }
 
 interface AttemptHistory {
@@ -83,9 +84,10 @@ export default function QuizPage() {
     let totalPoints = 0;
     let score = 0;
     let passed = false;
+    let apiResults: Record<string, any> = {};
 
     try {
-      const res = await fetch(`/api/quizzes/${quizId}`, {
+      const res = await fetch(`/api/quizzes/${quiz.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -100,8 +102,9 @@ export default function QuizPage() {
         score = data.score || 0;
         totalPoints = data.totalPoints || 0;
         passed = data.passed || false;
-        correctCount = Object.values(data.results || {}).filter((r: any) => r.isCorrect).length;
-        incorrectCount = Object.keys(data.results || {}).length - correctCount;
+        apiResults = data.results || {};
+        correctCount = Object.values(apiResults).filter((r: any) => r.isCorrect).length;
+        incorrectCount = Object.keys(apiResults).length - correctCount;
       } else {
         quiz.questions.forEach((q: Question) => {
           totalPoints += q.points;
@@ -123,6 +126,7 @@ export default function QuizPage() {
       correctCount,
       incorrectCount,
       answers: quizAnswers as Record<string, string>,
+      results: apiResults,
     });
     setScreen("results");
 
@@ -402,8 +406,10 @@ export default function QuizPage() {
                 <div className="space-y-4">
                   {quiz.questions.map((q: Question, i: number) => {
                     const selectedId = result.answers[q.id];
-                    const correctAnswer = q.answers.find((a) => a.isCorrect);
-                    const isCorrect = selectedId === correctAnswer?.id;
+                    const questionResult = result.results?.[q.id];
+                    const isCorrect = questionResult?.isCorrect || false;
+                    const correctAnswerId = questionResult?.correctAnswerId;
+                    const correctAnswer = q.answers.find((a) => a.id === correctAnswerId);
                     const selectedAnswer = q.answers.find(
                       (a) => a.id === selectedId
                     );

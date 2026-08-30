@@ -135,6 +135,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Assignment ID is required" }, { status: 400 });
     }
 
+    const assignment = await prisma.assignment.findUnique({
+      where: { id: assignmentId },
+      include: { course: { select: { instructorId: true } } },
+    });
+
+    if (!assignment) {
+      return NextResponse.json({ error: "Assignment not found" }, { status: 404 });
+    }
+
+    if (userRole !== "ADMIN" && assignment.course?.instructorId !== session.user.id) {
+      return NextResponse.json({ error: "You can only grade assignments from your own courses" }, { status: 403 });
+    }
+
     const updated = await prisma.assignment.update({
       where: { id: assignmentId },
       data: {

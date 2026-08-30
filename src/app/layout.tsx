@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     title: "SmartLMS - AI-Powered Learning Management System",
     description:
       "Create, manage, and sell online courses with the most powerful LMS platform.",
-    url: "https://smartlms-bay.vercel.app",
+    url: process.env.NEXT_PUBLIC_APP_URL || "https://smartlms-bay.vercel.app",
     siteName: "SmartLMS",
     locale: "en_US",
     type: "website",

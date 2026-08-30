@@ -43,9 +43,16 @@ export async function DELETE(request: Request) {
       await tx.learningProfile.deleteMany({ where: { userId } });
       await tx.passwordResetToken.deleteMany({ where: { userId } });
       await tx.payout.deleteMany({ where: { instructorId: userId } });
+      await tx.assignment.deleteMany({ where: { userId } });
+      await tx.grade.deleteMany({ where: { userId } });
+      await tx.announcement.deleteMany({ where: { authorId: userId } });
+      await tx.aIGeneratedQuiz.deleteMany({ where: { instructorId: userId } });
 
       if (user.role === "INSTRUCTOR") {
-        await tx.course.updateMany({ where: { instructorId: userId }, data: { instructorId: "unassigned" } });
+        const adminUser = await tx.user.findFirst({ where: { role: "ADMIN" }, select: { id: true } });
+        const fallbackInstructorId = adminUser?.id || userId;
+        await tx.course.updateMany({ where: { instructorId: userId }, data: { instructorId: fallbackInstructorId } });
+        await tx.liveClass.updateMany({ where: { instructorId: userId }, data: { instructorId: fallbackInstructorId } });
       }
 
       await tx.user.delete({ where: { id: userId } });

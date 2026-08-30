@@ -48,25 +48,30 @@ export async function POST(request: Request) {
     }
 
     const flutterwaveSecret = process.env.FLUTTERWAVE_SECRET_KEY;
-    if (flutterwaveSecret) {
-      try {
-        const verifyRes = await fetch(
-          `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${tx_ref}`,
-          { headers: { Authorization: `Bearer ${flutterwaveSecret}` } }
-        );
-        const verifyData = await verifyRes.json();
-        if (verifyData.status !== "success") {
-          return NextResponse.json(
-            { error: "Payment not verified" },
-            { status: 400 }
-          );
-        }
-      } catch {
+    if (!flutterwaveSecret) {
+      return NextResponse.json(
+        { error: "Payment system not configured" },
+        { status: 503 }
+      );
+    }
+
+    try {
+      const verifyRes = await fetch(
+        `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${tx_ref}`,
+        { headers: { Authorization: `Bearer ${flutterwaveSecret}` } }
+      );
+      const verifyData = await verifyRes.json();
+      if (verifyData.status !== "success") {
         return NextResponse.json(
-          { error: "Payment verification failed" },
-          { status: 500 }
+          { error: "Payment not verified" },
+          { status: 400 }
         );
       }
+    } catch {
+      return NextResponse.json(
+        { error: "Payment verification failed" },
+        { status: 500 }
+      );
     }
 
     const subscription = await prisma.subscription.create({

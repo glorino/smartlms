@@ -296,7 +296,7 @@ export async function GET(
     doc.setFontSize(4.5);
     doc.setTextColor(153, 153, 153);
     doc.text(
-      "View at: smartlms-bay.vercel.app/certificate/" + certificate.certificateId,
+      "View at: " + (process.env.NEXT_PUBLIC_APP_URL || "smartlms-bay.vercel.app") + "/certificate/" + certificate.certificateId,
       14,
       ph - 12
     );

@@ -5,7 +5,7 @@ import crypto from "crypto";
 
 export async function POST(request: Request) {
   try {
-    if (!await checkRateLimit("forgot-password", 3, 3600000)) {
+    if (!await checkRateLimit("forgot-password", 3, 3600000, request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown")) {
       return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
     }
     const body = await request.json();
