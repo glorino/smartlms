@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateJSON } from "@/lib/ai";
+import { auth } from "@/lib/auth";
 
 interface EmotionAnalysisRequest {
   messages: string[];
@@ -14,6 +15,11 @@ interface EmotionAnalysis {
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body: EmotionAnalysisRequest = await request.json();
     const { messages } = body;
 

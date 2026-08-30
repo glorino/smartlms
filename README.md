@@ -56,7 +56,7 @@
 - **Icons:** Lucide React
 - **State:** Zustand
 - **Forms:** React Hook Form + Zod
-- **Payments:** Stripe
+- **Payments:** Flutterwave
 
 ## Getting Started
 

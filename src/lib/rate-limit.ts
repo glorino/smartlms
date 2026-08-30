@@ -1,15 +1,16 @@
 import prisma from "./prisma";
 
-export async function checkRateLimit(key: string, maxRequests: number, windowMs: number): Promise<boolean> {
+export async function checkRateLimit(key: string, maxRequests: number, windowMs: number, ip?: string): Promise<boolean> {
   const now = Date.now();
   const windowStart = now - windowMs;
+  const scopedKey = ip ? `${key}:${ip}` : key;
 
   try {
-    const entry = await prisma.rateLimitEntry.findUnique({ where: { key } });
+    const entry = await prisma.rateLimitEntry.findUnique({ where: { key: scopedKey } });
 
     if (!entry) {
       await prisma.rateLimitEntry.create({
-        data: { key, timestamps: [String(now)] },
+        data: { key: scopedKey, timestamps: [String(now)] },
       });
       return true;
     }
@@ -22,7 +23,7 @@ export async function checkRateLimit(key: string, maxRequests: number, windowMs:
 
     timestamps.push(now);
     await prisma.rateLimitEntry.update({
-      where: { key },
+      where: { key: scopedKey },
       data: { timestamps: timestamps.map(String) },
     });
     return true;

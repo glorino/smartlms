@@ -61,9 +61,23 @@ export default auth((req) => {
     }
   }
 
-  if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin") || pathname.startsWith("/instructor")) {
+  if (pathname.startsWith("/dashboard")) {
     if (!req.auth) {
       return NextResponse.redirect(new URL("/login", req.nextUrl.origin));
+    }
+    return NextResponse.next();
+  }
+
+  if (pathname.startsWith("/admin") || pathname.startsWith("/instructor")) {
+    if (!req.auth) {
+      return NextResponse.redirect(new URL("/login", req.nextUrl.origin));
+    }
+    const role = (req.auth.user as any)?.role;
+    if (pathname.startsWith("/admin") && role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
+    }
+    if (pathname.startsWith("/instructor") && role !== "INSTRUCTOR" && role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
     }
     return NextResponse.next();
   }

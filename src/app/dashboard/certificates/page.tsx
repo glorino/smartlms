@@ -277,7 +277,7 @@ function HiddenCertificate({
   const courseName = cert.course.title;
   const instructorName = cert.course?.instructor?.name || "SmartLMS Team";
   const verificationId = cert.certificateId;
-  const verificationUrl = `https://smartlms-bay.vercel.app/verify-certificate?id=${verificationId}`;
+  const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://smartlms-bay.vercel.app"}/verify-certificate?id=${verificationId}`;
 
   return (
     <div

@@ -1,5 +1,14 @@
 import nodemailer from "nodemailer";
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT) || 587,
@@ -78,16 +87,16 @@ export function enrollmentConfirmation(
   user: { name: string | null; email: string },
   course: { title: string; slug: string; category?: string | null; level?: string }
 ): string {
-  const displayName = user.name || "Learner";
-  const categoryText = course.category ? ` in ${course.category}` : "";
-  const levelText = course.level ? ` &mdash; ${course.level} level` : "";
+  const displayName = escapeHtml(user.name || "Learner");
+  const categoryText = course.category ? ` in ${escapeHtml(course.category)}` : "";
+  const levelText = course.level ? ` &mdash; ${escapeHtml(course.level)} level` : "";
 
   const content = `
     <p style="color:#374151;font-size:16px;line-height:1.6;margin:0 0 20px;">
       Hi <strong>${displayName}</strong>,
     </p>
     <p style="color:#374151;font-size:16px;line-height:1.6;margin:0 0 20px;">
-      You've been successfully enrolled in <strong>${course.title}</strong>${categoryText}${levelText}.
+      You've been successfully enrolled in <strong>${escapeHtml(course.title)}</strong>${categoryText}${levelText}.
     </p>
     <div style="background-color:#eef2ff;border-left:4px solid #4f46e5;padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 24px;">
       <p style="color:#4338ca;font-size:14px;margin:0;">
@@ -114,7 +123,7 @@ export function quizResult(
   score: number,
   passed: boolean
 ): string {
-  const displayName = user.name || "Learner";
+  const displayName = escapeHtml(user.name || "Learner");
   const statusColor = passed ? "#059669" : "#dc2626";
   const statusText = passed ? "Congratulations! You passed!" : "Keep practicing — you'll get it next time!";
   const emoji = passed ? "🎉" : "📚";
@@ -124,7 +133,7 @@ export function quizResult(
       Hi <strong>${displayName}</strong>,
     </p>
     <p style="color:#374151;font-size:16px;line-height:1.6;margin:0 0 20px;">
-      You completed the quiz <strong>${quiz.title}</strong>.
+      You completed the quiz <strong>${escapeHtml(quiz.title)}</strong>.
     </p>
     <div style="text-align:center;margin:0 0 24px;">
       <div style="display:inline-block;background-color:${passed ? "#ecfdf5" : "#fef2f2"};border:2px solid ${statusColor};border-radius:12px;padding:24px 40px;">
@@ -165,14 +174,14 @@ export function certificateIssued(
   user: { name: string | null; email: string },
   course: { title: string; slug: string }
 ): string {
-  const displayName = user.name || "Learner";
+  const displayName = escapeHtml(user.name || "Learner");
 
   const content = `
     <p style="color:#374151;font-size:16px;line-height:1.6;margin:0 0 20px;">
       Hi <strong>${displayName}</strong>,
     </p>
     <p style="color:#374151;font-size:16px;line-height:1.6;margin:0 0 20px;">
-      Congratulations on completing <strong>${course.title}</strong>! Your certificate has been issued.
+      Congratulations on completing <strong>${escapeHtml(course.title)}</strong>! Your certificate has been issued.
     </p>
     <div style="background-color:#fef3c7;border-left:4px solid #f59e0b;padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 24px;">
       <p style="color:#92400e;font-size:14px;margin:0;">
@@ -191,4 +200,26 @@ export function certificateIssued(
   `;
 
   return baseTemplate("Certificate Issued!", content);
+}
+
+export function passwordResetEmail(resetUrl: string): string {
+  const content = `
+    <p style="color:#374151;font-size:16px;line-height:1.6;margin:0 0 20px;">
+      Hi,
+    </p>
+    <p style="color:#374151;font-size:16px;line-height:1.6;margin:0 0 20px;">
+      You requested a password reset for your SmartLMS account. Click the button below to reset your password. This link expires in 1 hour.
+    </p>
+    <p style="text-align:center;margin:0 0 24px;">
+      <a href="${resetUrl}"
+         style="background-color:#4f46e5;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:600;display:inline-block;font-size:15px;">
+        Reset Password
+      </a>
+    </p>
+    <p style="color:#6b7280;font-size:14px;line-height:1.6;margin:0;">
+      If you didn't request this, you can safely ignore this email.<br/>The SmartLMS Team
+    </p>
+  `;
+
+  return baseTemplate("Reset Your Password", content);
 }

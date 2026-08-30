@@ -485,7 +485,7 @@ model Subscription {
   status      String             @default("ACTIVE")
   startDate   DateTime           @default(now())
   endDate     DateTime?
-  stripeSubscriptionId String?
+  flutterwaveSubscriptionId String?
 
   userId      String
   user        User               @relation(fields: [userId], references: [id])

@@ -63,6 +63,7 @@ export default function LoginPage() {
         email: form.email,
         password: form.password,
         redirect: false,
+        callbackUrl: "/dashboard",
       });
       if (result?.error) {
         setServerError("Invalid email or password. Please try again.");

@@ -497,7 +497,7 @@ export default function CertificateView({
             <div className="mt-6 flex w-full items-center justify-between">
               <div className="flex flex-col">
                 <p className="text-[9px] leading-tight" style={{ color: "#999" }}>
-                  View at: smartlms-bay.vercel.app/certificate/{verificationId}
+                  View at: {typeof window !== "undefined" ? window.location.hostname : "smartlms-bay.vercel.app"}/certificate/{verificationId}
                 </p>
                 <p className="text-[9px] leading-tight" style={{ color: "#999" }}>
                   This certificate was issued by SmartLMS Platform

@@ -44,6 +44,17 @@ export async function POST(request: Request) {
 
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || "http://localhost:3000"}/reset-password?token=${token}`;
 
+    try {
+      const { sendEmail, passwordResetEmail } = await import("@/lib/email");
+      await sendEmail({
+        to: user.email,
+        subject: "Reset Your SmartLMS Password",
+        html: passwordResetEmail(resetUrl),
+      });
+    } catch {
+      console.error("Failed to send password reset email");
+    }
+
     return NextResponse.json({
       success: true,
       message: "If an account exists with that email, a password reset link has been sent.",

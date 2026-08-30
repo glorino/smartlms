@@ -58,7 +58,7 @@ export async function GET(
 
     const instructorName =
       certificate.course.instructor?.name || "SmartLMS Team";
-    const certPageUrl = `https://smartlms-bay.vercel.app/certificate/${certificate.certificateId}`;
+    const certPageUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://smartlms-bay.vercel.app"}/certificate/${certificate.certificateId}`;
 
     let qrMatrix: boolean[][] | null = null;
     try {

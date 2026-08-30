@@ -97,35 +97,39 @@ export async function GET(request: Request) {
       }
 
       if (!existingEnrollment) {
-        await prisma.$transaction(async (tx) => {
-          await tx.purchase.create({
-            data: {
-              userId,
-              courseId,
-              amount: transaction.amount,
-              currency: transaction.currency,
-              status: "COMPLETED",
-              paymentMethod: "flutterwave",
-              flutterwavePaymentId: tx_ref,
-            },
-          });
+        try {
+          await prisma.$transaction(async (tx) => {
+            await tx.purchase.create({
+              data: {
+                userId,
+                courseId,
+                amount: transaction.amount,
+                currency: transaction.currency,
+                status: "COMPLETED",
+                paymentMethod: "flutterwave",
+                flutterwavePaymentId: tx_ref,
+              },
+            });
 
-          await tx.enrollment.create({
-            data: {
-              userId,
-              courseId,
-              status: "ACTIVE",
-            },
-          });
+            await tx.enrollment.create({
+              data: {
+                userId,
+                courseId,
+                status: "ACTIVE",
+              },
+            });
 
-          await tx.course.update({
-            where: { id: courseId },
-            data: {
-              totalStudents: { increment: 1 },
-              revenue: { increment: transaction.amount },
-            },
+            await tx.course.update({
+              where: { id: courseId },
+              data: {
+                totalStudents: { increment: 1 },
+                revenue: { increment: transaction.amount },
+              },
+            });
           });
-        });
+        } catch (e: any) {
+          if (e?.code !== "P2002") throw e;
+        }
       }
 
       return NextResponse.redirect(

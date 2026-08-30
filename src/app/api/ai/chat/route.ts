@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { chatCompletion } from "@/lib/ai";
 import { SITE_CONFIG } from "@/lib/constants";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const SYSTEM_PROMPT = `You are SmartLMS Assistant, an intelligent AI helper for the SmartLMS online learning platform. You can help users with:
 
@@ -91,6 +92,16 @@ function generateSuggestions(response: string, context?: ChatRequest["context"])
 
 export async function POST(request: Request) {
   try {
+    const forwarded = request.headers.get("x-forwarded-for");
+    const ip = forwarded?.split(",")[0] || "unknown";
+
+    if (!await checkRateLimit("ai-chat", 20, 60000, ip)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please wait a moment." },
+        { status: 429 }
+      );
+    }
+
     const body: ChatRequest = await request.json();
     const { message, context, history } = body;
 

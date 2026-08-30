@@ -37,6 +37,12 @@ export async function DELETE(request: Request) {
       await tx.message.deleteMany({ where: { receiverId: userId } });
       await tx.achievement.deleteMany({ where: { userId } });
       await tx.liveClassAttendance.deleteMany({ where: { userId } });
+      await tx.forumPost.deleteMany({ where: { authorId: userId } });
+      await tx.forumReply.deleteMany({ where: { authorId: userId } });
+      await tx.aIGeneratedContent.deleteMany({ where: { userId } });
+      await tx.learningProfile.deleteMany({ where: { userId } });
+      await tx.passwordResetToken.deleteMany({ where: { userId } });
+      await tx.payout.deleteMany({ where: { instructorId: userId } });
 
       if (user.role === "INSTRUCTOR") {
         await tx.course.updateMany({ where: { instructorId: userId }, data: { instructorId: "unassigned" } });

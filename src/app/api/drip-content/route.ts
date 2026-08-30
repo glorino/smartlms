@@ -4,6 +4,11 @@ import { auth } from "@/lib/auth";
 
 export async function GET(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get("courseId");
 
