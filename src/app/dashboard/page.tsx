@@ -191,6 +191,10 @@ export default function DashboardPage() {
     ? Math.round(quizAttempts.reduce((acc, a) => acc + a.score, 0) / quizAttempts.length)
     : 0;
 
+  // For instructors: compute fallback stats from enrollment data if analytics fails
+  const instructorUniqueCourseIds = [...new Set(enrollments.map((e) => e.courseId))];
+  const instructorStudentIds = [...new Set(enrollments.map((e) => e.user?.id).filter(Boolean))];
+
   const stats =
     role === "ADMIN"
       ? [
@@ -201,10 +205,10 @@ export default function DashboardPage() {
         ]
       : role === "INSTRUCTOR"
         ? [
-            { label: "My Courses", value: analyticsData?.totalCourses ?? "—", icon: Package, color: "bg-blue-500", change: "", trend: "up" as const, subtitle: "courses" },
-            { label: "Total Students", value: analyticsData?.totalStudents ?? "—", icon: Users, color: "bg-emerald-500", change: analyticsData?.userGrowth ? `${analyticsData.userGrowth}%` : "", trend: "up" as const, subtitle: "students" },
+            { label: "My Courses", value: analyticsData?.totalCourses ?? instructorUniqueCourseIds.length, icon: Package, color: "bg-blue-500", change: "", trend: "up" as const, subtitle: "courses" },
+            { label: "Total Students", value: analyticsData?.totalStudents ?? instructorStudentIds.length, icon: Users, color: "bg-emerald-500", change: analyticsData?.enrollmentGrowth ? `${analyticsData.enrollmentGrowth}%` : "", trend: "up" as const, subtitle: "students" },
             { label: "Earnings", value: analyticsData?.totalRevenue != null ? `₦${Number(analyticsData.totalRevenue).toLocaleString()}` : "—", icon: DollarSign, color: "bg-amber-500", change: analyticsData?.revenueGrowth ? `${analyticsData.revenueGrowth}%` : "", trend: "up" as const, subtitle: "earnings" },
-            { label: "Active Courses", value: analyticsData?.totalEnrollments ?? "—", icon: BookOpen, color: "bg-rose-500", change: analyticsData?.enrollmentGrowth ? `${analyticsData.enrollmentGrowth}%` : "", trend: "up" as const, subtitle: "active" },
+            { label: "Active Courses", value: analyticsData?.totalEnrollments ?? enrollments.length, icon: BookOpen, color: "bg-rose-500", change: analyticsData?.enrollmentGrowth ? `${analyticsData.enrollmentGrowth}%` : "", trend: "up" as const, subtitle: "active" },
           ]
         : [
             { label: "Enrolled Courses", value: enrollments.length || 0, icon: BookOpen, color: "bg-blue-500", change: `${activeEnrollments.length} active`, trend: "up" as const, subtitle: "courses" },

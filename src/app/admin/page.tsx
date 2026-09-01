@@ -119,7 +119,7 @@ export default function AdminDashboardPage() {
             totalRevenue: data.totalRevenue || 0,
             totalEnrollments: data.totalEnrollments || 0,
             userGrowth: data.userGrowth || 0,
-            courseGrowth: 0,
+            courseGrowth: data.courseGrowth || 0,
             revenueGrowth: data.revenueGrowth || 0,
             enrollmentGrowth: data.enrollmentGrowth || 0,
           });

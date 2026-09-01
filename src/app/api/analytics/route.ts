@@ -34,91 +34,63 @@ export async function GET(request: Request) {
     const prevSinceDate = new Date(sinceDate);
     prevSinceDate.setDate(prevSinceDate.getDate() - days);
 
-    const courseFilter = isInstructor
-      ? { instructorId: userId }
-      : {};
+    const instructorFilter = isInstructor ? { course: { instructorId: userId } } : {};
+    const courseFilter = isInstructor ? { instructorId: userId } : {};
+    const enrollmentInstructorFilter = isInstructor ? { course: { instructorId: userId } } : {};
 
-    const totalStudents = await prisma.user.count({
-      where: { role: "STUDENT" },
-    });
-
-    const totalCourses = await prisma.course.count({
-      where: courseFilter,
-    });
-
-    const totalRevenueResult = await prisma.purchase.aggregate({
-      where: {
-        status: "COMPLETED",
-        ...(isInstructor ? { course: { instructorId: userId } } : {}),
-      },
-      _sum: { amount: true },
-    });
-    const totalRevenue = totalRevenueResult._sum.amount || 0;
-
-    const totalEnrollments = await prisma.enrollment.count({
-      where: isInstructor ? { course: { instructorId: userId } } : {},
-    });
-
-    const completedEnrollments = await prisma.enrollment.count({
-      where: {
-        status: "COMPLETED",
-        ...(isInstructor ? { course: { instructorId: userId } } : {}),
-      },
-    });
-
-    const activeUsers = await prisma.user.count({
-      where: {
-        role: "STUDENT",
-        enrollments: {
-          some: {
-            enrolledAt: { gte: sinceDate },
-          },
+    // Run ALL core queries in parallel
+    const [
+      totalStudents,
+      totalCourses,
+      revenueResult,
+      totalEnrollments,
+      completedEnrollments,
+      activeUsers,
+      prevActiveUsers,
+      currentEnrollments,
+      prevEnrollments,
+      currentRevenue,
+      prevRevenue,
+    ] = await Promise.all([
+      prisma.user.count({ where: { role: "STUDENT" } }),
+      prisma.course.count({ where: courseFilter }),
+      prisma.purchase.aggregate({
+        where: { status: "COMPLETED", ...instructorFilter },
+        _sum: { amount: true },
+      }),
+      prisma.enrollment.count({ where: enrollmentInstructorFilter }),
+      prisma.enrollment.count({
+        where: { status: "COMPLETED", ...enrollmentInstructorFilter },
+      }),
+      prisma.user.count({
+        where: {
+          role: "STUDENT",
+          enrollments: { some: { enrolledAt: { gte: sinceDate } } },
         },
-      },
-    });
-
-    const prevActiveUsers = await prisma.user.count({
-      where: {
-        role: "STUDENT",
-        enrollments: {
-          some: {
-            enrolledAt: { gte: prevSinceDate, lt: sinceDate },
-          },
+      }),
+      prisma.user.count({
+        where: {
+          role: "STUDENT",
+          enrollments: { some: { enrolledAt: { gte: prevSinceDate, lt: sinceDate } } },
         },
-      },
-    });
+      }),
+      prisma.enrollment.count({
+        where: { enrolledAt: { gte: sinceDate }, ...enrollmentInstructorFilter },
+      }),
+      prisma.enrollment.count({
+        where: { enrolledAt: { gte: prevSinceDate, lt: sinceDate }, ...enrollmentInstructorFilter },
+      }),
+      prisma.purchase.aggregate({
+        where: { status: "COMPLETED", createdAt: { gte: sinceDate }, ...instructorFilter },
+        _sum: { amount: true },
+      }),
+      prisma.purchase.aggregate({
+        where: { status: "COMPLETED", createdAt: { gte: prevSinceDate, lt: sinceDate }, ...instructorFilter },
+        _sum: { amount: true },
+      }),
+    ]);
 
-    const prevEnrollments = await prisma.enrollment.count({
-      where: {
-        enrolledAt: { gte: prevSinceDate, lt: sinceDate },
-        ...(isInstructor ? { course: { instructorId: userId } } : {}),
-      },
-    });
-
-    const prevRevenue = await prisma.purchase.aggregate({
-      where: {
-        status: "COMPLETED",
-        createdAt: { gte: prevSinceDate, lt: sinceDate },
-        ...(isInstructor ? { course: { instructorId: userId } } : {}),
-      },
-      _sum: { amount: true },
-    });
-
-    const currentEnrollments = await prisma.enrollment.count({
-      where: {
-        enrolledAt: { gte: sinceDate },
-        ...(isInstructor ? { course: { instructorId: userId } } : {}),
-      },
-    });
-
-    const currentRevenue = await prisma.purchase.aggregate({
-      where: {
-        status: "COMPLETED",
-        createdAt: { gte: sinceDate },
-        ...(isInstructor ? { course: { instructorId: userId } } : {}),
-      },
-      _sum: { amount: true },
-    });
+    const totalRevenue = revenueResult._sum.amount || 0;
 
     const calcGrowth = (current: number, previous: number) => {
       if (previous === 0) return current > 0 ? 100 : 0;
@@ -132,16 +104,54 @@ export async function GET(request: Request) {
     );
     const userGrowth = calcGrowth(activeUsers, prevActiveUsers);
 
+    // Monthly data + recent activity + charts in parallel
     const twelveMonthsAgo = new Date();
     twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
 
-    const enrollmentsByMonth = await prisma.enrollment.findMany({
-      where: {
-        enrolledAt: { gte: twelveMonthsAgo },
-        ...(isInstructor ? { course: { instructorId: userId } } : {}),
-      },
-      select: { enrolledAt: true },
-    });
+    const [enrollmentsByMonth, revenueByMonth, recentEnrollments, recentPurchases, topCourses, allPurchases, courseRatings] = await Promise.all([
+      prisma.enrollment.findMany({
+        where: { enrolledAt: { gte: twelveMonthsAgo }, ...enrollmentInstructorFilter },
+        select: { enrolledAt: true },
+      }),
+      prisma.purchase.findMany({
+        where: { status: "COMPLETED", createdAt: { gte: twelveMonthsAgo }, ...instructorFilter },
+        select: { createdAt: true, amount: true },
+      }),
+      prisma.enrollment.findMany({
+        where: enrollmentInstructorFilter,
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+          course: { select: { id: true, title: true } },
+        },
+        orderBy: { enrolledAt: "desc" },
+        take: 10,
+      }),
+      prisma.purchase.findMany({
+        where: { status: "COMPLETED", ...instructorFilter },
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+          course: { select: { id: true, title: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }),
+      prisma.course.findMany({
+        where: courseFilter,
+        include: { _count: { select: { enrollments: true } } },
+        orderBy: { totalStudents: "desc" },
+        take: 5,
+      }),
+      prisma.purchase.findMany({
+        where: instructorFilter,
+        select: { status: true, amount: true, createdAt: true },
+      }),
+      isInstructor
+        ? prisma.course.findMany({
+            where: courseFilter,
+            select: { rating: true, totalRatings: true },
+          })
+        : Promise.resolve([]),
+    ]);
 
     const monthlyEnrollments: Record<string, number> = {};
     for (const e of enrollmentsByMonth) {
@@ -149,52 +159,11 @@ export async function GET(request: Request) {
       monthlyEnrollments[key] = (monthlyEnrollments[key] || 0) + 1;
     }
 
-    const revenueByMonth = await prisma.purchase.findMany({
-      where: {
-        status: "COMPLETED",
-        createdAt: { gte: twelveMonthsAgo },
-        ...(isInstructor ? { course: { instructorId: userId } } : {}),
-      },
-      select: { createdAt: true, amount: true },
-    });
-
     const monthlyRevenue: Record<string, number> = {};
     for (const r of revenueByMonth) {
       const key = r.createdAt.toISOString().slice(0, 7);
       monthlyRevenue[key] = (monthlyRevenue[key] || 0) + r.amount;
     }
-
-    const topCourses = await prisma.course.findMany({
-      where: courseFilter,
-      include: {
-        _count: { select: { enrollments: true } },
-      },
-      orderBy: { totalStudents: "desc" },
-      take: 5,
-    });
-
-    const recentEnrollments = await prisma.enrollment.findMany({
-      where: isInstructor ? { course: { instructorId: userId } } : {},
-      include: {
-        user: { select: { id: true, name: true, email: true } },
-        course: { select: { id: true, title: true } },
-      },
-      orderBy: { enrolledAt: "desc" },
-      take: 10,
-    });
-
-    const recentPurchases = await prisma.purchase.findMany({
-      where: {
-        status: "COMPLETED",
-        ...(isInstructor ? { course: { instructorId: userId } } : {}),
-      },
-      include: {
-        user: { select: { id: true, name: true, email: true } },
-        course: { select: { id: true, title: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    });
 
     const recentActivity = [
       ...recentEnrollments.map((e) => ({
@@ -213,50 +182,41 @@ export async function GET(request: Request) {
       .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
       .slice(0, 10);
 
-    const engagementMetrics = {
-      avgSessionDuration: "24m 32s",
-      avgCompletionRate: totalEnrollments > 0
-        ? `${Math.round((completedEnrollments / totalEnrollments) * 100)}%`
-        : "0%",
-      dailyActiveUsers: activeUsers,
-    };
-
-    // Payment stats
-    const allPurchases = await prisma.purchase.findMany({
-      where: isInstructor ? { course: { instructorId: userId } } : {},
-      select: { status: true, amount: true, createdAt: true },
-    });
     const totalPayments = allPurchases.length;
     const completedPayments = allPurchases.filter((p) => p.status === "COMPLETED").length;
     const failedPayments = allPurchases.filter((p) => p.status === "FAILED").length;
     const refundedPayments = allPurchases.filter((p) => p.status === "REFUNDED").length;
-    const paymentSuccessRate = totalPayments > 0 ? Math.round((completedPayments / totalPayments) * 100) : 0;
-    const refundRate = totalPayments > 0 ? Math.round((refundedPayments / totalPayments) * 100) : 0;
 
-    // Course start rate (enrollments where student has completed at least 1 lesson)
-    const enrollmentsWithProgress = await prisma.enrollment.findMany({
-      where: isInstructor ? { course: { instructorId: userId } } : {},
-      select: {
-        id: true,
-        progress: true,
-      },
-    });
-    const courseStartRate = enrollmentsWithProgress.length > 0
-      ? Math.round((enrollmentsWithProgress.filter((e) => e.progress > 0).length / enrollmentsWithProgress.length) * 100)
-      : 0;
+    // Compute average rating for instructor
+    let averageRating = 0;
+    if (isInstructor && courseRatings.length > 0) {
+      const totalRatingSum = courseRatings.reduce((sum, c) => sum + c.rating * c.totalRatings, 0);
+      const totalRatingCount = courseRatings.reduce((sum, c) => sum + c.totalRatings, 0);
+      averageRating = totalRatingCount > 0 ? Math.round((totalRatingSum / totalRatingCount) * 10) / 10 : 0;
+    }
 
-    // Revenue by instructor (admin only)
+    // Admin-only data
     let revenueByInstructor: { instructorId: string; instructorName: string; revenue: number }[] = [];
+    let categoryDistribution: { category: string; count: number }[] = [];
+
     if (isAdmin) {
-      const instructorRevenues = await prisma.purchase.groupBy({
-        by: ["courseId"],
-        where: { status: "COMPLETED" },
-        _sum: { amount: true },
-      });
+      const [instructorRevenues, coursesWithInstructors, catCourses] = await Promise.all([
+        prisma.purchase.groupBy({
+          by: ["courseId"],
+          where: { status: "COMPLETED" },
+          _sum: { amount: true },
+        }),
+        prisma.course.findMany({
+          select: { id: true, instructorId: true, instructor: { select: { name: true } } },
+        }),
+        prisma.course.groupBy({
+          by: ["category"],
+          _count: { id: true },
+          where: { category: { not: null } },
+        }),
+      ]);
+
       const courseMap = new Map<string, { instructorId: string; instructorName: string }>();
-      const coursesWithInstructors = await prisma.course.findMany({
-        select: { id: true, instructorId: true, instructor: { select: { name: true } } },
-      });
       for (const c of coursesWithInstructors) {
         courseMap.set(c.id, { instructorId: c.instructorId, instructorName: c.instructor.name || "Unknown" });
       }
@@ -275,24 +235,12 @@ export async function GET(request: Request) {
         instructorName: data.name,
         revenue: Math.round(data.revenue),
       })).sort((a, b) => b.revenue - a.revenue);
-    }
 
-    // Category distribution (admin only)
-    let categoryDistribution: { category: string; count: number }[] = [];
-    if (isAdmin) {
-      const catCourses = await prisma.course.groupBy({
-        by: ["category"],
-        _count: { id: true },
-        where: { category: { not: null } },
-      });
       categoryDistribution = catCourses.map((c) => ({
         category: c.category || "Uncategorized",
         count: c._count.id,
       })).sort((a, b) => b.count - a.count);
     }
-
-    // Geographic distribution (from user bios/locations — simplified: group by country if available)
-    // Since we don't have a country field, we'll derive from ActivityLog IP or return a placeholder
 
     return NextResponse.json({
       totalStudents,
@@ -303,6 +251,7 @@ export async function GET(request: Request) {
       userGrowth,
       enrollmentGrowth,
       revenueGrowth,
+      averageRating,
       completionRate: totalEnrollments > 0
         ? (completedEnrollments / totalEnrollments) * 100
         : 0,
@@ -310,20 +259,19 @@ export async function GET(request: Request) {
       monthlyRevenue,
       topCourses,
       recentActivity,
-      engagementMetrics,
       paymentStats: {
         totalPayments,
         completedPayments,
         failedPayments,
         refundedPayments,
-        paymentSuccessRate,
-        refundRate,
+        paymentSuccessRate: totalPayments > 0 ? Math.round((completedPayments / totalPayments) * 100) : 0,
+        refundRate: totalPayments > 0 ? Math.round((refundedPayments / totalPayments) * 100) : 0,
       },
-      courseStartRate,
       revenueByInstructor,
       categoryDistribution,
     });
   } catch (error) {
+    console.error("Analytics API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

@@ -28,6 +28,20 @@ interface InstructorStats {
   revenueGrowth: number;
 }
 
+function getMonthlyData(monthlyObj: Record<string, number>, months: number): { labels: string[]; values: number[] } {
+  const labels: string[] = [];
+  const values: number[] = [];
+  const now = new Date();
+  for (let i = months - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = d.toISOString().slice(0, 7);
+    const label = d.toLocaleString("default", { month: "short" });
+    labels.push(label);
+    values.push(monthlyObj[key] || 0);
+  }
+  return { labels, values };
+}
+
 export default function InstructorDashboardPage() {
   const [stats, setStats] = useState<InstructorStats>({
     totalCourses: 0,
@@ -39,13 +53,18 @@ export default function InstructorDashboardPage() {
     revenueGrowth: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [monthlyRevenue, setMonthlyRevenue] = useState<Record<string, number>>({});
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch("/api/analytics?range=30d");
-        if (res.ok) {
-          const data = await res.json();
+        const [analyticsRes, earningsRes] = await Promise.allSettled([
+          fetch("/api/analytics?range=30d"),
+          fetch("/api/instructor/earnings"),
+        ]);
+
+        if (analyticsRes.status === "fulfilled" && analyticsRes.value.ok) {
+          const data = await analyticsRes.value.json();
           setStats({
             totalCourses: data.totalCourses || 0,
             totalStudents: data.totalStudents || 0,
@@ -55,6 +74,36 @@ export default function InstructorDashboardPage() {
             studentGrowth: data.enrollmentGrowth || 0,
             revenueGrowth: data.revenueGrowth || 0,
           });
+          setMonthlyRevenue(data.monthlyRevenue || {});
+        }
+
+        // Fallback: if analytics fails, compute from earnings endpoint
+        if (analyticsRes.status === "rejected" || (analyticsRes.status === "fulfilled" && !analyticsRes.value.ok)) {
+          if (earningsRes.status === "fulfilled" && earningsRes.value.ok) {
+            const earnings = await earningsRes.value.json();
+            const earningsData = earnings.earnings || {};
+            setStats({
+              totalCourses: earningsData.courses?.length || 0,
+              totalStudents: 0,
+              totalRevenue: earningsData.totalEarnings || 0,
+              averageRating: 0,
+              courseGrowth: 0,
+              studentGrowth: 0,
+              revenueGrowth: 0,
+            });
+            if (earningsData.monthlyData) {
+              const revMap: Record<string, number> = {};
+              const now = new Date();
+              for (const item of earningsData.monthlyData) {
+                const monthIndex = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].indexOf(item.month);
+                if (monthIndex >= 0) {
+                  const d = new Date(now.getFullYear(), monthIndex, 1);
+                  revMap[d.toISOString().slice(0, 7)] = item.amount;
+                }
+              }
+              setMonthlyRevenue(revMap);
+            }
+          }
         }
       } catch {
         // Use fallback
@@ -64,6 +113,9 @@ export default function InstructorDashboardPage() {
     }
     fetchData();
   }, []);
+
+  const revenueData = getMonthlyData(monthlyRevenue, 12);
+  const maxRevenue = Math.max(...revenueData.values, 1);
 
   const statCards = [
     { label: "My Courses", value: stats.totalCourses, icon: BookOpen, color: "bg-blue-500", growth: stats.courseGrowth },
@@ -162,30 +214,20 @@ export default function InstructorDashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-emerald-500" />
-              Performance
+              Revenue (12 months)
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex h-48 items-end gap-2">
-              {Array.from({ length: 12 }, (_, i) => {
-                const month = new Date();
-                month.setMonth(month.getMonth() - 11 + i);
-                const label = month.toLocaleString("default", { month: "short" });
-                const h = 20 + Math.abs(Math.sin((i + 1) * 0.7)) * 80;
-                return (
-                  <div key={i} className="flex-1 flex flex-col items-center">
-                    <div
-                      className="w-full rounded-t-md bg-gradient-to-t from-indigo-500 to-indigo-400 transition-all hover:from-indigo-600 hover:to-indigo-500"
-                      style={{ height: `${h}%` }}
-                    />
-                    <span className="mt-2 text-[10px] text-gray-400">{label}</span>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-4 flex justify-between text-xs text-gray-500">
-              {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((m) => (
-                <span key={m}>{m}</span>
+              {revenueData.values.map((val, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center">
+                  <div
+                    className="w-full rounded-t-md bg-gradient-to-t from-indigo-500 to-indigo-400 transition-all hover:from-indigo-600 hover:to-indigo-500"
+                    style={{ height: `${(val / maxRevenue) * 100}%`, minHeight: val > 0 ? "4px" : "0px" }}
+                    title={`₦${val.toLocaleString()}`}
+                  />
+                  <span className="mt-2 text-[10px] text-gray-400">{revenueData.labels[i]}</span>
+                </div>
               ))}
             </div>
           </CardContent>
