@@ -286,7 +286,7 @@ export default function InstructorEarningsPage() {
                     <Badge variant="success">Default</Badge>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full gap-2" onClick={() => toast("Payout method setup is not yet available. Please check back soon.", { icon: "🚧" })}>
+                <Button variant="outline" className="w-full gap-2" onClick={() => toast("Payout methods will be managed by the platform administrator.", { icon: "ℹ️" })}>
                   <Plus className="h-4 w-4" />
                   Add Payout Method
                 </Button>
@@ -311,7 +311,7 @@ export default function InstructorEarningsPage() {
                   <label className="text-sm font-medium text-gray-700">Minimum Payout</label>
                   <Input type="number" placeholder="50.00" defaultValue="50.00" />
                 </div>
-                <Button className="w-full" onClick={() => toast("Payout settings are not yet available. This feature is under development.", { icon: "🚧" })}>Save Settings</Button>
+                <Button className="w-full" onClick={() => toast("Payout schedule is managed by the platform administrator.", { icon: "ℹ️" })}>Save Settings</Button>
               </CardContent>
             </Card>
           </div>

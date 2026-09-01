@@ -490,6 +490,139 @@ export default function QuizEngine({
               })}
             </div>
           )}
+
+          {mappedType === "multi-select" && (
+            <div className="space-y-3">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Select all that apply</p>
+              {mappedOptions.map((option) => {
+                const selected = (answers[dbQuestion.id] as string[] || []).includes(option.id);
+                const correctIds = dbQuestion.answers.filter((a) => a.isCorrect).map((a) => a.id);
+                const isCorrect = correctIds.includes(option.id);
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => handleMultiSelect(dbQuestion.id, option.id)}
+                    disabled={isSubmitted}
+                    className={`flex w-full items-center gap-3 rounded-lg border-2 p-4 text-left transition-all ${
+                      isSubmitted
+                        ? isCorrect
+                          ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
+                          : selected && !isCorrect
+                          ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                          : "border-gray-200 dark:border-gray-700"
+                        : selected
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                        : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
+                    }`}
+                  >
+                    <div
+                      className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 ${
+                        selected
+                          ? "border-blue-500 bg-blue-500"
+                          : "border-gray-300 dark:border-gray-600"
+                      }`}
+                    >
+                      {selected && <Check className="h-3 w-3 text-white" />}
+                    </div>
+                    <span className="text-gray-700 dark:text-gray-300">{option.text}</span>
+                    {option.imageUrl && (
+                      <img src={option.imageUrl} alt={`Option ${option.text}`} className="ml-auto max-h-16 rounded object-contain" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {mappedType === "short-answer" && (
+            <input
+              type="text"
+              value={(answers[dbQuestion.id] as string) || ""}
+              onChange={(e) => handleAnswer(dbQuestion.id, e.target.value)}
+              disabled={isSubmitted}
+              placeholder="Type a short answer..."
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            />
+          )}
+
+          {mappedType === "long-answer" && (
+            <textarea
+              value={(answers[dbQuestion.id] as string) || ""}
+              onChange={(e) => handleAnswer(dbQuestion.id, e.target.value)}
+              disabled={isSubmitted}
+              placeholder="Type your detailed answer here..."
+              rows={6}
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white resize-y"
+            />
+          )}
+
+          {mappedType === "code" && (
+            <div className="space-y-2">
+              <textarea
+                value={(answers[dbQuestion.id] as string) || ""}
+                onChange={(e) => handleAnswer(dbQuestion.id, e.target.value)}
+                disabled={isSubmitted}
+                placeholder="Write your code here..."
+                rows={10}
+                className="w-full rounded-lg border border-gray-300 bg-gray-900 px-4 py-3 font-mono text-sm text-green-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-black dark:text-green-400 resize-y"
+                spellCheck={false}
+              />
+            </div>
+          )}
+
+          {mappedType === "numeric" && (
+            <input
+              type="number"
+              value={(answers[dbQuestion.id] as string) || ""}
+              onChange={(e) => handleAnswer(dbQuestion.id, e.target.value)}
+              disabled={isSubmitted}
+              placeholder="Enter a number..."
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            />
+          )}
+
+          {mappedType === "ordering" && (
+            <div className="space-y-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Drag to reorder or use the buttons</p>
+              {(answers[dbQuestion.id] as string[] || mappedOptions.map((o) => o.id)).map((optId, idx) => {
+                const option = mappedOptions.find((o) => o.id === optId);
+                if (!option) return null;
+                const currentOrder = (answers[dbQuestion.id] as string[]) || mappedOptions.map((o) => o.id);
+                return (
+                  <div key={option.id} className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-700/50">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600 dark:bg-blue-900 dark:text-blue-400">
+                      {idx + 1}
+                    </span>
+                    <span className="flex-1 text-sm text-gray-700 dark:text-gray-300">{option.text}</span>
+                    <div className="flex gap-1">
+                      <button
+                        disabled={isSubmitted || idx === 0}
+                        onClick={() => {
+                          const newOrder = [...currentOrder];
+                          [newOrder[idx - 1], newOrder[idx]] = [newOrder[idx], newOrder[idx - 1]];
+                          handleAnswer(dbQuestion.id, newOrder);
+                        }}
+                        className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-700 disabled:opacity-30 dark:hover:bg-gray-600"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <button
+                        disabled={isSubmitted || idx === currentOrder.length - 1}
+                        onClick={() => {
+                          const newOrder = [...currentOrder];
+                          [newOrder[idx], newOrder[idx + 1]] = [newOrder[idx + 1], newOrder[idx]];
+                          handleAnswer(dbQuestion.id, newOrder);
+                        }}
+                        className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-700 disabled:opacity-30 dark:hover:bg-gray-600"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
         )}
 
