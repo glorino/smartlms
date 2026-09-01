@@ -110,9 +110,10 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch("/api/analytics?range=30d");
-        if (res.ok) {
-          const data = await res.json();
+        // Try analytics API first
+        const analyticsRes = await fetch("/api/analytics?range=30d");
+        if (analyticsRes.ok) {
+          const data = await analyticsRes.json();
           setStats({
             totalStudents: data.totalStudents || 0,
             totalCourses: data.totalCourses || 0,
@@ -126,9 +127,47 @@ export default function AdminDashboardPage() {
           setActivities(data.recentActivity || []);
           setMonthlyRevenue(data.monthlyRevenue || {});
           setMonthlyEnrollments(data.monthlyEnrollments || {});
+          setLoading(false);
+          return;
         }
       } catch {
-        // Use fallback data
+        // Analytics failed, fall through to individual endpoints
+      }
+
+      // Fallback: compute stats from individual working endpoints
+      try {
+        const [usersRes, coursesRes, enrollmentsRes] = await Promise.allSettled([
+          fetch("/api/users?role=STUDENT&limit=1"),
+          fetch("/api/courses?allStatus=true&limit=1"),
+          fetch("/api/enrollments"),
+        ]);
+
+        let totalStudents = 0;
+        let totalCourses = 0;
+        let totalEnrollments = 0;
+
+        if (usersRes.status === "fulfilled" && usersRes.value.ok) {
+          const userData = await usersRes.value.json();
+          totalStudents = userData.pagination?.total || 0;
+        }
+        if (coursesRes.status === "fulfilled" && coursesRes.value.ok) {
+          const courseData = await coursesRes.value.json();
+          totalCourses = courseData.pagination?.total || 0;
+        }
+        if (enrollmentsRes.status === "fulfilled" && enrollmentsRes.value.ok) {
+          const enrollData = await enrollmentsRes.value.json();
+          const enrollments = enrollData.enrollments || [];
+          totalEnrollments = enrollments.length;
+        }
+
+        setStats((prev) => ({
+          ...prev,
+          totalStudents,
+          totalCourses,
+          totalEnrollments,
+        }));
+      } catch {
+        // Individual endpoints also failed
       } finally {
         setLoading(false);
       }
