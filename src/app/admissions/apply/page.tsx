@@ -88,7 +88,7 @@ export default function AdmissionForm() {
   const validateStep = (): boolean => {
     switch (currentStep) {
       case 1:
-        if (!form.firstName || !form.lastName || !form.dateOfBirth || !form.gender || !form.homeAddress) {
+        if (!form.firstName || !form.lastName || !form.dateOfBirth || !form.gender || !form.homeAddress || !form.email || !form.phone) {
           toast.error("Please fill all required fields");
           return false;
         }
@@ -296,24 +296,26 @@ export default function AdmissionForm() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-300">Email</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-300">Email *</label>
                   <input
                     type="email"
                     value={form.email}
                     onChange={(e) => update("email", e.target.value)}
                     className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-2.5 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
                     placeholder="student@email.com"
+                    required
                   />
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-300">Phone Number</label>
+                <label className="mb-1 block text-sm font-medium text-gray-300">Phone Number *</label>
                 <input
                   type="tel"
                   value={form.phone}
                   onChange={(e) => update("phone", e.target.value)}
                   className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-2.5 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
                   placeholder="+234..."
+                  required
                 />
               </div>
               <div>
