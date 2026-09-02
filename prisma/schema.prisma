@@ -98,11 +98,10 @@ model User {
      aiConversations      AICONversation[]
      aiGeneratedQuizzes   AIGeneratedQuiz[]
      aiContentGens        AIContentGeneration[]
-       careerPaths          CareerPath[]
-       forumPosts           ForumPost[]
-       forumReplies         ForumReply[]
-       payouts              Payout[]
-       reviewedAdmissions   AdmissionApplication[]
+      careerPaths          CareerPath[]
+      forumPosts           ForumPost[]
+      forumReplies         ForumReply[]
+      payouts              Payout[]
 
   @@index([email])
   @@index([role])
@@ -900,52 +899,4 @@ model RateLimitEntry {
 
   @@unique([key])
   @@index([key])
-}
-
-enum AdmissionStatus {
-  PENDING
-  UNDER_REVIEW
-  APPROVED
-  REJECTED
-}
-
-model AdmissionApplication {
-  id              String          @id @default(cuid())
-  applicationNumber String        @unique
-  status          AdmissionStatus @default(PENDING)
-
-  firstName       String
-  lastName        String
-  middleName      String?
-  dateOfBirth     DateTime
-  gender          String
-  bloodGroup      String?
-  nationality     String          @default("Nigerian")
-  stateOfOrigin   String?
-  homeAddress     String
-
-  email           String
-  phone           String
-
-  previousSchool  String?
-  previousScore   String?
-
-  guardianName    String?
-  guardianRelationship String?
-  guardianPhone   String?
-  guardianEmail   String?
-
-  documents       Json            @default("[]")
-  notes           String?
-
-  reviewedAt      DateTime?
-  reviewerId      String?
-  reviewer        User?           @relation(fields: [reviewerId], references: [id])
-
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-
-  @@index([status])
-  @@index([applicationNumber])
-  @@index([createdAt])
 }

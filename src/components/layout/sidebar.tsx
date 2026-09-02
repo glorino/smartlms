@@ -31,7 +31,6 @@ import {
   Calendar,
   Trophy,
   Briefcase,
-  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -78,7 +77,6 @@ const adminItems = [
   { href: "/admin", label: "Dashboard", icon: Shield },
   { href: "/admin/users", label: "Manage Users", icon: Users },
   { href: "/admin/courses", label: "Manage Courses", icon: BookOpen },
-  { href: "/admin/admissions", label: "Admissions", icon: FileText },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/live-classes", label: "Live Classes", icon: Video },
   { href: "/admin/health", label: "System Health", icon: Activity },
