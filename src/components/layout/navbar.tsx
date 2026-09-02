@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -15,6 +15,8 @@ import {
   ChevronDown,
   GraduationCap,
   ShieldCheck,
+  Bell,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +35,8 @@ export default function Navbar({ session: propSession }: { session?: Session }) 
   const [searchOpen, setSearchOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const pathname = usePathname();
   const router = useRouter();
   const session = (propSession || sessionData) as Session | undefined;
@@ -45,6 +49,35 @@ export default function Navbar({ session: propSession }: { session?: Session }) 
     { href: "/about", label: "About" },
     { href: "/verify-certificate", label: "Verify", icon: ShieldCheck },
   ];
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchCounts = async () => {
+      try {
+        const [msgRes, notifRes] = await Promise.allSettled([
+          fetch("/api/messages?limit=1"),
+          fetch("/api/notifications?filter=unread&limit=1"),
+        ]);
+
+        if (msgRes.status === "fulfilled" && msgRes.value.ok) {
+          const msgData = await msgRes.value.json();
+          setUnreadMessages(msgData.total || 0);
+        }
+
+        if (notifRes.status === "fulfilled" && notifRes.value.ok) {
+          const notifData = await notifRes.value.json();
+          setUnreadNotifications(notifData.unreadCount || 0);
+        }
+      } catch {
+        // silent
+      }
+    };
+
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,6 +151,39 @@ export default function Navbar({ session: propSession }: { session?: Session }) 
                   <BookOpen className="h-4 w-4" />
                   Dashboard
                 </Link>
+
+                <div className="flex items-center gap-1">
+                  <Link
+                    href="/dashboard/notifications"
+                    className="relative rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                    title="Notifications"
+                  >
+                    <Bell className="h-5 w-5" />
+                    {unreadNotifications > 0 && (
+                      <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                        {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                      </span>
+                    )}
+                  </Link>
+                  <Link
+                    href={
+                      user?.role === "INSTRUCTOR"
+                        ? "/instructor/messages"
+                        : user?.role === "ADMIN"
+                        ? "/admin/messages" 
+                        : "/dashboard/messages"
+                    }
+                    className="relative rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                    title="Messages"
+                  >
+                    <MessageSquare className="h-5 w-5" />
+                    {unreadMessages > 0 && (
+                      <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                        {unreadMessages > 99 ? "99+" : unreadMessages}
+                      </span>
+                    )}
+                  </Link>
+                </div>
 
                 <div className="relative">
                   <button
@@ -248,6 +314,42 @@ export default function Navbar({ session: propSession }: { session?: Session }) 
                 {link.label}
               </Link>
             ))}
+            {user && (
+              <>
+                <Link
+                  href="/dashboard/notifications"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                >
+                  <Bell className="h-4 w-4" />
+                  Notifications
+                  {unreadNotifications > 0 && (
+                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                      {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                    </span>
+                  )}
+                </Link>
+                <Link
+                  href={
+                    user.role === "INSTRUCTOR"
+                      ? "/instructor/messages"
+                      : user.role === "ADMIN"
+                      ? "/admin/messages"
+                      : "/dashboard/messages"
+                  }
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Messages
+                  {unreadMessages > 0 && (
+                    <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                      {unreadMessages > 99 ? "99+" : unreadMessages}
+                    </span>
+                  )}
+                </Link>
+              </>
+            )}
             {!user && (
               <Link
                 href="/login"
