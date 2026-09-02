@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       documents,
     } = body;
 
-    if (!firstName || !lastName || !dateOfBirth || !gender || !homeAddress || !email || !phone) {
+    if (!firstName || !lastName || !dateOfBirth || !gender || !homeAddress) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -33,8 +33,8 @@ export async function POST(request: Request) {
         nationality: nationality || "Nigerian",
         stateOfOrigin: stateOfOrigin || null,
         homeAddress,
-        email,
-        phone,
+        email: email || null,
+        phone: phone || null,
         previousSchool: previousSchool || null,
         previousScore: previousScore || null,
         guardianName: guardianName || null,

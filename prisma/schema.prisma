@@ -924,8 +924,8 @@ model AdmissionApplication {
   stateOfOrigin   String?
   homeAddress     String
 
-  email           String
-  phone           String
+  email           String?
+  phone           String?
 
   previousSchool  String?
   previousScore   String?
