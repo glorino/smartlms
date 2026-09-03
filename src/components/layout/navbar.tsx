@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { signOutAction } from "@/lib/signout-action";
 import {
   Menu,
   X,
@@ -231,9 +232,7 @@ export default function Navbar({ session: propSession }: { session?: Session }) 
                           <button
                             onClick={async () => {
                               setDropdownOpen(false);
-                              try {
-                                await fetch("/api/auth/custom-signout", { method: "POST" });
-                              } catch {}
+                              await signOutAction();
                               window.location.href = "/";
                             }}
                             className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
