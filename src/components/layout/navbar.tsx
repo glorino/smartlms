@@ -229,9 +229,10 @@ export default function Navbar({ session: propSession }: { session?: Session }) 
                         </div>
                         <div className="border-t border-gray-100 py-1">
                           <button
-                            onClick={() => {
+                            onClick={async () => {
                               setDropdownOpen(false);
-                              window.location.href = "/api/auth/custom-signout";
+                              await fetch("/api/auth/custom-signout", { credentials: "include" });
+                              window.location.href = "/";
                             }}
                             className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                           >
