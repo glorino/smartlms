@@ -144,6 +144,7 @@ export async function POST(request: Request) {
       thumbnail,
       tags,
       sections,
+      status: requestedStatus,
     } = body;
 
     if (!title) {
@@ -172,7 +173,7 @@ export async function POST(request: Request) {
           thumbnail,
           tags: tags || [],
           instructorId: userId,
-          status: "DRAFT",
+          status: requestedStatus === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
         },
       });
 
@@ -240,25 +241,26 @@ export async function POST(request: Request) {
 
               if (lessonData.quiz.questions && Array.isArray(lessonData.quiz.questions)) {
                 for (let k = 0; k < lessonData.quiz.questions.length; k++) {
-                  const questionData = lessonData.quiz.questions[k];
+                  const qd = lessonData.quiz.questions[k];
 
                   const question = await tx.question.create({
                     data: {
-                      content: questionData.content,
-                      type: questionData.type || "SINGLE_CHOICE",
-                      points: questionData.points || 1,
-                      explanation: questionData.explanation,
+                      content: qd.content || qd.text || "",
+                      type: qd.type || "SINGLE_CHOICE",
+                      points: qd.points || 1,
+                      explanation: qd.explanation,
                       order: k,
                       quizId: quiz.id,
                     },
                   });
 
-                  if (questionData.answers && Array.isArray(questionData.answers)) {
+                  const answerList = qd.answers || qd.options || [];
+                  if (Array.isArray(answerList) && answerList.length > 0) {
                     await tx.answer.createMany({
-                      data: questionData.answers.map((a: any) => ({
-                        content: a.content,
+                      data: answerList.map((a: any, idx: number) => ({
+                        content: a.content || a.text || "",
                         isCorrect: a.isCorrect || false,
-                        order: a.order,
+                        order: a.order ?? idx,
                         questionId: question.id,
                       })),
                     });
