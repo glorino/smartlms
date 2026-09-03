@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://smartlms-bay.vercel.app"),
   title: "SmartLMS - AI-Powered Learning Management System",
   description:
     "The most advanced LMS combining the best features of Tutor LMS, LearnDash, and MasterStudy. Create courses, build quizzes, issue certificates, and track learner progress with AI-powered tools.",
@@ -38,12 +39,21 @@ export const metadata: Metadata = {
     siteName: "SmartLMS",
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "SmartLMS - AI-Powered Learning Management System",
+      },
+    ],
   },
    twitter: {
      card: "summary_large_image",
      title: "SmartLMS - AI-Powered Learning Management System",
      description:
        "Create, manage, and sell online courses with the most powerful LMS platform.",
+     images: ["/opengraph-image"],
    },
    icons: {
      icon: [
