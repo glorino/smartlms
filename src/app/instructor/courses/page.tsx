@@ -66,7 +66,7 @@ export default function InstructorCoursesPage() {
 
   const stats = {
     totalCourses: courses.length,
-    totalStudents: courses.reduce((acc, c) => acc + (c.totalStudents || c._count?.enrollments || 0), 0),
+    totalStudents: courses.reduce((acc, c) => acc + (c._count?.enrollments || c.totalStudents || 0), 0),
     averageRating: Number(
       (courses.filter((c) => c.rating > 0).reduce((acc, c) => acc + c.rating, 0) /
         (courses.filter((c) => c.rating > 0).length || 1)).toFixed(1)

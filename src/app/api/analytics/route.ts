@@ -47,7 +47,9 @@ export async function GET(request: Request) {
 
     // Batch 1: Core counts — ALL in parallel, ALL resilient
     const b1 = await Promise.allSettled([
-      prisma.user.count({ where: { role: "STUDENT" } }),
+      isInstructor
+        ? prisma.user.count({ where: { role: "STUDENT", enrollments: { some: eFilter } } })
+        : prisma.user.count({ where: { role: "STUDENT" } }),
       prisma.course.count({ where: cFilter }),
       prisma.purchase.aggregate({ where: { status: "COMPLETED", ...iFilter }, _sum: { amount: true } }),
       prisma.enrollment.count({ where: eFilter }),
