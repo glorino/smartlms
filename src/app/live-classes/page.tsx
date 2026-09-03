@@ -3,6 +3,8 @@ import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import LiveClassesClient from "./live-classes-client";
 
+export const dynamic = "force-dynamic";
+
 async function getLiveClasses() {
   try {
     const now = new Date();
