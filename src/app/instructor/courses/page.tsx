@@ -40,6 +40,7 @@ export default function InstructorCoursesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "PUBLISHED" | "DRAFT">("all");
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [uniqueStudentCount, setUniqueStudentCount] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchCourses() {
@@ -55,7 +56,19 @@ export default function InstructorCoursesPage() {
         setLoading(false);
       }
     }
+    async function fetchStudentCount() {
+      try {
+        const res = await fetch("/api/analytics?range=all");
+        if (res.ok) {
+          const data = await res.json();
+          setUniqueStudentCount(data.totalStudents || 0);
+        }
+      } catch {
+        // Fallback to per-course sum
+      }
+    }
     fetchCourses();
+    fetchStudentCount();
   }, []);
 
   const filtered = courses.filter((course) => {
@@ -66,7 +79,7 @@ export default function InstructorCoursesPage() {
 
   const stats = {
     totalCourses: courses.length,
-    totalStudents: courses.reduce((acc, c) => acc + (c._count?.enrollments || c.totalStudents || 0), 0),
+    totalStudents: uniqueStudentCount ?? courses.reduce((acc, c) => acc + ((c as any)._count?.enrollments || 0), 0),
     averageRating: Number(
       (courses.filter((c) => c.rating > 0).reduce((acc, c) => acc + c.rating, 0) /
         (courses.filter((c) => c.rating > 0).length || 1)).toFixed(1)
