@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth";
 import Sidebar from "@/components/layout/sidebar";
 import Navbar from "@/components/layout/navbar";
-import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +10,6 @@ export default async function InstructorLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  const h = await headers();
-  h.set("Cache-Control", "no-store, no-cache, must-revalidate");
-
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar user={session?.user ?? undefined} />
