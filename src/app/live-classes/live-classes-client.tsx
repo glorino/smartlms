@@ -115,7 +115,14 @@ export default function LiveClassesClient({
       cls.course.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleJoinClass = (meetingUrl: string | null) => {
+  const handleJoinClass = async (meetingUrl: string | null, classId?: string) => {
+    if (classId) {
+      try {
+        await fetch(`/api/live-classes/${classId}/attendance`, { method: "POST" });
+      } catch {
+        // silent — attendance is best-effort
+      }
+    }
     if (meetingUrl) {
       window.open(meetingUrl, "_blank", "noopener,noreferrer");
     } else {
@@ -296,7 +303,7 @@ function UpcomingCard({
   onJoin,
 }: {
   cls: LiveClassData;
-  onJoin: (url: string | null) => void;
+  onJoin: (url: string | null, classId?: string) => void;
 }) {
   const platform = platformConfig[cls.platform] || { bg: "bg-gray-50", text: "text-gray-700", dot: "bg-gray-500" };
   const timeUntil = getTimeUntil(cls.scheduledAt);
@@ -364,7 +371,7 @@ function UpcomingCard({
 
         {/* Action */}
         <button
-          onClick={() => onJoin(cls.meetingUrl)}
+          onClick={() => onJoin(cls.meetingUrl, cls.id)}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white transition-all hover:bg-indigo-700 hover:shadow-md"
         >
           <Video className="h-4 w-4" />

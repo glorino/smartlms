@@ -29,6 +29,7 @@ interface CourseItem {
   students: number;
   rating: number;
   price: number;
+  category?: string;
 }
 
 const statusColors: Record<string, string> = {
@@ -46,10 +47,21 @@ export default function AdminCoursesPage() {
   useEffect(() => {
     async function fetchCourses() {
       try {
-        const res = await fetch("/api/courses");
+        const res = await fetch("/api/courses?allStatus=true&limit=100");
         if (res.ok) {
           const data = await res.json();
-          setCourses(data.courses || data || []);
+          const raw = data.courses || [];
+          const mapped: CourseItem[] = raw.map((c: any) => ({
+            id: c.id,
+            title: c.title,
+            instructor: c.instructor?.name || c.instructor?.email || "Unknown",
+            status: c.status,
+            students: c._count?.enrollments || c.totalStudents || 0,
+            rating: c.rating || 0,
+            price: c.price || 0,
+            category: c.category,
+          }));
+          setCourses(mapped);
         }
       } catch {
         setCourses([]);
@@ -80,7 +92,7 @@ export default function AdminCoursesPage() {
   const handleApprove = async (id: string) => {
     try {
       const res = await fetch(`/api/courses/${id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "PUBLISHED" }),
       });
@@ -98,7 +110,7 @@ export default function AdminCoursesPage() {
   const handleReject = async (id: string) => {
     try {
       const res = await fetch(`/api/courses/${id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "DRAFT" }),
       });
@@ -144,7 +156,6 @@ export default function AdminCoursesPage() {
         </Link>
       </div>
 
-      {/* Course Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {courseStats.map((stat) => (
           <Card key={stat.label}>
@@ -163,7 +174,6 @@ export default function AdminCoursesPage() {
         ))}
       </div>
 
-      {/* Search and Filters */}
       <Card>
         <CardContent className="p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -194,7 +204,6 @@ export default function AdminCoursesPage() {
         </CardContent>
       </Card>
 
-      {/* Courses Table */}
       {courses.length === 0 ? (
         <Card>
           <CardContent className="py-16 text-center">
