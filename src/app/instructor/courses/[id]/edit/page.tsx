@@ -247,17 +247,65 @@ export default function EditCoursePage() {
               id: s.id,
               title: s.title,
               description: s.description || "",
-              lessons: (s.lessons || []).map((l: any, lIdx: number) => ({
-                id: l.id,
-                title: l.title || "",
-                type: (l.type || "VIDEO") as LessonType,
-                content: l.content || "",
-                videoUrl: l.videoUrl || null,
-                videoType: l.videoType || detectVideoType(l.videoUrl),
-                duration: parseDurationToInt(l.duration),
-                order: l.order ?? lIdx,
-                isPreview: l.isPreview || false,
-              })),
+              lessons: (s.lessons || []).map((l: any, lIdx: number) => {
+                const lessonData: Lesson = {
+                  id: l.id,
+                  title: l.title || "",
+                  type: (l.type || "VIDEO") as LessonType,
+                  content: l.content || "",
+                  videoUrl: l.videoUrl || null,
+                  videoType: l.videoType || detectVideoType(l.videoUrl),
+                  duration: parseDurationToInt(l.duration),
+                  order: l.order ?? lIdx,
+                  isPreview: l.isPreview || false,
+                };
+
+                if (l.type === "QUIZ") {
+                  const existingQuiz = (l.quizzes && l.quizzes[0]) || null;
+                  if (existingQuiz) {
+                    lessonData.quiz = {
+                      title: existingQuiz.title || "Quiz",
+                      timeLimit: existingQuiz.timeLimit || 15,
+                      passingScore: existingQuiz.passingScore || 70,
+                      maxAttempts: existingQuiz.maxAttempts || 3,
+                      shuffleQuestions: existingQuiz.shuffleQuestions ?? false,
+                      showCorrectAnswers: existingQuiz.showCorrectAnswers ?? true,
+                      questions: (existingQuiz.questions || []).map((q: any) => ({
+                        id: q.id,
+                        text: q.content || "",
+                        type: q.type === "TRUE_FALSE" ? "true_false" : q.type === "FILL_BLANK" ? "fill_blank" : "multiple_choice",
+                        options: (q.answers || []).map((a: any) => ({
+                          text: a.content || "",
+                          isCorrect: a.isCorrect || false,
+                        })),
+                        correctAnswer: q.correctAnswer || "",
+                        points: q.points || 1,
+                        explanation: q.explanation || "",
+                      })),
+                    };
+                  } else {
+                    lessonData.quiz = defaultQuiz();
+                  }
+                }
+
+                if (l.type === "ASSIGNMENT") {
+                  const existingAssignment = (l.assignments && l.assignments[0]) || null;
+                  if (existingAssignment) {
+                    lessonData.assignment = {
+                      title: existingAssignment.title || "Assignment",
+                      description: existingAssignment.description || "",
+                      maxScore: existingAssignment.maxScore || 100,
+                      dueDate: existingAssignment.dueDate
+                        ? new Date(existingAssignment.dueDate).toISOString().slice(0, 16)
+                        : "",
+                    };
+                  } else {
+                    lessonData.assignment = defaultAssignment();
+                  }
+                }
+
+                return lessonData;
+              }),
             }))
           );
         }
