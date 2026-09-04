@@ -623,16 +623,6 @@ export default function EditCoursePage() {
       if (!s.title.trim()) return "Section title cannot be empty";
       for (const l of s.lessons) {
         if (!l.title.trim()) return `Lesson title cannot be empty in "${s.title}"`;
-        if (l.type === "QUIZ" && l.quiz) {
-          if (!l.quiz.questions.length) return `Quiz "${l.quiz.title}" needs at least one question`;
-          for (const q of l.quiz.questions) {
-            if (!q.text.trim()) return `Question text is required in "${l.quiz.title}"`;
-            if (q.type === "multiple_choice") {
-              const filled = q.options.filter((o) => o.text.trim());
-              if (filled.length < 2) return `Quiz question needs at least 2 options in "${l.quiz.title}"`;
-            }
-          }
-        }
       }
     }
     return null;
