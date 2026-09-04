@@ -489,8 +489,8 @@ export default function AdminAnalyticsPage() {
     {
       label: "Completion Rate",
       value: data ? `${Math.round(data.completionRate)}%` : "—",
-      change: 0,
-      trend: "up" as const,
+      change: data?.enrollmentGrowth || 0,
+      trend: (data?.enrollmentGrowth || 0) >= 0 ? ("up" as const) : ("down" as const),
       icon: Award,
       color: "bg-emerald-500",
     },
@@ -506,7 +506,7 @@ export default function AdminAnalyticsPage() {
       label: "Payment Success",
       value: data?.paymentStats ? `${data.paymentStats.paymentSuccessRate}%` : "—",
       change: 0,
-      trend: "up" as const,
+      trend: (data?.paymentStats?.paymentSuccessRate || 0) >= 90 ? ("up" as const) : ("down" as const),
       icon: Shield,
       color: "bg-green-500",
     },
@@ -521,16 +521,16 @@ export default function AdminAnalyticsPage() {
     {
       label: "Course Start Rate",
       value: data?.courseStartRate !== undefined ? `${data.courseStartRate}%` : "—",
-      change: 0,
-      trend: "up" as const,
+      change: data?.enrollmentGrowth || 0,
+      trend: (data?.enrollmentGrowth || 0) >= 0 ? ("up" as const) : ("down" as const),
       icon: Rocket,
       color: "bg-cyan-500",
     },
     {
       label: "Certificates Issued",
-      value: engagement?.avgCompletionRate ? `${Math.round((data?.totalEnrollments || 0) * (engagement.avgCompletionRate / 100) * 0.8)}` : "—",
-      change: 0,
-      trend: "up" as const,
+      value: engagement?.avgCompletionRate ? `${Math.round((data?.totalEnrollments || 0) * (engagement.avgCompletionRate / 100))}` : "—",
+      change: data?.enrollmentGrowth || 0,
+      trend: (data?.enrollmentGrowth || 0) >= 0 ? ("up" as const) : ("down" as const),
       icon: Award,
       color: "bg-amber-500",
     },
@@ -1127,7 +1127,14 @@ export default function AdminAnalyticsPage() {
                 icon: Rocket,
                 color: "from-purple-500 to-pink-500",
                 title: "Revenue Forecast",
-                insight: `Based on current trends, projected revenue for next month is ₦${Math.round((data?.totalRevenue || 0) * 1.12).toLocaleString()} (+12%).`,
+                insight: data?.totalRevenue
+                  ? (() => {
+                      const monthlyGrowth = data.revenueGrowth || 0;
+                      const multiplier = 1 + Math.max(-0.5, Math.min(2, monthlyGrowth / 100));
+                      const projected = Math.round(data.totalRevenue * multiplier);
+                      return `Projected revenue for next month is ₦${projected.toLocaleString()} (${monthlyGrowth >= 0 ? "+" : ""}${monthlyGrowth}% based on recent growth).`;
+                    })()
+                  : "Revenue forecast will appear once payment data is available.",
                 action: "View detailed forecast",
               },
               {
@@ -1197,7 +1204,7 @@ export default function AdminAnalyticsPage() {
                 { stage: "Enrolled", count: data?.totalEnrollments || 0, pct: data?.totalStudents ? Math.round(((data?.totalEnrollments || 0) / data.totalStudents) * 100) : 0, color: "bg-purple-500" },
                 { stage: "Started Learning", count: data?.totalEnrollments ? Math.round(data.totalEnrollments * ((data?.courseStartRate || 0) / 100)) : 0, pct: data?.courseStartRate || 0, color: "bg-amber-500" },
                 { stage: "Completed 100%", count: data?.totalEnrollments ? Math.round(data.totalEnrollments * ((data?.completionRate || 0) / 100)) : 0, pct: Math.round(data?.completionRate || 0), color: "bg-emerald-500" },
-                { stage: "Earned Certificate", count: data?.totalEnrollments ? Math.round(data.totalEnrollments * ((data?.completionRate || 0) / 100) * 0.8) : 0, pct: Math.round((data?.completionRate || 0) * 0.8), color: "bg-green-500" },
+                { stage: "Earned Certificate", count: data?.totalEnrollments ? Math.round(data.totalEnrollments * ((data?.completionRate || 0) / 100)) : 0, pct: Math.round(data?.completionRate || 0), color: "bg-green-500" },
               ].map((item) => (
                 <div key={item.stage} className="flex items-center gap-3">
                   <span className="w-36 text-xs font-medium text-gray-600 shrink-0">{item.stage}</span>
@@ -1275,19 +1282,21 @@ export default function AdminAnalyticsPage() {
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { label: "Avg Quiz Score", value: `${engagement?.avgQuizScore || 78}%`, icon: Award, color: "text-emerald-600 bg-emerald-50", trend: "+3%" },
-              { label: "Avg Completion Time", value: `${engagement?.avgTimePerLesson || 24} min`, icon: Clock, color: "text-blue-600 bg-blue-50", trend: "-8%" },
-              { label: "Lesson Completion Rate", value: `${engagement?.avgCompletionRate || 72}%`, icon: Target, color: "text-purple-600 bg-purple-50", trend: "+5%" },
-              { label: "Engagement Score", value: `${engagement?.engagementScore || 82}/100`, icon: Activity, color: "text-amber-600 bg-amber-50", trend: "+12%" },
+              { label: "Avg Quiz Score", value: engagement?.avgQuizScore != null ? `${engagement.avgQuizScore}%` : "—", icon: Award, color: "text-emerald-600 bg-emerald-50", trend: null as string | null },
+              { label: "Avg Completion Time", value: engagement?.avgTimePerLesson != null ? `${engagement.avgTimePerLesson} min` : "—", icon: Clock, color: "text-blue-600 bg-blue-50", trend: null as string | null },
+              { label: "Lesson Completion Rate", value: engagement?.avgCompletionRate != null ? `${engagement.avgCompletionRate}%` : "—", icon: Target, color: "text-purple-600 bg-purple-50", trend: null as string | null },
+              { label: "Engagement Score", value: engagement?.engagementScore != null ? `${engagement.engagementScore}/100` : "—", icon: Activity, color: "text-amber-600 bg-amber-50", trend: null as string | null },
             ].map((metric) => (
               <div key={metric.label} className="rounded-xl border border-gray-100 p-4">
                 <div className="flex items-center justify-between">
                   <div className={`rounded-lg p-2 ${metric.color}`}>
                     <metric.icon className="h-4 w-4" />
                   </div>
-                  <span className={`text-xs font-medium ${metric.trend.startsWith("+") ? "text-emerald-600" : "text-red-600"}`}>
-                    {metric.trend}
-                  </span>
+                  {metric.trend ? (
+                    <span className={`text-xs font-medium ${metric.trend.startsWith("+") ? "text-emerald-600" : metric.trend.startsWith("-") ? "text-red-600" : "text-gray-500"}`}>
+                      {metric.trend}
+                    </span>
+                  ) : null}
                 </div>
                 <p className="mt-3 text-xl font-bold text-gray-900">{metric.value}</p>
                 <p className="text-xs text-gray-500">{metric.label}</p>
@@ -1355,21 +1364,10 @@ export default function AdminAnalyticsPage() {
               })}
             </div>
           ) : (
-            <div className="space-y-3">
-              {[
-                { category: "Web Development", students: 1240, color: "bg-indigo-500", pct: 35 },
-                { category: "Data Science", students: 890, color: "bg-blue-500", pct: 25 },
-                { category: "AI & Machine Learning", students: 620, color: "bg-purple-500", pct: 18 },
-                { category: "Design", students: 430, color: "bg-pink-500", pct: 12 },
-                { category: "Business", students: 350, color: "bg-amber-500", pct: 10 },
-              ].map((item) => (
-                <div key={item.category} className="flex items-center gap-3">
-                  <div className={`h-3 w-3 rounded-full ${item.color} shrink-0`} />
-                  <span className="flex-1 text-sm text-gray-700">{item.category}</span>
-                  <span className="text-sm font-semibold text-gray-900">{item.students.toLocaleString()}</span>
-                  <span className="w-10 text-right text-xs text-gray-500">{item.pct}%</span>
-                </div>
-              ))}
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <BarChart3 className="mb-3 h-8 w-8 text-gray-300" />
+              <p className="text-sm text-gray-500">No category data available yet</p>
+              <p className="text-xs text-gray-400">Data will appear as courses are created with categories</p>
             </div>
           )}
           {data?.categoryDistribution && data.categoryDistribution.length > 0 && (
