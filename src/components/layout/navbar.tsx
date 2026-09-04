@@ -99,7 +99,7 @@ export default function Navbar({ session: propSession }: { session?: Session }) 
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="hidden items-center gap-8 md:flex">
+          <div className="hidden items-center gap-8 md:ml-10 md:flex">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
