@@ -192,8 +192,11 @@ export async function PUT(
                   },
                 });
 
-                await tx.quiz.deleteMany({ where: { lessonId: lessonRecord.id } });
-                await tx.assignment.deleteMany({ where: { lessonId: lessonRecord.id } });
+                await tx.quizAttempt.deleteMany({ where: { quiz: { lessonId: lessonRecord.id } } }).catch(() => {});
+                await tx.answer.deleteMany({ where: { question: { quiz: { lessonId: lessonRecord.id } } } }).catch(() => {});
+                await tx.question.deleteMany({ where: { quiz: { lessonId: lessonRecord.id } } }).catch(() => {});
+                await tx.quiz.deleteMany({ where: { lessonId: lessonRecord.id } }).catch(() => {});
+                await tx.assignment.deleteMany({ where: { lessonId: lessonRecord.id } }).catch(() => {});
               } else {
                 lessonRecord = await tx.lesson.create({
                   data: {
@@ -274,7 +277,12 @@ export async function PUT(
             );
             for (const existing of existingLessons) {
               if (!incomingLessonIds.has(existing.id)) {
-                await tx.lesson.delete({ where: { id: existing.id } });
+                await tx.quizAttempt.deleteMany({ where: { quiz: { lessonId: existing.id } } }).catch(() => {});
+                await tx.answer.deleteMany({ where: { question: { quiz: { lessonId: existing.id } } } }).catch(() => {});
+                await tx.question.deleteMany({ where: { quiz: { lessonId: existing.id } } }).catch(() => {});
+                await tx.quiz.deleteMany({ where: { lessonId: existing.id } }).catch(() => {});
+                await tx.assignment.deleteMany({ where: { lessonId: existing.id } }).catch(() => {});
+                await tx.lesson.delete({ where: { id: existing.id } }).catch(() => {});
               }
             }
           }
@@ -282,7 +290,16 @@ export async function PUT(
 
         for (const existing of existingSections) {
           if (!incomingSectionIds.has(existing.id)) {
-            await tx.courseSection.delete({ where: { id: existing.id } });
+            const sectionLessons = await tx.lesson.findMany({ where: { sectionId: existing.id } });
+            for (const l of sectionLessons) {
+              await tx.quizAttempt.deleteMany({ where: { quiz: { lessonId: l.id } } }).catch(() => {});
+              await tx.answer.deleteMany({ where: { question: { quiz: { lessonId: l.id } } } }).catch(() => {});
+              await tx.question.deleteMany({ where: { quiz: { lessonId: l.id } } }).catch(() => {});
+              await tx.quiz.deleteMany({ where: { lessonId: l.id } }).catch(() => {});
+              await tx.assignment.deleteMany({ where: { lessonId: l.id } }).catch(() => {});
+            }
+            await tx.lesson.deleteMany({ where: { sectionId: existing.id } }).catch(() => {});
+            await tx.courseSection.delete({ where: { id: existing.id } }).catch(() => {});
           }
         }
       }
