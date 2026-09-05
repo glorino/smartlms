@@ -207,6 +207,7 @@ export default function EditCoursePage() {
   const [level, setLevel] = useState("");
   const [language, setLanguage] = useState("English");
   const [price, setPrice] = useState("");
+  const [salePrice, setSalePrice] = useState("");
   const [tags, setTags] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [thumbnailBase64, setThumbnailBase64] = useState("");
@@ -240,6 +241,7 @@ export default function EditCoursePage() {
           setLevel(course.level || "Beginner");
           setLanguage(course.language || "English");
           setPrice(String(course.price || 0));
+          setSalePrice(course.salePrice ? String(course.salePrice) : "");
           setTags((course.tags || []).join(", "));
           setThumbnailUrl(course.thumbnail || "");
           setSections(
@@ -549,6 +551,7 @@ export default function EditCoursePage() {
       level,
       language,
       price: parseFloat(price) || 0,
+      salePrice: salePrice ? parseFloat(salePrice) : null,
       thumbnail,
       tags: tagList,
       status,
@@ -755,6 +758,7 @@ export default function EditCoursePage() {
                   <Select label="Language" options={languageOptions} placeholder="Select language" value={language} onChange={setLanguage} />
                   <Input label="Price (₦)" type="number" min="0" step="0.01" placeholder="0.00" value={price} onChange={(e) => setPrice(e.target.value)} />
                 </div>
+                <Input label="Sale Price (₦)" type="number" min="0" step="0.01" placeholder="0.00 (optional discount price)" value={salePrice} onChange={(e) => setSalePrice(e.target.value)} />
                 <Input label="Tags" placeholder="e.g. javascript, react, beginner" value={tags} onChange={(e) => setTags(e.target.value)} />
                 <p className="text-xs text-muted-foreground">Separate tags with commas</p>
               </CardContent>

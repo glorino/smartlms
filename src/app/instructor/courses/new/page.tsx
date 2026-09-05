@@ -237,6 +237,7 @@ export default function NewCoursePage() {
   const [level, setLevel] = useState("");
   const [language, setLanguage] = useState("English");
   const [price, setPrice] = useState("");
+  const [salePrice, setSalePrice] = useState("");
   const [tags, setTags] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [thumbnailBase64, setThumbnailBase64] = useState("");
@@ -479,6 +480,7 @@ export default function NewCoursePage() {
       level,
       language,
       price: parseFloat(price) || 0,
+      salePrice: salePrice ? parseFloat(salePrice) : null,
       thumbnail,
       tags: tagList,
       status,
@@ -725,6 +727,15 @@ export default function NewCoursePage() {
                   />
                 </div>
                 <Input
+                  label="Sale Price (₦)"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00 (optional discount price)"
+                  value={salePrice}
+                  onChange={(e) => setSalePrice(e.target.value)}
+                />
+                <Input
                   label="Tags"
                   placeholder="e.g. javascript, react, beginner"
                   value={tags}
@@ -761,7 +772,7 @@ export default function NewCoursePage() {
                       accept="image/*"
                       onChange={handleFileUpload}
                       className="block w-full text-sm text-gray-500 file:mr-3 file:rounded-md file:border-0 file:bg-gradient-to-r file:from-indigo-500 file:to-purple-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:from-indigo-600 hover:file:to-purple-700 file:cursor-pointer file:shadow-md"
-                    />
+                  />
                   </div>
                 </div>
                 {thumbnailPreview ? (
