@@ -27,15 +27,6 @@ export async function chatCompletion(
   return response.choices[0]?.message?.content || "";
 }
 
-export async function generateEmbeddings(text: string): Promise<number[]> {
-  const client = getOpenAI();
-  const response = await client.embeddings.create({
-    model: "text-embedding-3-small",
-    input: text,
-  });
-  return response.data[0].embedding;
-}
-
 export async function generateJSON<T>(
   messages: { role: "system" | "user" | "assistant"; content: string }[],
   options?: { model?: string; maxTokens?: number }
