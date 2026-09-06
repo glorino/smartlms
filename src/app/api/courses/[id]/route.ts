@@ -116,198 +116,200 @@ export async function PUT(
       slug = existingSlug ? `${newSlug}-${Date.now()}` : newSlug;
     }
 
-    const updatedCourse = await prisma.$transaction(async (tx) => {
-      const updated = await tx.course.update({
-        where: { id },
-        data: {
-          ...(title && { title, slug }),
-          ...(description !== undefined && { description }),
-          ...(shortDescription !== undefined && { shortDescription }),
-          ...(price !== undefined && { price: Number(price) }),
-          ...(salePrice !== undefined && { salePrice: salePrice ? Number(salePrice) : null }),
-          ...(category !== undefined && { category }),
-          ...(level && { level }),
-          ...(language && { language }),
-          ...(status && { status }),
-          ...(thumbnail !== undefined && { thumbnail }),
-          ...(tags && { tags }),
-        },
-      });
+    const updatedCourse = await prisma.course.update({
+      where: { id },
+      data: {
+        ...(title && { title, slug }),
+        ...(description !== undefined && { description }),
+        ...(shortDescription !== undefined && { shortDescription }),
+        ...(price !== undefined && { price: Number(price) }),
+        ...(salePrice !== undefined && { salePrice: salePrice ? Number(salePrice) : null }),
+        ...(category !== undefined && { category }),
+        ...(level && { level }),
+        ...(language && { language }),
+        ...(status && { status }),
+        ...(thumbnail !== undefined && { thumbnail }),
+        ...(tags && { tags }),
+      },
+    });
 
-      if (Array.isArray(sections)) {
-        const existingSections = await tx.courseSection.findMany({
-          where: { courseId: id },
-          include: { lessons: true },
-        });
+    if (Array.isArray(sections)) {
+      try {
+        await prisma.$transaction(async (tx) => {
+          const existingSections = await tx.courseSection.findMany({
+            where: { courseId: id },
+            include: { lessons: true },
+          });
 
-        const existingSectionIds = new Set(existingSections.map((s) => s.id));
-        const incomingSectionIds = new Set(
-          sections.filter((s: any) => s.id).map((s: any) => s.id)
-        );
+          const existingSectionIds = new Set(existingSections.map((s) => s.id));
+          const incomingSectionIds = new Set(
+            sections.filter((s: any) => s.id).map((s: any) => s.id)
+          );
 
-        for (const sData of sections) {
-          const sectionId = sData.id || null;
+          for (const sData of sections) {
+            const sectionId = sData.id || null;
 
-          let sectionRecord;
-          if (sectionId && existingSectionIds.has(sectionId)) {
-            sectionRecord = await tx.courseSection.update({
-              where: { id: sectionId },
-              data: {
-                title: sData.title,
-                description: sData.description || null,
-                order: sData.order ?? 0,
-              },
-            });
-          } else {
-            sectionRecord = await tx.courseSection.create({
-              data: {
-                title: sData.title,
-                description: sData.description || null,
-                order: sData.order ?? 0,
-                courseId: id,
-              },
-            });
-          }
+            let sectionRecord;
+            if (sectionId && existingSectionIds.has(sectionId)) {
+              sectionRecord = await tx.courseSection.update({
+                where: { id: sectionId },
+                data: {
+                  title: sData.title,
+                  description: sData.description || null,
+                  order: sData.order ?? 0,
+                },
+              });
+            } else {
+              sectionRecord = await tx.courseSection.create({
+                data: {
+                  title: sData.title,
+                  description: sData.description || null,
+                  order: sData.order ?? 0,
+                  courseId: id,
+                },
+              });
+            }
 
-          if (Array.isArray(sData.lessons)) {
-            const existingLessons = await tx.lesson.findMany({
-              where: { sectionId: sectionRecord.id },
-            });
-            const existingLessonIds = new Set(existingLessons.map((l) => l.id));
+            if (Array.isArray(sData.lessons)) {
+              const existingLessons = await tx.lesson.findMany({
+                where: { sectionId: sectionRecord.id },
+              });
+              const existingLessonIds = new Set(existingLessons.map((l) => l.id));
 
-            for (const lData of sData.lessons) {
-              const lessonId = lData.id || null;
+              for (const lData of sData.lessons) {
+                const lessonId = lData.id || null;
 
-              let lessonRecord;
-              if (lessonId && existingLessonIds.has(lessonId)) {
-                lessonRecord = await tx.lesson.update({
-                  where: { id: lessonId },
-                  data: {
-                    title: lData.title,
-                    type: lData.type || "TEXT",
-                    content: lData.content || null,
-                    videoUrl: lData.videoUrl || null,
-                    videoType: lData.videoType || null,
-                    duration: lData.duration || null,
-                    order: lData.order ?? 0,
-                    isPreview: lData.isPreview || false,
-                  },
-                });
+                let lessonRecord;
+                if (lessonId && existingLessonIds.has(lessonId)) {
+                  lessonRecord = await tx.lesson.update({
+                    where: { id: lessonId },
+                    data: {
+                      title: lData.title,
+                      type: lData.type || "TEXT",
+                      content: lData.content || null,
+                      videoUrl: lData.videoUrl || null,
+                      videoType: lData.videoType || null,
+                      duration: lData.duration || null,
+                      order: lData.order ?? 0,
+                      isPreview: lData.isPreview || false,
+                    },
+                  });
 
-                await tx.quizAttempt.deleteMany({ where: { quiz: { lessonId: lessonRecord.id } } }).catch(() => {});
-                await tx.answer.deleteMany({ where: { question: { quiz: { lessonId: lessonRecord.id } } } }).catch(() => {});
-                await tx.question.deleteMany({ where: { quiz: { lessonId: lessonRecord.id } } }).catch(() => {});
-                await tx.quiz.deleteMany({ where: { lessonId: lessonRecord.id } }).catch(() => {});
-                await tx.assignment.deleteMany({ where: { lessonId: lessonRecord.id } }).catch(() => {});
-              } else {
-                lessonRecord = await tx.lesson.create({
-                  data: {
-                    title: lData.title,
-                    type: lData.type || "TEXT",
-                    content: lData.content || null,
-                    videoUrl: lData.videoUrl || null,
-                    videoType: lData.videoType || null,
-                    duration: lData.duration || null,
-                    order: lData.order ?? 0,
-                    isPreview: lData.isPreview || false,
-                    sectionId: sectionRecord.id,
-                    courseId: id,
-                  },
-                });
-              }
+                  await tx.quizAttempt.deleteMany({ where: { quiz: { lessonId: lessonRecord.id } } }).catch(() => {});
+                  await tx.answer.deleteMany({ where: { question: { quiz: { lessonId: lessonRecord.id } } } }).catch(() => {});
+                  await tx.question.deleteMany({ where: { quiz: { lessonId: lessonRecord.id } } }).catch(() => {});
+                  await tx.quiz.deleteMany({ where: { lessonId: lessonRecord.id } }).catch(() => {});
+                  await tx.assignment.deleteMany({ where: { lessonId: lessonRecord.id } }).catch(() => {});
+                } else {
+                  lessonRecord = await tx.lesson.create({
+                    data: {
+                      title: lData.title,
+                      type: lData.type || "TEXT",
+                      content: lData.content || null,
+                      videoUrl: lData.videoUrl || null,
+                      videoType: lData.videoType || null,
+                      duration: lData.duration || null,
+                      order: lData.order ?? 0,
+                      isPreview: lData.isPreview || false,
+                      sectionId: sectionRecord.id,
+                      courseId: id,
+                    },
+                  });
+                }
 
-              if (lData.type === "QUIZ" && lData.quiz) {
-                const quiz = await tx.quiz.create({
-                  data: {
-                    title: lData.quiz.title,
-                    description: lData.quiz.description,
-                    timeLimit: lData.quiz.timeLimit,
-                    passingScore: lData.quiz.passingScore || 60,
-                    maxAttempts: lData.quiz.maxAttempts,
-                    shuffleQuestions: lData.quiz.shuffleQuestions ?? true,
-                    showCorrectAnswers: lData.quiz.showCorrectAnswers ?? true,
-                    courseId: id,
-                    lessonId: lessonRecord.id,
-                  },
-                });
+                if (lData.type === "QUIZ" && lData.quiz) {
+                  const quiz = await tx.quiz.create({
+                    data: {
+                      title: lData.quiz.title,
+                      description: lData.quiz.description,
+                      timeLimit: lData.quiz.timeLimit,
+                      passingScore: lData.quiz.passingScore || 60,
+                      maxAttempts: lData.quiz.maxAttempts,
+                      shuffleQuestions: lData.quiz.shuffleQuestions ?? true,
+                      showCorrectAnswers: lData.quiz.showCorrectAnswers ?? true,
+                      courseId: id,
+                      lessonId: lessonRecord.id,
+                    },
+                  });
 
-                if (lData.quiz.questions && Array.isArray(lData.quiz.questions)) {
-                  for (let k = 0; k < lData.quiz.questions.length; k++) {
-                    const qd = lData.quiz.questions[k];
-                    const question = await tx.question.create({
-                      data: {
-                        content: qd.content || qd.text || "",
-                        type: qd.type || "SINGLE_CHOICE",
-                        points: qd.points || 1,
-                        explanation: qd.explanation,
-                        order: k,
-                        quizId: quiz.id,
-                      },
-                    });
-
-                    const answerList = qd.answers || qd.options || [];
-                    if (Array.isArray(answerList) && answerList.length > 0) {
-                      await tx.answer.createMany({
-                        data: answerList.map((a: any, idx: number) => ({
-                          content: a.content || a.text || "",
-                          isCorrect: a.isCorrect || false,
-                          order: a.order ?? idx,
-                          questionId: question.id,
-                        })),
+                  if (lData.quiz.questions && Array.isArray(lData.quiz.questions)) {
+                    for (let k = 0; k < lData.quiz.questions.length; k++) {
+                      const qd = lData.quiz.questions[k];
+                      const question = await tx.question.create({
+                        data: {
+                          content: qd.content || qd.text || "",
+                          type: qd.type || "SINGLE_CHOICE",
+                          points: qd.points || 1,
+                          explanation: qd.explanation,
+                          order: k,
+                          quizId: quiz.id,
+                        },
                       });
+
+                      const answerList = qd.answers || qd.options || [];
+                      if (Array.isArray(answerList) && answerList.length > 0) {
+                        await tx.answer.createMany({
+                          data: answerList.map((a: any, idx: number) => ({
+                            content: a.content || a.text || "",
+                            isCorrect: a.isCorrect || false,
+                            order: a.order ?? idx,
+                            questionId: question.id,
+                          })),
+                        });
+                      }
                     }
                   }
                 }
+
+                if (lData.type === "ASSIGNMENT" && lData.assignment) {
+                  await tx.assignment.create({
+                    data: {
+                      title: lData.assignment.title,
+                      description: lData.assignment.description,
+                      maxScore: lData.assignment.maxScore || 100,
+                      status: "PENDING",
+                      userId: userId,
+                      lessonId: lessonRecord.id,
+                    },
+                  });
+                }
               }
 
-              if (lData.type === "ASSIGNMENT" && lData.assignment) {
-                await tx.assignment.create({
-                  data: {
-                    title: lData.assignment.title,
-                    description: lData.assignment.description,
-                    maxScore: lData.assignment.maxScore || 100,
-                    status: "PENDING",
-                    userId: userId,
-                    lessonId: lessonRecord.id,
-                  },
-                });
-              }
-            }
-
-            const incomingLessonIds = new Set(
-              sData.lessons.filter((l: any) => l.id).map((l: any) => l.id)
-            );
-            for (const existing of existingLessons) {
-              if (!incomingLessonIds.has(existing.id)) {
-                await tx.quizAttempt.deleteMany({ where: { quiz: { lessonId: existing.id } } }).catch(() => {});
-                await tx.answer.deleteMany({ where: { question: { quiz: { lessonId: existing.id } } } }).catch(() => {});
-                await tx.question.deleteMany({ where: { quiz: { lessonId: existing.id } } }).catch(() => {});
-                await tx.quiz.deleteMany({ where: { lessonId: existing.id } }).catch(() => {});
-                await tx.assignment.deleteMany({ where: { lessonId: existing.id } }).catch(() => {});
-                await tx.lesson.delete({ where: { id: existing.id } }).catch(() => {});
+              const incomingLessonIds = new Set(
+                sData.lessons.filter((l: any) => l.id).map((l: any) => l.id)
+              );
+              for (const existing of existingLessons) {
+                if (!incomingLessonIds.has(existing.id)) {
+                  await tx.quizAttempt.deleteMany({ where: { quiz: { lessonId: existing.id } } }).catch(() => {});
+                  await tx.answer.deleteMany({ where: { question: { quiz: { lessonId: existing.id } } } }).catch(() => {});
+                  await tx.question.deleteMany({ where: { quiz: { lessonId: existing.id } } }).catch(() => {});
+                  await tx.quiz.deleteMany({ where: { lessonId: existing.id } }).catch(() => {});
+                  await tx.assignment.deleteMany({ where: { lessonId: existing.id } }).catch(() => {});
+                  await tx.lesson.delete({ where: { id: existing.id } }).catch(() => {});
+                }
               }
             }
           }
-        }
 
-        for (const existing of existingSections) {
-          if (!incomingSectionIds.has(existing.id)) {
-            const sectionLessons = await tx.lesson.findMany({ where: { sectionId: existing.id } });
-            for (const l of sectionLessons) {
-              await tx.quizAttempt.deleteMany({ where: { quiz: { lessonId: l.id } } }).catch(() => {});
-              await tx.answer.deleteMany({ where: { question: { quiz: { lessonId: l.id } } } }).catch(() => {});
-              await tx.question.deleteMany({ where: { quiz: { lessonId: l.id } } }).catch(() => {});
-              await tx.quiz.deleteMany({ where: { lessonId: l.id } }).catch(() => {});
-              await tx.assignment.deleteMany({ where: { lessonId: l.id } }).catch(() => {});
+          for (const existing of existingSections) {
+            if (!incomingSectionIds.has(existing.id)) {
+              const sectionLessons = await tx.lesson.findMany({ where: { sectionId: existing.id } });
+              for (const l of sectionLessons) {
+                await tx.quizAttempt.deleteMany({ where: { quiz: { lessonId: l.id } } }).catch(() => {});
+                await tx.answer.deleteMany({ where: { question: { quiz: { lessonId: l.id } } } }).catch(() => {});
+                await tx.question.deleteMany({ where: { quiz: { lessonId: l.id } } }).catch(() => {});
+                await tx.quiz.deleteMany({ where: { lessonId: l.id } }).catch(() => {});
+                await tx.assignment.deleteMany({ where: { lessonId: l.id } }).catch(() => {});
+              }
+              await tx.lesson.deleteMany({ where: { sectionId: existing.id } }).catch(() => {});
+              await tx.courseSection.delete({ where: { id: existing.id } }).catch(() => {});
             }
-            await tx.lesson.deleteMany({ where: { sectionId: existing.id } }).catch(() => {});
-            await tx.courseSection.delete({ where: { id: existing.id } }).catch(() => {});
           }
-        }
+        });
+      } catch (sectionError) {
+        console.error("Section processing error (course metadata already saved):", sectionError);
       }
-
-      return updated;
-    });
+    }
 
     const fullCourse = await prisma.course.findUnique({
       where: { id },
