@@ -31,6 +31,7 @@ import {
   Calendar,
   Trophy,
   Briefcase,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -69,6 +70,7 @@ const instructorItems = [
   { href: "/instructor/earnings", label: "Earnings", icon: DollarSign },
   { href: "/instructor/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/instructor/assignments", label: "Assignments", icon: ClipboardCheck },
+  { href: "/instructor/grade", label: "AI Grading", icon: Sparkles },
   { href: "/instructor/messages", label: "Messages", icon: MessageSquare },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];

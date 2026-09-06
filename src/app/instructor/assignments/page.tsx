@@ -18,6 +18,7 @@ import {
   Trash2,
   Calendar,
   BookOpen,
+  Sparkles,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -101,6 +102,17 @@ export default function AssignmentsPage() {
   const [formData, setFormData] = useState<AssignmentFormData>(defaultForm);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [aiGrading, setAiGrading] = useState(false);
+  const [aiResult, setAiResult] = useState<{
+    grade: string;
+    score: number;
+    feedback: string;
+    rubricScores: { criterion: string; score: number; feedback: string }[];
+    suggestions: string[];
+  } | null>(null);
+  const [rubricCriteria, setRubricCriteria] = useState<{ criterion: string; maxScore: number; description: string }[]>([]);
+  const [showRubric, setShowRubric] = useState(false);
+  const [newCriterion, setNewCriterion] = useState({ criterion: "", maxScore: "10", description: "" });
 
   useEffect(() => {
     fetchData();
@@ -296,6 +308,55 @@ export default function AssignmentsPage() {
       setGrade("");
       setFeedback("");
     }
+  };
+
+  const handleAIGrade = async () => {
+    if (!selectedSubmission) return;
+    setAiGrading(true);
+    setAiResult(null);
+    try {
+      const submissionContent = selectedSubmission.content || "";
+      if (!submissionContent.trim()) {
+        toast.error("No submission content to grade");
+        setAiGrading(false);
+        return;
+      }
+      const res = await fetch("/api/ai/grade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          submissionContent,
+          assignmentId: selectedSubmission.id,
+          courseId: selectedSubmission.courseId,
+          rubric: rubricCriteria.length > 0 ? rubricCriteria : undefined,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAiResult(data);
+        setGrade(String(Math.round(data.score)));
+        setFeedback(data.feedback || "");
+        toast.success("AI grading complete");
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "AI grading failed");
+      }
+    } catch {
+      toast.error("Failed to grade with AI");
+    } finally {
+      setAiGrading(false);
+    }
+  };
+
+  const addRubricCriterion = () => {
+    if (newCriterion.criterion.trim()) {
+      setRubricCriteria([...rubricCriteria, { ...newCriterion, maxScore: Number(newCriterion.maxScore) || 10 }]);
+      setNewCriterion({ criterion: "", maxScore: "10", description: "" });
+    }
+  };
+
+  const removeRubricCriterion = (index: number) => {
+    setRubricCriteria(rubricCriteria.filter((_, i) => i !== index));
   };
 
   if (loading) {
@@ -677,12 +738,29 @@ export default function AssignmentsPage() {
 
       {selectedSubmission && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <Card className="w-full max-w-lg mx-4">
+          <Card className="w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <CardHeader>
-              <CardTitle>Grade Submission</CardTitle>
-              <CardDescription>
-                {selectedSubmission.studentName} - {selectedSubmission.assignmentTitle}
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Grade Submission</CardTitle>
+                  <CardDescription>
+                    {selectedSubmission.studentName} - {selectedSubmission.assignmentTitle}
+                  </CardDescription>
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedSubmission(null);
+                    setGrade("");
+                    setFeedback("");
+                    setAiResult(null);
+                    setRubricCriteria([]);
+                    setShowRubric(false);
+                  }}
+                  className="rounded-sm opacity-70 hover:opacity-100"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
@@ -694,9 +772,143 @@ export default function AssignmentsPage() {
                 </p>
                 <p className="text-sm text-gray-500">Status: {selectedSubmission.status}</p>
                 {selectedSubmission.content && (
-                  <p className="mt-2 text-sm text-gray-600 border-t pt-2">{selectedSubmission.content}</p>
+                  <div className="mt-2 border-t pt-2">
+                    <p className="text-xs font-medium text-gray-500 mb-1">Submission Content:</p>
+                    <p className="text-sm text-gray-600 whitespace-pre-wrap max-h-32 overflow-y-auto">
+                      {selectedSubmission.content}
+                    </p>
+                  </div>
                 )}
               </div>
+
+              {!selectedSubmission.content && (
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                    Paste Submission Content
+                  </label>
+                  <Textarea
+                    placeholder="Paste the student's submission content here..."
+                    value={selectedSubmission.content || ""}
+                    onChange={(e) =>
+                      setSelectedSubmission({ ...selectedSubmission, content: e.target.value })
+                    }
+                    className="min-h-[100px]"
+                  />
+                </div>
+              )}
+
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowRubric(!showRubric)}
+                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {showRubric ? "Hide Rubric" : "Add Rubric Criteria (Optional)"}
+                </button>
+                {showRubric && (
+                  <div className="mt-2 space-y-2 rounded-lg border border-gray-200 p-3">
+                    {rubricCriteria.map((c, i) => (
+                      <div key={i} className="flex items-center gap-2 text-sm">
+                        <span className="flex-1 font-medium">{c.criterion}</span>
+                        <span className="text-gray-500">/ {c.maxScore} pts</span>
+                        <button
+                          onClick={() => removeRubricCriterion(i)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Criterion name"
+                        value={newCriterion.criterion}
+                        onChange={(e) => setNewCriterion({ ...newCriterion, criterion: e.target.value })}
+                        className="flex-1"
+                      />
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="Max"
+                        value={newCriterion.maxScore}
+                        onChange={(e) => setNewCriterion({ ...newCriterion, maxScore: e.target.value })}
+                        className="w-20"
+                      />
+                      <Button size="sm" onClick={addRubricCriterion} disabled={!newCriterion.criterion.trim()}>
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={handleAIGrade}
+                  disabled={aiGrading || !selectedSubmission.content}
+                  className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+                >
+                  {aiGrading ? (
+                    <>
+                      <Spinner size="sm" className="mr-2" />
+                      Grading...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Grade with AI
+                    </>
+                  )}
+                </Button>
+                {aiResult && (
+                  <span className="text-sm text-emerald-600 font-medium">
+                    AI grading complete - review below
+                  </span>
+                )}
+              </div>
+
+              {aiResult && (
+                <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-gray-900">AI Grade Result</h4>
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-bold text-indigo-600">{aiResult.score}%</span>
+                      <span className="rounded-full bg-indigo-100 px-3 py-1 text-sm font-bold text-indigo-700">
+                        {aiResult.grade}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Feedback:</p>
+                    <p className="text-sm text-gray-600">{aiResult.feedback}</p>
+                  </div>
+                  {aiResult.rubricScores && aiResult.rubricScores.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-1">Rubric Scores:</p>
+                      <div className="space-y-1">
+                        {aiResult.rubricScores.map((rs, i) => (
+                          <div key={i} className="flex items-center justify-between text-sm">
+                            <span className="text-gray-600">{rs.criterion}</span>
+                            <span className="font-medium text-gray-900">{rs.score} pts</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {aiResult.suggestions && aiResult.suggestions.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-1">Suggestions:</p>
+                      <ul className="list-disc list-inside space-y-0.5">
+                        {aiResult.suggestions.map((s, i) => (
+                          <li key={i} className="text-sm text-gray-600">{s}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="flex items-center gap-4">
                 <Input
                   label="Score (0-100)"
@@ -722,6 +934,9 @@ export default function AssignmentsPage() {
                     setSelectedSubmission(null);
                     setGrade("");
                     setFeedback("");
+                    setAiResult(null);
+                    setRubricCriteria([]);
+                    setShowRubric(false);
                   }}
                 >
                   Cancel

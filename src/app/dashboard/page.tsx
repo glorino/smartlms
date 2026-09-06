@@ -211,6 +211,7 @@ export default function DashboardPage() {
                 learningTime: [],
                 engagementMetrics: {
                   loginFrequency: learningStreak || 1,
+                  // TODO: replace with real session tracking data once available
                   averageSessionMinutes: 30,
                   completedLessons: completedEnrollments.length,
                   totalLessons: enrollments.length || 1,
@@ -290,7 +291,7 @@ export default function DashboardPage() {
     ? enrollments.slice(0, 3).map((e) => ({
         id: e.courseId,
         title: e.course.title,
-        students: 0,
+        students: enrollments.filter((en: any) => en.courseId === e.courseId).length,
         status: "Published",
         progress: Math.round(e.progress),
         lastAccessed: "",
@@ -302,7 +303,7 @@ export default function DashboardPage() {
         progress: Math.round(e.progress),
         lastAccessed: e.enrolledAt,
         lastLesson: "Continue learning",
-        students: 0,
+        students: enrollments.filter((en: any) => en.courseId === e.courseId).length,
         status: "",
       }));
 
@@ -397,20 +398,13 @@ export default function DashboardPage() {
                     </div>
                   </div>
                    <div className="mt-4 flex items-end gap-0.5 h-8">
-                    {(() => {
-                      const numVal = typeof stat.value === "number" ? stat.value : parseInt(String(stat.value)) || 50;
-                      const seed = numVal + index * 17;
-                      return Array.from({ length: 7 }, (_, i) => {
-                        const h = 20 + Math.abs(Math.sin(seed * (i + 1) * 0.7)) * 80;
-                        return (
-                          <div
-                            key={i}
-                            className={`flex-1 rounded-sm bg-gradient-to-t ${gradients[index] || gradients[0]} opacity-30`}
-                            style={{ height: `${h}%` }}
-                          />
-                        );
-                      });
-                    })()}
+                    {Array.from({ length: 7 }, (_, i) => (
+                      <div
+                        key={i}
+                        className={`flex-1 rounded-sm bg-gradient-to-t ${gradients[index] || gradients[0]} opacity-30`}
+                        style={{ height: "30%" }}
+                      />
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -615,20 +609,13 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="mt-4 flex items-end gap-0.5 h-8">
-                  {(() => {
-                    const numVal = typeof stat.value === "number" ? stat.value : parseInt(String(stat.value)) || 50;
-                    const seed = numVal + index * 13 + 7;
-                    return Array.from({ length: 7 }, (_, i) => {
-                      const h = 20 + Math.abs(Math.sin(seed * (i + 1) * 0.6)) * 80;
-                      return (
-                        <div
-                          key={i}
-                          className={`flex-1 rounded-sm bg-gradient-to-t ${gradients[index] || gradients[0]} opacity-30`}
-                          style={{ height: `${h}%` }}
-                        />
-                      );
-                    });
-                  })()}
+                  {Array.from({ length: 7 }, (_, i) => (
+                    <div
+                      key={i}
+                      className={`flex-1 rounded-sm bg-gradient-to-t ${gradients[index] || gradients[0]} opacity-30`}
+                      style={{ height: "30%" }}
+                    />
+                  ))}
                 </div>
               </CardContent>
             </Card>

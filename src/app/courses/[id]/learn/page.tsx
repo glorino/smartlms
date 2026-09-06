@@ -128,7 +128,7 @@ export default function CourseLearnPage() {
   const [inlineQuizPreviousAttempts, setInlineQuizPreviousAttempts] = useState<{ score: number; passed: boolean; completedAt: string }[]>([]);
 
   const [studyToolsOpen, setStudyToolsOpen] = useState(false);
-  const [studyToolType, setStudyToolType] = useState<"summary" | "flashcards" | "key_concepts">("summary");
+  const [studyToolType, setStudyToolType] = useState<"summary" | "flashcards" | "key_concepts" | "study_guide">("summary");
   const [studyToolLoading, setStudyToolLoading] = useState(false);
   const [studyToolResult, setStudyToolResult] = useState<any>(null);
 
@@ -394,7 +394,7 @@ export default function CourseLearnPage() {
     }
   };
 
-  const generateStudyTool = async (type: "summary" | "flashcards" | "key_concepts") => {
+  const generateStudyTool = async (type: "summary" | "flashcards" | "key_concepts" | "study_guide") => {
     if (!currentLesson) return;
     setStudyToolType(type);
     setStudyToolLoading(true);
@@ -710,6 +710,7 @@ export default function CourseLearnPage() {
                       { type: "summary" as const, icon: BookOpen, label: "Summary" },
                       { type: "flashcards" as const, icon: Layers, label: "Flashcards" },
                       { type: "key_concepts" as const, icon: Brain, label: "Key Concepts" },
+                      { type: "study_guide" as const, icon: FileText, label: "Study Guide" },
                     ].map((tool) => (
                       <button
                         key={tool.type}
@@ -762,6 +763,25 @@ export default function CourseLearnPage() {
                               <div className="my-2 border-t border-gray-700" />
                               <p className="text-xs font-semibold text-green-400">A</p>
                               <p className="mt-1 text-sm text-gray-300">{card.back}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : studyToolType === "study_guide" ? (
+                        <div className="space-y-4">
+                          {(Array.isArray(studyToolResult) ? studyToolResult : studyToolResult.sections || []).map((section: any, i: number) => (
+                            <div key={i} className="rounded-lg border border-gray-600 bg-gray-900/50 p-3">
+                              <p className="text-sm font-semibold text-white">{section.title}</p>
+                              <p className="mt-1 text-sm text-gray-400">{section.content}</p>
+                              {section.topics?.length > 0 && (
+                                <ul className="mt-2 space-y-1">
+                                  {section.topics.map((topic: string, j: number) => (
+                                    <li key={j} className="flex items-start gap-2 text-sm text-gray-400">
+                                      <Check className="mt-0.5 h-3 w-3 shrink-0 text-green-500" />
+                                      {topic}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
                             </div>
                           ))}
                         </div>
