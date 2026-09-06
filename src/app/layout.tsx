@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import Providers from "@/components/providers";
 import Chatbot from "@/components/chatbot/chatbot";
+import { APP_URL } from "@/lib/constants";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://smartlms-bay.vercel.app"),
+  metadataBase: new URL(APP_URL),
   title: "SmartLMS - AI-Powered Learning Management System",
   description:
     "The most advanced LMS combining the best features of Tutor LMS, LearnDash, and MasterStudy. Create courses, build quizzes, issue certificates, and track learner progress with AI-powered tools.",
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
     title: "SmartLMS - AI-Powered Learning Management System",
     description:
       "Create, manage, and sell online courses with the most powerful LMS platform.",
-    url: process.env.NEXT_PUBLIC_APP_URL || "https://smartlms-bay.vercel.app",
+    url: APP_URL,
     siteName: "SmartLMS",
     locale: "en_US",
     type: "website",

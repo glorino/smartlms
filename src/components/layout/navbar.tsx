@@ -170,7 +170,7 @@ export default function Navbar({ session: propSession }: { session?: Session }) 
                       user?.role === "INSTRUCTOR"
                         ? "/instructor/messages"
                         : user?.role === "ADMIN"
-                        ? "/admin/messages" 
+                        ? "/dashboard/messages" 
                         : "/dashboard/messages"
                     }
                     className="relative rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
@@ -335,7 +335,7 @@ export default function Navbar({ session: propSession }: { session?: Session }) 
                     user.role === "INSTRUCTOR"
                       ? "/instructor/messages"
                       : user.role === "ADMIN"
-                      ? "/admin/messages"
+                      ? "/dashboard/messages"
                       : "/dashboard/messages"
                   }
                   onClick={() => setMobileOpen(false)}

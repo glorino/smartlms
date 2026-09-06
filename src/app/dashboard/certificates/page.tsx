@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
+import { APP_URL } from "@/lib/constants";
 import type { Certificate } from "@/types";
 
 export default function MyCertificatesPage() {
@@ -277,7 +278,7 @@ function HiddenCertificate({
   const courseName = cert.course.title;
   const instructorName = cert.course?.instructor?.name || "SmartLMS Team";
   const verificationId = cert.certificateId;
-  const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://smartlms-bay.vercel.app"}/verify-certificate?id=${verificationId}`;
+  const verificationUrl = `${APP_URL}/verify-certificate?id=${verificationId}`;
 
   return (
     <div
@@ -564,7 +565,7 @@ function HiddenCertificate({
         >
           <div>
             <div style={{ fontSize: "8px", color: "#999" }}>
-              View at: {process.env.NEXT_PUBLIC_APP_URL || "smartlms-bay.vercel.app"}/certificate/{verificationId}
+              View at: {new URL(APP_URL).hostname}/certificate/{verificationId}
             </div>
             <div style={{ fontSize: "8px", color: "#999" }}>
               This certificate was issued by SmartLMS Platform

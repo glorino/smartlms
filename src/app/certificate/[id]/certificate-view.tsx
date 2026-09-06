@@ -7,6 +7,7 @@ import Navbar from "@/components/layout/navbar";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
+import { APP_URL } from "@/lib/constants";
 
 function QRCodeImage({ data, size = 80 }: { data: string; size?: number }) {
   const [src, setSrc] = useState("");
@@ -497,7 +498,7 @@ export default function CertificateView({
             <div className="mt-6 flex w-full items-center justify-between">
               <div className="flex flex-col">
                 <p className="text-[9px] leading-tight" style={{ color: "#999" }}>
-                  View at: {typeof window !== "undefined" ? window.location.hostname : "smartlms-bay.vercel.app"}/certificate/{verificationId}
+                  View at: {new URL(APP_URL).hostname}/certificate/{verificationId}
                 </p>
                 <p className="text-[9px] leading-tight" style={{ color: "#999" }}>
                   This certificate was issued by SmartLMS Platform

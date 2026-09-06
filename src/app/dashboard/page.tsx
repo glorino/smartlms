@@ -113,6 +113,7 @@ export default function DashboardPage() {
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [learningStreak, setLearningStreak] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [insights, setInsights] = useState<any>(null);
 
   useEffect(() => {
     async function fetchAll() {
@@ -175,6 +176,52 @@ export default function DashboardPage() {
         if (analyticsIdx >= 0 && results[analyticsIdx]?.status === "fulfilled" && results[analyticsIdx].value.ok) {
           const data = await results[analyticsIdx].value.json();
           setAnalyticsData(data);
+        }
+
+        if (userId && role === "STUDENT") {
+          try {
+            const enrollData = enrollRes.status === "fulfilled" && enrollRes.value.ok
+              ? await enrollRes.value.clone().json()
+              : { enrollments: [] };
+            const quizData = quizRes.status === "fulfilled" && quizRes.value.ok
+              ? await quizRes.value.clone().json()
+              : { attempts: [] };
+
+            const quizScores = (quizData.attempts || []).map((a: any) => ({
+              quizId: a.quizId || a.id,
+              score: a.score || 0,
+              totalPoints: a.totalPoints || 100,
+              subject: a.courseName || "General",
+            }));
+
+            const courseCompletions = (enrollData.enrollments || []).map((e: any) => ({
+              courseId: e.courseId,
+              title: e.course?.title || "Course",
+              progress: e.progress || 0,
+              lastAccessed: e.enrolledAt || new Date().toISOString(),
+            }));
+
+            const insightsRes = await fetch("/api/ai/insights", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userId,
+                quizScores,
+                courseCompletions,
+                learningTime: [],
+                engagementMetrics: {
+                  loginFrequency: learningStreak || 1,
+                  averageSessionMinutes: 30,
+                  completedLessons: completedEnrollments.length,
+                  totalLessons: enrollments.length || 1,
+                },
+              }),
+            });
+            if (insightsRes.ok) {
+              const insightsData = await insightsRes.json();
+              setInsights(insightsData.insights);
+            }
+          } catch {}
         }
       } catch {
         setLearningStreak(0);
@@ -789,6 +836,57 @@ export default function DashboardPage() {
               </div>
             </div>
           </Card>
+
+          {/* AI Learning Insights */}
+          {insights && (
+            <Card className="overflow-hidden border-purple-200">
+              <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-4">
+                <div className="flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-white" />
+                  <h3 className="font-semibold text-white">Learning Insights</h3>
+                </div>
+              </div>
+              <CardContent className="p-4 space-y-3">
+                {insights.summary && (
+                  <div className="grid grid-cols-2 gap-2 text-center">
+                    <div className="rounded-lg bg-purple-50 p-2">
+                      <p className="text-lg font-bold text-purple-700">{insights.summary.overallEngagement}</p>
+                      <p className="text-[10px] text-purple-500">Engagement</p>
+                    </div>
+                    <div className="rounded-lg bg-blue-50 p-2">
+                      <p className="text-lg font-bold text-blue-700">{insights.summary.learningPattern}</p>
+                      <p className="text-[10px] text-blue-500">Pattern</p>
+                    </div>
+                  </div>
+                )}
+                {insights.recommendations?.slice(0, 3).map((rec: any, i: number) => (
+                  <div key={i} className="flex items-start gap-2 rounded-lg bg-gray-50 p-2.5">
+                    {rec.priority === "high" ? (
+                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-500" />
+                    ) : rec.priority === "medium" ? (
+                      <TrendingDown className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+                    ) : (
+                      <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500" />
+                    )}
+                    <div>
+                      <p className="text-xs font-medium text-gray-900">{rec.message}</p>
+                      {rec.action && (
+                        <p className="mt-0.5 text-[10px] text-gray-500">{rec.action}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {insights.weakAreas?.length > 0 && (
+                  <div>
+                    <p className="mb-1 text-[10px] font-semibold text-red-500 uppercase">Weak Areas</p>
+                    {insights.weakAreas.map((w: any, i: number) => (
+                      <p key={i} className="text-xs text-gray-600">{w.subject}: {w.averageScore}%</p>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Upcoming Deadlines */}
           <Card>

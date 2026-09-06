@@ -133,7 +133,7 @@ export async function GET(request: Request) {
       }
 
       return NextResponse.redirect(
-        new URL(`/dashboard?enrolled=1&course_id=${courseId}`, request.url)
+        new URL(`/payment/success?tx_ref=${tx_ref}&status=successful&course_id=${courseId}`, request.url)
       );
     }
 

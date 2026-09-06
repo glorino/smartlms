@@ -43,6 +43,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        if (user.isBlocked) {
+          throw new Error("Your account has been blocked. Contact support.");
+        }
+
         return {
           id: user.id,
           email: user.email,

@@ -45,7 +45,7 @@ async function main() {
       userId: user.id,
       courseId: course.id,
       status: "ACTIVE",
-      qrCode: `https://smartlms-bay.vercel.app/verify-certificate?id=${certId}`,
+      qrCode: `${process.env.NEXT_PUBLIC_APP_URL || "https://smartlms-bay.vercel.app"}/verify-certificate?id=${certId}`,
     },
     include: {
       course: { select: { title: true } },

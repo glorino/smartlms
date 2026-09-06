@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rate-limit";
 import prisma from "@/lib/prisma";
+import { APP_URL } from "@/lib/constants";
 
 const FLUTTERWAVE_SECRET = process.env.FLUTTERWAVE_SECRET_KEY;
 
 export async function POST(request: Request) {
   try {
-    if (!await checkRateLimit("payments-initiate", 10, 3600000)) {
+    if (!await checkRateLimit("payments-initiate", 10, 3600000, request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown")) {
       return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
     }
     const session = await auth();
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
       tx_ref,
       amount: String(amount),
       currency: currency || "NGN",
-      redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/payments/verify`,
+      redirect_url: `${APP_URL}/api/payments/verify`,
       customer: {
         email,
         name,
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
       customizations: {
         title: "SmartLMS Course Enrollment",
         description: `Payment for course`,
-        logo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/logo.png`,
+        logo: `${APP_URL}/logo.png`,
       },
       meta: {
         courseId,

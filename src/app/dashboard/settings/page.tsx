@@ -67,6 +67,8 @@ export default function SettingsPage() {
   }, [session]);
 
   const [saving, setSaving] = useState(false);
+  const [savingPrefs, setSavingPrefs] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const handleSaveProfile = async () => {
     setSaving(true);
@@ -93,6 +95,7 @@ export default function SettingsPage() {
   };
 
   const handleSaveNotifications = async () => {
+    setSavingPrefs(true);
     try {
       const res = await fetch("/api/auth/update", {
         method: "PATCH",
@@ -106,6 +109,8 @@ export default function SettingsPage() {
       }
     } catch {
       toast.error("Failed to save preferences");
+    } finally {
+      setSavingPrefs(false);
     }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -116,6 +121,7 @@ export default function SettingsPage() {
       toast.error("Passwords don't match");
       return;
     }
+    setChangingPassword(true);
     try {
       const res = await fetch("/api/auth/change-password", {
         method: "POST",
@@ -132,6 +138,8 @@ export default function SettingsPage() {
       }
     } catch {
       toast.error("Failed to change password");
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -413,9 +421,18 @@ export default function SettingsPage() {
               </div>
 
               <div className="flex justify-end">
-                <Button onClick={handleSaveNotifications}>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Preferences
+                <Button onClick={handleSaveNotifications} disabled={savingPrefs}>
+                  {savingPrefs ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Preferences
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>
@@ -473,9 +490,18 @@ export default function SettingsPage() {
                 Show passwords
               </label>
               <div className="flex justify-end">
-                <Button onClick={handleChangePassword}>
-                  <Lock className="mr-2 h-4 w-4" />
-                  Update Password
+                <Button onClick={handleChangePassword} disabled={changingPassword}>
+                  {changingPassword ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="mr-2 h-4 w-4" />
+                      Update Password
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>

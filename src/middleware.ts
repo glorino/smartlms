@@ -43,6 +43,7 @@ const publicApiRoutes = [
   { path: /^\/api\/quizzes$/, method: "GET" },
   { path: /^\/api\/quizzes\/[^/]+$/, method: "GET" },
   { path: /^\/api\/live-classes$/, method: "GET" },
+  { path: /^\/api\/payments\/webhook$/, method: "POST" },
 ];
 
 export default auth((req) => {

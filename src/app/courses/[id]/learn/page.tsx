@@ -24,6 +24,10 @@ import {
   Award,
   RotateCcw,
   Bot,
+  Sparkles,
+  Brain,
+  Layers,
+  ChevronDown,
 } from "lucide-react";
 import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
@@ -122,6 +126,11 @@ export default function CourseLearnPage() {
   const [inlineQuizResult, setInlineQuizResult] = useState<{ score: number; totalPoints: number; passed: boolean; correctCount: number; incorrectCount: number; answers: Record<string, string> } | null>(null);
   const [inlineQuizAttemptCount, setInlineQuizAttemptCount] = useState(0);
   const [inlineQuizPreviousAttempts, setInlineQuizPreviousAttempts] = useState<{ score: number; passed: boolean; completedAt: string }[]>([]);
+
+  const [studyToolsOpen, setStudyToolsOpen] = useState(false);
+  const [studyToolType, setStudyToolType] = useState<"summary" | "flashcards" | "key_concepts">("summary");
+  const [studyToolLoading, setStudyToolLoading] = useState(false);
+  const [studyToolResult, setStudyToolResult] = useState<any>(null);
 
   useEffect(() => {
     async function loadCourse() {
@@ -382,6 +391,31 @@ export default function CourseLearnPage() {
       }
     } catch (err) {
       console.error("Failed to delete note", err);
+    }
+  };
+
+  const generateStudyTool = async (type: "summary" | "flashcards" | "key_concepts") => {
+    if (!currentLesson) return;
+    setStudyToolType(type);
+    setStudyToolLoading(true);
+    setStudyToolResult(null);
+    setStudyToolsOpen(true);
+    try {
+      const res = await fetch("/api/ai/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, lessonId: currentLesson.id, courseId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setStudyToolResult(data.content);
+      } else {
+        setStudyToolResult({ error: "Failed to generate content" });
+      }
+    } catch {
+      setStudyToolResult({ error: "Failed to generate content" });
+    } finally {
+      setStudyToolLoading(false);
     }
   };
 
@@ -658,6 +692,95 @@ export default function CourseLearnPage() {
                 </div>
               </div>
             )}
+
+            {/* Study Tools */}
+            <div className="border-b border-gray-800 bg-gray-900 px-6 py-4">
+              <button
+                onClick={() => setStudyToolsOpen(!studyToolsOpen)}
+                className="flex w-full items-center gap-3 text-left"
+              >
+                <Sparkles className="h-5 w-5 text-purple-400" />
+                <span className="text-sm font-semibold text-white">AI Study Tools</span>
+                <ChevronDown className={`ml-auto h-4 w-4 text-gray-400 transition-transform ${studyToolsOpen ? "rotate-180" : ""}`} />
+              </button>
+              {studyToolsOpen && (
+                <div className="mt-4 space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { type: "summary" as const, icon: BookOpen, label: "Summary" },
+                      { type: "flashcards" as const, icon: Layers, label: "Flashcards" },
+                      { type: "key_concepts" as const, icon: Brain, label: "Key Concepts" },
+                    ].map((tool) => (
+                      <button
+                        key={tool.type}
+                        onClick={() => generateStudyTool(tool.type)}
+                        disabled={studyToolLoading}
+                        className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                          studyToolType === tool.type && studyToolResult
+                            ? "bg-purple-600/20 text-purple-400 ring-1 ring-purple-600/30"
+                            : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
+                        } disabled:opacity-50`}
+                      >
+                        <tool.icon className="h-4 w-4" />
+                        {tool.label}
+                      </button>
+                    ))}
+                  </div>
+                  {studyToolLoading && (
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-purple-400 border-t-transparent" />
+                      Generating {studyToolType}...
+                    </div>
+                  )}
+                  {studyToolResult && !studyToolLoading && (
+                    <div className="rounded-lg border border-gray-700 bg-gray-800/50 p-4">
+                      {studyToolResult.error ? (
+                        <p className="text-sm text-red-400">{studyToolResult.error}</p>
+                      ) : studyToolType === "summary" ? (
+                        <div className="space-y-3">
+                          <p className="text-sm leading-relaxed text-gray-300">{studyToolResult.summary}</p>
+                          {studyToolResult.keyPoints?.length > 0 && (
+                            <div>
+                              <p className="mb-1 text-xs font-semibold text-purple-400">Key Points</p>
+                              <ul className="space-y-1">
+                                {studyToolResult.keyPoints.map((p: string, i: number) => (
+                                  <li key={i} className="flex items-start gap-2 text-sm text-gray-400">
+                                    <Check className="mt-0.5 h-3 w-3 shrink-0 text-green-500" />
+                                    {p}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      ) : studyToolType === "flashcards" ? (
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                          {(Array.isArray(studyToolResult) ? studyToolResult : studyToolResult.flashcards || []).map((card: any, i: number) => (
+                            <div key={i} className="rounded-lg border border-gray-600 bg-gray-900/50 p-3">
+                              <p className="text-xs font-semibold text-purple-400">Q</p>
+                              <p className="mt-1 text-sm text-white">{card.front}</p>
+                              <div className="my-2 border-t border-gray-700" />
+                              <p className="text-xs font-semibold text-green-400">A</p>
+                              <p className="mt-1 text-sm text-gray-300">{card.back}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {(Array.isArray(studyToolResult) ? studyToolResult : studyToolResult.concepts || []).map((c: any, i: number) => (
+                            <div key={i} className="rounded-lg border border-gray-600 bg-gray-900/50 p-3">
+                              <p className="text-sm font-semibold text-white">{c.concept}</p>
+                              <p className="mt-1 text-sm text-gray-400">{c.definition}</p>
+                              {c.example && <p className="mt-1 text-xs text-purple-300">Example: {c.example}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Navigation */}
             <div className="flex items-center justify-between bg-gray-900 px-6 pb-20 pr-24 pt-4">

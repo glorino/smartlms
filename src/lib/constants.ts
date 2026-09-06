@@ -1,7 +1,9 @@
+export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://smartlms-bay.vercel.app";
+
 export const SITE_CONFIG = {
   name: "SmartLMS",
   tagline: "AI-Powered Learning Management System",
-  url: process.env.NEXT_PUBLIC_APP_URL || "https://smartlms-bay.vercel.app",
+  url: APP_URL,
   stats: {
     students: "100K+",
     courses: "500+",

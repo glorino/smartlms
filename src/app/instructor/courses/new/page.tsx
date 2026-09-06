@@ -23,6 +23,8 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -250,6 +252,10 @@ export default function NewCoursePage() {
   const [expandedLessons, setExpandedLessons] = useState<Record<string, boolean>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiLevel, setAiLevel] = useState("Beginner");
+
   useEffect(() => {
     if (thumbnailUrl.trim()) {
       setThumbnailPreview(thumbnailUrl.trim());
@@ -292,6 +298,56 @@ export default function NewCoursePage() {
     setThumbnailBase64("");
     setThumbnailPreview("");
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const generateCourseOutline = async () => {
+    if (!aiTopic.trim()) {
+      toast("Please enter a topic", "error");
+      return;
+    }
+    setAiGenerating(true);
+    try {
+      const res = await fetch("/api/ai/course-creator", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic: aiTopic, level: aiLevel }),
+      });
+      if (!res.ok) throw new Error("Generation failed");
+      const data = await res.json();
+      const outline = data.outline;
+      if (!outline) throw new Error("No outline returned");
+
+      if (outline.title) setTitle(outline.title);
+      if (outline.description) setDescription(outline.description);
+      if (outline.level) setLevel(outline.level);
+
+      if (outline.sections?.length) {
+        const newSections: Section[] = outline.sections.map((s: any, sIdx: number) => ({
+          id: generateId(),
+          title: s.title || `Section ${sIdx + 1}`,
+          lessons: (s.lessons || []).map((l: any, lIdx: number) => ({
+            id: generateId(),
+            title: l.title || `Lesson ${lIdx + 1}`,
+            type: (l.type === "QUIZ" ? "QUIZ" : l.type === "VIDEO" ? "VIDEO" : "TEXT") as LessonType,
+            content: l.description || "",
+            videoUrl: null,
+            videoType: null,
+            duration: 0,
+            order: lIdx,
+          })),
+        }));
+        setSections(newSections);
+        const expanded: Record<string, boolean> = {};
+        newSections.forEach((s) => { expanded[s.id] = true; });
+        setExpandedSections(expanded);
+      }
+
+      toast("Course outline generated!", "success");
+    } catch {
+      toast("Failed to generate outline. Please try again.", "error");
+    } finally {
+      setAiGenerating(false);
+    }
   };
 
   const addSection = () => {
@@ -692,7 +748,7 @@ export default function NewCoursePage() {
                   value={shortDescription}
                   onChange={(e) => setShortDescription(e.target.value)}
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Select
                     label="Category *"
                     options={categoryOptions}
@@ -708,7 +764,7 @@ export default function NewCoursePage() {
                     onChange={setLevel}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Select
                     label="Language"
                     options={languageOptions}
@@ -1048,29 +1104,29 @@ export default function NewCoursePage() {
                                               className="min-h-[80px]"
                                             />
                                           </div>
-                                          <div className="grid grid-cols-2 gap-4">
-                                            <Input
-                                              label="Max Score"
-                                              type="number"
-                                              min="0"
-                                              value={lesson.assignment.maxScore}
-                                              onChange={(e) =>
-                                                updateAssignment(section.id, lesson.id, {
-                                                  maxScore: parseInt(e.target.value) || 0,
-                                                })
-                                              }
-                                            />
-                                            <Input
-                                              label="Due Date"
-                                              type="datetime-local"
-                                              value={lesson.assignment.dueDate}
-                                              onChange={(e) =>
-                                                updateAssignment(section.id, lesson.id, {
-                                                  dueDate: e.target.value,
-                                                })
-                                              }
-                                            />
-                                          </div>
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                             <Input
+                                               label="Max Score"
+                                               type="number"
+                                               min="0"
+                                               value={lesson.assignment.maxScore}
+                                               onChange={(e) =>
+                                                 updateAssignment(section.id, lesson.id, {
+                                                   maxScore: parseInt(e.target.value) || 0,
+                                                 })
+                                               }
+                                             />
+                                             <Input
+                                               label="Due Date"
+                                               type="datetime-local"
+                                               value={lesson.assignment.dueDate}
+                                               onChange={(e) =>
+                                                 updateAssignment(section.id, lesson.id, {
+                                                   dueDate: e.target.value,
+                                                 })
+                                               }
+                                             />
+                                           </div>
                                         </div>
                                       )}
 
@@ -1119,6 +1175,42 @@ export default function NewCoursePage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            <Card className="border-gray-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Sparkles className="h-5 w-5 text-purple-500" />
+                  AI Course Generator
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Input
+                  label="Topic"
+                  placeholder="e.g. Introduction to Machine Learning"
+                  value={aiTopic}
+                  onChange={(e) => setAiTopic(e.target.value)}
+                />
+                <Select
+                  label="Level"
+                  options={levelOptions}
+                  value={aiLevel}
+                  onChange={setAiLevel}
+                />
+                <Button
+                  className="w-full gap-2"
+                  variant="outline"
+                  onClick={generateCourseOutline}
+                  disabled={aiGenerating || !aiTopic.trim()}
+                >
+                  {aiGenerating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                  {aiGenerating ? "Generating..." : "Generate Outline"}
+                </Button>
+              </CardContent>
+            </Card>
+
             <Card className="border-gray-200 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg">Publish</CardTitle>

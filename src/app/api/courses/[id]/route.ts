@@ -360,7 +360,44 @@ export async function DELETE(
       );
     }
 
-    await prisma.course.delete({ where: { id } });
+    await prisma.$transaction(async (tx) => {
+      // Quiz attempts
+      await tx.quizAttempt.deleteMany({ where: { quiz: { courseId: id } } });
+      // Answers
+      await tx.answer.deleteMany({ where: { question: { quiz: { courseId: id } } } });
+      // Questions
+      await tx.question.deleteMany({ where: { quiz: { courseId: id } } });
+      // Quizzes
+      await tx.quiz.deleteMany({ where: { courseId: id } });
+      // Assignments
+      await tx.assignment.deleteMany({ where: { lesson: { courseId: id } } });
+      // Grades
+      await tx.grade.deleteMany({ where: { courseId: id } });
+      // Lesson progress
+      await tx.lessonProgress.deleteMany({ where: { lesson: { courseId: id } } });
+      // Notes
+      await tx.note.deleteMany({ where: { lesson: { courseId: id } } });
+      // Lessons
+      await tx.lesson.deleteMany({ where: { courseId: id } });
+      // Course sections
+      await tx.courseSection.deleteMany({ where: { courseId: id } });
+      // Reviews
+      await tx.review.deleteMany({ where: { courseId: id } });
+      // Bookmarks
+      await tx.bookmark.deleteMany({ where: { courseId: id } });
+      // Certificates
+      await tx.certificate.deleteMany({ where: { courseId: id } });
+      // Enrollments
+      await tx.enrollment.deleteMany({ where: { courseId: id } });
+      // Purchases
+      await tx.purchase.deleteMany({ where: { courseId: id } });
+      // Live class attendances
+      await tx.liveClassAttendance.deleteMany({ where: { liveClass: { courseId: id } } });
+      // Live classes
+      await tx.liveClass.deleteMany({ where: { courseId: id } });
+      // Course
+      await tx.course.delete({ where: { id } });
+    });
 
     return NextResponse.json({ message: "Course deleted successfully" });
   } catch (error) {

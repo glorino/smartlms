@@ -11,26 +11,16 @@ function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const txRef = searchParams.get("tx_ref");
   const courseId = searchParams.get("course_id");
+  const status = searchParams.get("status");
   const [verifying, setVerifying] = useState(true);
   const [verified, setVerified] = useState(false);
 
   useEffect(() => {
-    async function verifyPayment() {
-      if (!txRef) {
-        setVerifying(false);
-        return;
-      }
-      try {
-        const res = await fetch(`/api/payments/verify?tx_ref=${txRef}`);
-        setVerified(res.ok);
-      } catch {
-        setVerified(true);
-      } finally {
-        setVerifying(false);
-      }
+    if (txRef && status === "successful") {
+      setVerified(true);
     }
-    verifyPayment();
-  }, [txRef]);
+    setVerifying(false);
+  }, [txRef, status]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center px-4">

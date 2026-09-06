@@ -29,6 +29,7 @@ interface UserItem {
   email: string;
   role: string;
   status: string;
+  isBlocked: boolean;
   createdAt: string;
   enrolledCourses: number;
 }
@@ -87,21 +88,25 @@ export default function AdminUsersPage() {
   ];
 
   const handleBlock = async (id: string) => {
-    if (confirm("Are you sure you want to block this user?")) {
+    const user = users.find((u) => u.id === id);
+    if (!user) return;
+    const newBlockedState = !user.isBlocked;
+    const action = newBlockedState ? "block" : "unblock";
+    if (confirm(`Are you sure you want to ${action} this user?`)) {
       try {
-        const res = await fetch(`/api/users/${id}`, {
+        const res = await fetch(`/api/admin/users/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "inactive" }),
+          body: JSON.stringify({ isBlocked: newBlockedState }),
         });
         if (res.ok) {
-          setUsers(users.map((u) => u.id === id ? { ...u, status: "inactive" } : u));
-          toast.success("User blocked successfully");
+          setUsers(users.map((u) => u.id === id ? { ...u, isBlocked: newBlockedState } : u));
+          toast.success(`User ${action === "block" ? "blocked" : "unblocked"} successfully`);
         } else {
-          toast.error("Failed to block user");
+          toast.error(`Failed to ${action} user`);
         }
       } catch {
-        toast.error("Failed to block user");
+        toast.error(`Failed to ${action} user`);
       }
     }
   };
@@ -287,10 +292,21 @@ export default function AdminUsersPage() {
                             </button>
                             <button
                               onClick={() => handleBlock(user.id)}
-                              className="flex w-full items-center gap-2 px-4 py-2 text-sm text-orange-600 hover:bg-orange-50"
+                              className={`flex w-full items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 ${
+                                user.isBlocked ? "text-emerald-600" : "text-orange-600 hover:bg-orange-50"
+                              }`}
                             >
-                              <UserX className="h-4 w-4" />
-                              Block User
+                              {user.isBlocked ? (
+                                <>
+                                  <UserCheck className="h-4 w-4" />
+                                  Unblock User
+                                </>
+                              ) : (
+                                <>
+                                  <UserX className="h-4 w-4" />
+                                  Block User
+                                </>
+                              )}
                             </button>
                             <button
                               onClick={() => handleDelete(user.id)}

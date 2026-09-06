@@ -34,7 +34,7 @@ const footerLinks = {
 
 const socialLinks = [
   { icon: Globe, label: "Twitter", href: SITE_CONFIG.social.twitter },
-  { icon: MessageCircle, label: "Chat", href: SITE_CONFIG.social.linkedin },
+  { icon: MessageCircle, label: "LinkedIn", href: SITE_CONFIG.social.linkedin },
   { icon: Code2, label: "GitHub", href: SITE_CONFIG.social.github },
   { icon: Play, label: "YouTube", href: SITE_CONFIG.social.youtube },
 ];

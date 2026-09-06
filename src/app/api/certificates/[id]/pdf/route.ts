@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
+import { APP_URL } from "@/lib/constants";
 
 export async function GET(
   request: Request,
@@ -58,7 +59,7 @@ export async function GET(
 
     const instructorName =
       certificate.course.instructor?.name || "SmartLMS Team";
-    const certPageUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://smartlms-bay.vercel.app"}/certificate/${certificate.certificateId}`;
+    const certPageUrl = `${APP_URL}/certificate/${certificate.certificateId}`;
 
     let qrMatrix: boolean[][] | null = null;
     try {
@@ -296,7 +297,7 @@ export async function GET(
     doc.setFontSize(4.5);
     doc.setTextColor(153, 153, 153);
     doc.text(
-      "View at: " + (process.env.NEXT_PUBLIC_APP_URL || "smartlms-bay.vercel.app") + "/certificate/" + certificate.certificateId,
+      "View at: " + APP_URL + "/certificate/" + certificate.certificateId,
       14,
       ph - 12
     );

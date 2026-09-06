@@ -750,11 +750,11 @@ export default function EditCoursePage() {
                   value={shortDescription}
                   onChange={(e) => setShortDescription(e.target.value)}
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Select label="Category" options={categoryOptions} placeholder="Select category" value={category} onChange={setCategory} />
                   <Select label="Level" options={levelOptions} placeholder="Select level" value={level} onChange={setLevel} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Select label="Language" options={languageOptions} placeholder="Select language" value={language} onChange={setLanguage} />
                   <Input label="Price (₦)" type="number" min="0" step="0.01" placeholder="0.00" value={price} onChange={(e) => setPrice(e.target.value)} />
                 </div>
@@ -1017,21 +1017,21 @@ export default function EditCoursePage() {
                                                   className="min-h-[80px]"
                                                 />
                                               </div>
-                                              <div className="grid grid-cols-2 gap-4">
-                                                <Input
-                                                  label="Max Score"
-                                                  type="number"
-                                                  min="0"
-                                                  value={lesson.assignment.maxScore}
-                                                  onChange={(e) => updateAssignment(section.id, lesson.id, { maxScore: parseInt(e.target.value) || 0 })}
-                                                />
-                                                <Input
-                                                  label="Due Date"
-                                                  type="datetime-local"
-                                                  value={lesson.assignment.dueDate}
-                                                  onChange={(e) => updateAssignment(section.id, lesson.id, { dueDate: e.target.value })}
-                                                />
-                                              </div>
+                                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                 <Input
+                                                   label="Max Score"
+                                                   type="number"
+                                                   min="0"
+                                                   value={lesson.assignment.maxScore}
+                                                   onChange={(e) => updateAssignment(section.id, lesson.id, { maxScore: parseInt(e.target.value) || 0 })}
+                                                 />
+                                                 <Input
+                                                   label="Due Date"
+                                                   type="datetime-local"
+                                                   value={lesson.assignment.dueDate}
+                                                   onChange={(e) => updateAssignment(section.id, lesson.id, { dueDate: e.target.value })}
+                                                 />
+                                               </div>
                                             </>
                                           )}
                                         </div>
@@ -1060,26 +1060,26 @@ export default function EditCoursePage() {
                                                 value={lesson.quiz.title}
                                                 onChange={(e) => updateQuiz(section.id, lesson.id, { title: e.target.value })}
                                               />
-                                              <div className="grid grid-cols-2 gap-4">
-                                                <Input
-                                                  label="Time Limit (minutes)"
-                                                  type="number"
-                                                  min="1"
-                                                  value={lesson.quiz.timeLimit}
-                                                  onChange={(e) => updateQuiz(section.id, lesson.id, { timeLimit: parseInt(e.target.value) || 1 })}
-                                                />
-                                                <Input
-                                                  label="Passing Score (%)"
-                                                  type="number"
-                                                  min="0"
-                                                  max="100"
-                                                  value={lesson.quiz.passingScore}
-                                                  onChange={(e) => updateQuiz(section.id, lesson.id, { passingScore: parseInt(e.target.value) || 0 })}
-                                                />
-                                              </div>
-                                              <div className="grid grid-cols-2 gap-4">
-                                                <Input
-                                                  label="Max Attempts"
+                                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                 <Input
+                                                   label="Time Limit (minutes)"
+                                                   type="number"
+                                                   min="1"
+                                                   value={lesson.quiz.timeLimit}
+                                                   onChange={(e) => updateQuiz(section.id, lesson.id, { timeLimit: parseInt(e.target.value) || 1 })}
+                                                 />
+                                                 <Input
+                                                   label="Passing Score (%)"
+                                                   type="number"
+                                                   min="0"
+                                                   max="100"
+                                                   value={lesson.quiz.passingScore}
+                                                   onChange={(e) => updateQuiz(section.id, lesson.id, { passingScore: parseInt(e.target.value) || 0 })}
+                                                 />
+                                               </div>
+                                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                 <Input
+                                                   label="Max Attempts"
                                                   type="number"
                                                   min="1"
                                                   value={lesson.quiz.maxAttempts}

@@ -355,7 +355,7 @@ export default function HelpPage() {
           <CardContent>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Link
-                href="/courses"
+                href="/docs"
                 className="flex items-center gap-3 rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50"
               >
                 <FileText className="h-5 w-5 text-indigo-600" />
