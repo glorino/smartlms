@@ -202,6 +202,37 @@ export function certificateIssued(
   return baseTemplate("Certificate Issued!", content);
 }
 
+export function welcomeEmail(
+  user: { name: string | null; email: string }
+): string {
+  const displayName = escapeHtml(user.name || "Learner");
+
+  const content = `
+    <p style="color:#374151;font-size:16px;line-height:1.6;margin:0 0 20px;">
+      Hi <strong>${displayName}</strong>,
+    </p>
+    <p style="color:#374151;font-size:16px;line-height:1.6;margin:0 0 20px;">
+      Welcome to <strong>SmartLMS</strong>! We're excited to have you on board. Your account has been created and you're ready to start learning.
+    </p>
+    <div style="background-color:#eef2ff;border-left:4px solid #4f46e5;padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 24px;">
+      <p style="color:#4338ca;font-size:14px;margin:0;">
+        Browse hundreds of courses, enroll in topics you love, and track your progress all in one place.
+      </p>
+    </div>
+    <p style="text-align:center;margin:0 0 24px;">
+      <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/courses"
+         style="background-color:#4f46e5;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:600;display:inline-block;font-size:15px;">
+        Explore Courses
+      </a>
+    </p>
+    <p style="color:#6b7280;font-size:14px;line-height:1.6;margin:0;">
+      Happy learning!<br/>The SmartLMS Team
+    </p>
+  `;
+
+  return baseTemplate("Welcome to SmartLMS!", content);
+}
+
 export function passwordResetEmail(resetUrl: string): string {
   const content = `
     <p style="color:#374151;font-size:16px;line-height:1.6;margin:0 0 20px;">

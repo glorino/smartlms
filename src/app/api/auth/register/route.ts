@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { sendEmail, welcomeEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -43,6 +44,12 @@ export async function POST(request: Request) {
         role: "STUDENT",
       },
     });
+
+    sendEmail({
+      to: user.email,
+      subject: "Welcome to SmartLMS!",
+      html: welcomeEmail(user),
+    }).catch(() => {});
 
     return NextResponse.json(
       {
