@@ -33,10 +33,25 @@ export default function EnrollButton({
 
   const isFree = price === 0 || price === undefined;
 
+  const checkAuth = async () => {
+    try {
+      const res = await fetch("/api/auth/session");
+      const session = await res.json();
+      return !!session?.user;
+    } catch {
+      return false;
+    }
+  };
+
   const handleFreeEnroll = async () => {
     setIsEnrolling(true);
     setError("");
     try {
+      const isAuth = await checkAuth();
+      if (!isAuth) {
+        router.push(`/login?callbackUrl=${encodeURIComponent(`/courses/${courseId}`)}`);
+        return;
+      }
       const res = await fetch("/api/enrollments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -56,8 +71,13 @@ export default function EnrollButton({
     }
   };
 
-  const handlePaidEnroll = () => {
+  const handlePaidEnroll = async () => {
     setError("");
+    const isAuth = await checkAuth();
+    if (!isAuth) {
+      router.push(`/login?callbackUrl=${encodeURIComponent(`/courses/${courseId}`)}`);
+      return;
+    }
     setShowPaymentModal(true);
   };
 
