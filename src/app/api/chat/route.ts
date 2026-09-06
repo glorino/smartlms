@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { SITE_CONFIG } from "@/lib/constants";
+import { auth } from "@/lib/auth";
 
 interface ChatRequest {
   message: string;
@@ -110,11 +111,23 @@ async function getAIResponse(message: string): Promise<string | null> {
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body: ChatRequest = await request.json();
 
     if (!body.message || typeof body.message !== "string") {
       return NextResponse.json(
         { error: "Message is required and must be a string" },
+        { status: 400 }
+      );
+    }
+
+    if (body.message.length > 2000) {
+      return NextResponse.json(
+        { error: "Message must be 2000 characters or less" },
         { status: 400 }
       );
     }

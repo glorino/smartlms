@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email";
 import { SITE_CONFIG } from "@/lib/constants";
+import { auth } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 function escapeHtml(str: string): string {
   return str
@@ -13,12 +15,48 @@ function escapeHtml(str: string): string {
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
+    const allowed = await checkRateLimit("contact", 3, 60 * 60 * 1000, ip);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const { name, email, subject, message } = body;
 
     if (!name || !email || !subject || !message) {
       return NextResponse.json(
         { error: "All fields are required" },
+        { status: 400 }
+      );
+    }
+
+    if (typeof name !== "string" || name.length > 100) {
+      return NextResponse.json(
+        { error: "Name must be a string of 100 characters or less" },
+        { status: 400 }
+      );
+    }
+
+    if (typeof subject !== "string" || subject.length > 200) {
+      return NextResponse.json(
+        { error: "Subject must be a string of 200 characters or less" },
+        { status: 400 }
+      );
+    }
+
+    if (typeof message !== "string" || message.length > 5000) {
+      return NextResponse.json(
+        { error: "Message must be a string of 5000 characters or less" },
         { status: 400 }
       );
     }

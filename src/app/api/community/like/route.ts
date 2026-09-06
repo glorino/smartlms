@@ -12,6 +12,15 @@ export async function POST(request: Request) {
     const { postId, replyId } = body;
 
     if (postId) {
+      const existing = await prisma.forumLike.findUnique({
+        where: { userId_postId: { userId: session.user.id, postId } },
+      });
+      if (existing) {
+        return NextResponse.json({ error: "Already liked" }, { status: 400 });
+      }
+      await prisma.forumLike.create({
+        data: { userId: session.user.id, postId },
+      });
       const post = await prisma.forumPost.update({
         where: { id: postId },
         data: { likes: { increment: 1 } },
@@ -19,6 +28,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ likes: post.likes });
     }
     if (replyId) {
+      const existing = await prisma.forumLike.findUnique({
+        where: { userId_replyId: { userId: session.user.id, replyId } },
+      });
+      if (existing) {
+        return NextResponse.json({ error: "Already liked" }, { status: 400 });
+      }
+      await prisma.forumLike.create({
+        data: { userId: session.user.id, replyId },
+      });
       const reply = await prisma.forumReply.update({
         where: { id: replyId },
         data: { likes: { increment: 1 } },

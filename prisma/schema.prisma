@@ -102,6 +102,7 @@ model User {
   careerPaths          CareerPath[]
   forumPosts           ForumPost[]
   forumReplies         ForumReply[]
+  forumLikes           ForumLike[]
   payouts              Payout[]
 
   @@index([email])
@@ -810,6 +811,7 @@ model ForumPost {
   tags      String?
   likes     Int          @default(0)
   replies   ForumReply[]
+  forumLikes ForumLike[]
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
@@ -829,8 +831,27 @@ model ForumReply {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
+  forumLikes ForumLike[]
+
   @@index([postId])
   @@index([authorId])
+}
+
+model ForumLike {
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String?
+  post      ForumPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
+  replyId   String?
+  reply     ForumReply? @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+
+  @@unique([userId, postId])
+  @@unique([userId, replyId])
+  @@index([postId])
+  @@index([replyId])
+  @@index([userId])
 }
 
 model Payout {
