@@ -9,8 +9,22 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const role = (session.user as any).role;
+
+    const where: any = {};
+    if (role === "STUDENT") {
+      where.userId = session.user.id;
+    } else if (role === "INSTRUCTOR") {
+      where.lesson = { course: { instructorId: session.user.id } };
+    }
+
     const assignments = await prisma.assignment.findMany({
-      where: { userId: session.user.id },
+      where,
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        lesson: { select: { id: true, title: true } },
+        course: { select: { id: true, title: true } },
+      },
       orderBy: { createdAt: "desc" },
     });
 
@@ -31,52 +45,103 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { assignmentId, content, fileUrl } = body;
+    const { assignmentId, lessonId, courseId, content, fileUrl } = body;
 
-    if (!assignmentId) {
+    if (!content && !fileUrl) {
       return NextResponse.json(
-        { error: "Assignment ID is required" },
+        { error: "Content or file is required" },
         { status: 400 }
       );
     }
 
-    const assignment = await prisma.assignment.findUnique({
-      where: { id: assignmentId },
-    });
+    const userId = session.user.id;
 
-    if (!assignment) {
-      return NextResponse.json(
-        { error: "Assignment not found" },
-        { status: 404 }
-      );
+    if (assignmentId) {
+      const existing = await prisma.assignment.findUnique({
+        where: { id: assignmentId },
+      });
+
+      if (!existing) {
+        return NextResponse.json({ error: "Assignment not found" }, { status: 404 });
+      }
+
+      if (existing.userId !== userId) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+
+      if (existing.status === "GRADED") {
+        return NextResponse.json(
+          { error: "This assignment has already been graded" },
+          { status: 400 }
+        );
+      }
+
+      const updated = await prisma.assignment.update({
+        where: { id: assignmentId },
+        data: {
+          content: content || existing.content,
+          fileUrl: fileUrl || existing.fileUrl,
+          status: "SUBMITTED",
+          submittedAt: new Date(),
+        },
+      });
+
+      return NextResponse.json({ assignment: updated });
     }
 
-    if (assignment.userId !== session.user.id) {
-      return NextResponse.json(
-        { error: "Forbidden" },
-        { status: 403 }
-      );
-    }
+    if (lessonId) {
+      const template = await prisma.assignment.findFirst({
+        where: { lessonId },
+        orderBy: { createdAt: "asc" },
+      });
 
-    if (assignment.status === "GRADED") {
-      return NextResponse.json(
-        { error: "This assignment has already been graded" },
-        { status: 400 }
-      );
-    }
-
-    const updated = await prisma.assignment.update({
-      where: { id: assignmentId },
-      data: {
-        content: content || assignment.content,
-        fileUrl: fileUrl || assignment.fileUrl,
+      const assignmentData: any = {
+        content,
+        fileUrl: fileUrl || null,
         status: "SUBMITTED",
-        submittedAt: new Date(),
-      },
-    });
+        userId,
+        lessonId,
+        courseId: courseId || template?.courseId || null,
+        title: template?.title || "Assignment",
+        description: template?.description || null,
+        maxScore: template?.maxScore || 100,
+        dueDate: template?.dueDate || null,
+      };
 
-    return NextResponse.json({ assignment: updated });
+      const existingSubmission = await prisma.assignment.findFirst({
+        where: { userId, lessonId },
+      });
+
+      let assignment;
+      if (existingSubmission) {
+        if (existingSubmission.status === "GRADED") {
+          return NextResponse.json(
+            { error: "This assignment has already been graded" },
+            { status: 400 }
+          );
+        }
+        assignment = await prisma.assignment.update({
+          where: { id: existingSubmission.id },
+          data: {
+            content,
+            fileUrl: fileUrl || null,
+            status: "SUBMITTED",
+            submittedAt: new Date(),
+          },
+        });
+      } else {
+        assignment = await prisma.assignment.create({ data: assignmentData });
+      }
+
+      return NextResponse.json({ assignment }, { status: 201 });
+    }
+
+    return NextResponse.json(
+      { error: "assignmentId or lessonId is required" },
+      { status: 400 }
+    );
   } catch (error) {
+    console.error("Assignment submission error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

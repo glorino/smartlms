@@ -516,15 +516,14 @@ export default function CourseLearnPage() {
 
   const submitAssignment = async () => {
     if (!currentLesson || !assignmentSubmission.trim()) return;
-    const assignment = currentLesson.assignments?.[0];
-    if (!assignment) return;
     setAssignmentSubmitting(true);
     try {
       const res = await fetch("/api/assignments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          assignmentId: assignment.id,
+          lessonId: currentLesson.id,
+          courseId,
           content: assignmentSubmission,
         }),
       });
