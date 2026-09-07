@@ -51,6 +51,31 @@ interface LessonData {
   duration: number | null;
   order: number;
   sectionId: string;
+  quizzes?: {
+    id: string;
+    title: string;
+    description: string | null;
+    timeLimit: number | null;
+    passingScore: number;
+    maxAttempts: number | null;
+    questions: {
+      id: string;
+      content: string;
+      type: string;
+      points: number;
+      explanation: string | null;
+      order: number;
+      answers: { id: string; content: string; isCorrect: boolean; order: number }[];
+    }[];
+  }[];
+  assignments?: {
+    id: string;
+    title: string;
+    description: string | null;
+    maxScore: number;
+    dueDate: string | null;
+    status: string;
+  }[];
 }
 
 interface SectionData {
@@ -131,6 +156,16 @@ export default function CourseLearnPage() {
   const [studyToolType, setStudyToolType] = useState<"summary" | "flashcards" | "key_concepts" | "study_guide">("summary");
   const [studyToolLoading, setStudyToolLoading] = useState(false);
   const [studyToolResult, setStudyToolResult] = useState<any>(null);
+
+  const [activeQuiz, setActiveQuiz] = useState<any>(null);
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [quizResult, setQuizResult] = useState<any>(null);
+  const [quizSubmitting, setQuizSubmitting] = useState(false);
+
+  const [assignmentSubmission, setAssignmentSubmission] = useState("");
+  const [assignmentSubmitting, setAssignmentSubmitting] = useState(false);
+  const [submittedAssignments, setSubmittedAssignments] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function loadCourse() {
@@ -429,6 +464,78 @@ export default function CourseLearnPage() {
     }
   };
 
+  useEffect(() => {
+    setActiveQuiz(null);
+    setQuizAnswers({});
+    setQuizSubmitted(false);
+    setQuizResult(null);
+    setQuizSubmitting(false);
+    setAssignmentSubmission("");
+    setAssignmentSubmitting(false);
+  }, [currentLesson?.id]);
+
+  useEffect(() => {
+    if (!currentLesson || currentLesson.type !== "ASSIGNMENT") return;
+    if (currentLesson.assignments && currentLesson.assignments.length > 0) {
+      const submitted = currentLesson.assignments.filter(
+        (a) => a.status === "SUBMITTED" || a.status === "GRADED"
+      );
+      if (submitted.length > 0) {
+        setSubmittedAssignments((prev) => new Set(prev).add(currentLesson!.id));
+      }
+    }
+  }, [currentLesson]);
+
+  const startLessonQuiz = (quiz: any) => {
+    setActiveQuiz(quiz);
+    setQuizAnswers({});
+    setQuizSubmitted(false);
+    setQuizResult(null);
+  };
+
+  const submitLessonQuiz = async () => {
+    if (!activeQuiz) return;
+    setQuizSubmitting(true);
+    try {
+      const res = await fetch(`/api/quizzes/${activeQuiz.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers: quizAnswers, timeTaken: null, attemptNumber: 1 }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setQuizResult(data);
+        setQuizSubmitted(true);
+        if (data.passed && currentLesson) {
+          handleQuizComplete(currentLesson.id, true);
+        }
+      }
+    } catch {}
+    setQuizSubmitting(false);
+  };
+
+  const submitAssignment = async () => {
+    if (!currentLesson || !assignmentSubmission.trim()) return;
+    const assignment = currentLesson.assignments?.[0];
+    if (!assignment) return;
+    setAssignmentSubmitting(true);
+    try {
+      const res = await fetch("/api/assignments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          assignmentId: assignment.id,
+          content: assignmentSubmission,
+        }),
+      });
+      if (res.ok) {
+        setSubmittedAssignments((prev) => new Set(prev).add(currentLesson.id));
+        markComplete();
+      }
+    } catch {}
+    setAssignmentSubmitting(false);
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -612,8 +719,179 @@ export default function CourseLearnPage() {
               </div>
             )}
 
+            {/* Quiz Lesson */}
+            {currentLesson.type === "QUIZ" && (
+              <div className="min-h-[70vh] bg-gray-900 p-6 sm:p-8">
+                {!activeQuiz ? (
+                  <div className="mx-auto max-w-2xl space-y-6">
+                    <div className="text-center">
+                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-100">
+                        <ClipboardCheck className="h-8 w-8 text-amber-600" />
+                      </div>
+                      <h2 className="text-2xl font-bold text-white">{currentLesson.title}</h2>
+                      {currentLesson.description && (
+                        <p className="mt-2 text-gray-400">{currentLesson.description}</p>
+                      )}
+                    </div>
+                    {currentLesson.quizzes && currentLesson.quizzes.length > 0 ? (
+                      currentLesson.quizzes.map((quiz) => (
+                        <div key={quiz.id} className="rounded-xl border border-gray-700 bg-gray-800 p-6">
+                          <h3 className="text-lg font-semibold text-white">{quiz.title}</h3>
+                          {quiz.description && <p className="mt-1 text-sm text-gray-400">{quiz.description}</p>}
+                          <div className="mt-4 grid grid-cols-3 gap-4 text-center">
+                            <div className="rounded-lg bg-gray-900/50 p-3">
+                              <p className="text-xl font-bold text-white">{quiz.questions.length}</p>
+                              <p className="text-xs text-gray-500">Questions</p>
+                            </div>
+                            <div className="rounded-lg bg-gray-900/50 p-3">
+                              <p className="text-xl font-bold text-white">{quiz.timeLimit ? `${quiz.timeLimit}m` : "None"}</p>
+                              <p className="text-xs text-gray-500">Time Limit</p>
+                            </div>
+                            <div className="rounded-lg bg-gray-900/50 p-3">
+                              <p className="text-xl font-bold text-white">{quiz.passingScore}%</p>
+                              <p className="text-xs text-gray-500">To Pass</p>
+                            </div>
+                          </div>
+                          <Button onClick={() => startLessonQuiz(quiz)} className="mt-4 w-full">
+                            Start Quiz
+                          </Button>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-center text-gray-400">No quiz available for this lesson.</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mx-auto max-w-2xl space-y-6">
+                    {!quizSubmitted ? (
+                      <>
+                        <h3 className="text-lg font-bold text-white">{activeQuiz.title}</h3>
+                        <div className="space-y-4">
+                          {activeQuiz.questions.map((q: any, idx: number) => (
+                            <div key={q.id} className="rounded-xl border border-gray-700 bg-gray-800 p-5">
+                              <p className="text-sm font-medium text-gray-300">
+                                <span className="text-blue-400">Q{idx + 1}.</span> {q.content}
+                              </p>
+                              <div className="mt-3 space-y-2">
+                                {q.answers.map((a: any) => (
+                                  <label
+                                    key={a.id}
+                                    className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-sm transition-colors ${
+                                      quizAnswers[q.id] === a.id
+                                        ? "border-blue-500 bg-blue-500/10 text-blue-300"
+                                        : "border-gray-600 text-gray-400 hover:border-gray-500"
+                                    }`}
+                                  >
+                                    <input
+                                      type="radio"
+                                      name={q.id}
+                                      value={a.id}
+                                      checked={quizAnswers[q.id] === a.id}
+                                      onChange={() => setQuizAnswers((prev) => ({ ...prev, [q.id]: a.id }))}
+                                      className="hidden"
+                                    />
+                                    {a.content}
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <Button onClick={submitLessonQuiz} disabled={quizSubmitting} className="w-full">
+                          {quizSubmitting ? "Submitting..." : "Submit Quiz"}
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="text-center space-y-4">
+                        <div className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full ${quizResult?.passed ? "bg-green-900/50" : "bg-red-900/50"}`}>
+                          {quizResult?.passed ? (
+                            <CheckCircle2 className="h-10 w-10 text-green-400" />
+                          ) : (
+                            <RotateCcw className="h-10 w-10 text-red-400" />
+                          )}
+                        </div>
+                        <h3 className="text-2xl font-bold text-white">
+                          {quizResult?.passed ? "Quiz Passed!" : "Not Passed"}
+                        </h3>
+                        <p className="text-gray-400">
+                          Score: {quizResult?.totalPoints > 0 ? Math.round((quizResult.score / quizResult.totalPoints) * 100) : 0}%
+                        </p>
+                        <div className="flex gap-3 justify-center">
+                          {!quizResult?.passed && (
+                            <Button variant="outline" onClick={() => startLessonQuiz(activeQuiz)} className="border-gray-600 text-gray-300">
+                              <RotateCcw className="mr-2 h-4 w-4" /> Retry
+                            </Button>
+                          )}
+                          <Button onClick={() => { setActiveQuiz(null); setQuizResult(null); setQuizSubmitted(false); }}>
+                            Back to Lesson
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Assignment Lesson */}
+            {currentLesson.type === "ASSIGNMENT" && (
+              <div className="min-h-[70vh] bg-gray-900 p-6 sm:p-8">
+                <div className="mx-auto max-w-2xl space-y-6">
+                  {currentLesson.assignments && currentLesson.assignments.length > 0 ? (
+                    currentLesson.assignments.map((assignment) => (
+                      <div key={assignment.id} className="rounded-xl border border-gray-700 bg-gray-800 p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100">
+                            <ClipboardCheck className="h-5 w-5 text-emerald-600" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-white">{assignment.title}</h3>
+                            <p className="text-xs text-gray-500">Max Score: {assignment.maxScore}</p>
+                          </div>
+                        </div>
+                        {assignment.description && (
+                          <div className="mb-4 rounded-lg bg-gray-900/50 p-4">
+                            <p className="text-sm leading-relaxed text-gray-300">{assignment.description}</p>
+                          </div>
+                        )}
+                        {assignment.dueDate && (
+                          <p className="mb-4 text-xs text-gray-500">
+                            Due: {new Date(assignment.dueDate).toLocaleDateString()}
+                          </p>
+                        )}
+                        {submittedAssignments.has(currentLesson.id) ? (
+                          <div className="rounded-lg bg-green-900/20 border border-green-800/50 p-4 text-center">
+                            <CheckCircle2 className="mx-auto h-8 w-8 text-green-400" />
+                            <p className="mt-2 text-sm font-medium text-green-400">Assignment Submitted</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <textarea
+                              value={assignmentSubmission}
+                              onChange={(e) => setAssignmentSubmission(e.target.value)}
+                              placeholder="Write your assignment submission here..."
+                              rows={6}
+                              className="w-full rounded-lg border border-gray-600 bg-gray-900 px-4 py-3 text-sm text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
+                            />
+                            <Button onClick={submitAssignment} disabled={assignmentSubmitting || !assignmentSubmission.trim()} className="w-full">
+                              {assignmentSubmitting ? "Submitting..." : "Submit Assignment"}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center">
+                      <ClipboardCheck className="mx-auto h-16 w-16 text-gray-600" />
+                      <p className="mt-4 text-gray-400">No assignment details available.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Text / Content */}
-            {currentLesson.type !== "VIDEO" && (
+            {currentLesson.type !== "VIDEO" && currentLesson.type !== "QUIZ" && currentLesson.type !== "ASSIGNMENT" && (
               <div className="min-h-[70vh] bg-gray-900">
                 {currentLesson.content ? (
                   <div className="lesson-content px-6 py-10 sm:px-8 lg:px-12">
