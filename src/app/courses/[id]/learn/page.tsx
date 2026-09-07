@@ -737,7 +737,7 @@ export default function CourseLearnPage() {
                       currentLesson.quizzes.map((quiz) => (
                         <div key={quiz.id} className="rounded-xl border border-gray-700 bg-gray-800 p-6">
                           <h3 className="text-lg font-semibold text-white">{quiz.title}</h3>
-                          {quiz.description && <p className="mt-1 text-sm text-gray-400">{quiz.description}</p>}
+                          {quiz.description && <p className="mt-1 whitespace-pre-line text-sm text-gray-400">{quiz.description}</p>}
                           <div className="mt-4 grid grid-cols-3 gap-4 text-center">
                             <div className="rounded-lg bg-gray-900/50 p-3">
                               <p className="text-xl font-bold text-white">{quiz.questions.length}</p>
@@ -851,7 +851,7 @@ export default function CourseLearnPage() {
                         </div>
                         {assignment.description && (
                           <div className="mb-4 rounded-lg bg-gray-900/50 p-4">
-                            <p className="text-sm leading-relaxed text-gray-300">{assignment.description}</p>
+                            <p className="whitespace-pre-line text-sm leading-relaxed text-gray-300">{assignment.description}</p>
                           </div>
                         )}
                         {assignment.dueDate && (
