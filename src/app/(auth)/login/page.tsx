@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import {
   GraduationCap,
@@ -29,15 +29,28 @@ const features = [
 const testimonials = LOGIN_TESTIMONIALS;
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const blocked = searchParams.get("blocked") === "true";
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [blocked, setBlocked] = useState(false);
+
+  useEffect(() => {
+    if (window.location.search.includes("blocked=true")) {
+      setBlocked(true);
+    }
+  }, []);
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
