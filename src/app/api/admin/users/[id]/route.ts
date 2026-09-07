@@ -22,7 +22,7 @@ export async function PATCH(
 
     const { id } = await context.params;
     const body = await request.json();
-    const { role, isBlocked } = body;
+    const { role, isBlocked, name, email } = body;
 
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) {
@@ -30,6 +30,28 @@ export async function PATCH(
     }
 
     const updateData: Record<string, unknown> = {};
+    if (name !== undefined) {
+      updateData.name = String(name).trim();
+    }
+    if (email !== undefined) {
+      const emailStr = String(email).trim().toLowerCase();
+      if (!emailStr || !emailStr.includes("@")) {
+        return NextResponse.json(
+          { error: "Valid email is required" },
+          { status: 400 }
+        );
+      }
+      if (emailStr !== user.email) {
+        const existing = await prisma.user.findUnique({ where: { email: emailStr } });
+        if (existing) {
+          return NextResponse.json(
+            { error: "Email is already in use" },
+            { status: 400 }
+          );
+        }
+      }
+      updateData.email = emailStr;
+    }
     if (role !== undefined) {
       if (!["STUDENT", "INSTRUCTOR", "ADMIN"].includes(role)) {
         return NextResponse.json(

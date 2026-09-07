@@ -114,7 +114,7 @@ export default function AdminUsersPage() {
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this user?")) {
       try {
-        const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
+        const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
         if (res.ok) {
           setUsers(users.filter((u) => u.id !== id));
           toast.success("User deleted successfully");
@@ -424,7 +424,7 @@ export default function AdminUsersPage() {
               <Button
                 onClick={async () => {
                   try {
-                    const res = await fetch(`/api/users/${editingUser.id}`, {
+                    const res = await fetch(`/api/admin/users/${editingUser.id}`, {
                       method: "PATCH",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ name: editName, email: editEmail, role: editRole }),
