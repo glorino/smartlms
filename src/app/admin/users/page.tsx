@@ -246,16 +246,21 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        user.status === "active"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-gray-100 text-gray-700"
+                        user.isBlocked
+                          ? "bg-red-100 text-red-700"
+                          : "bg-emerald-100 text-emerald-700"
                       }`}>
-                        {user.status === "active" ? (
-                          <UserCheck className="h-3 w-3" />
+                        {user.isBlocked ? (
+                          <>
+                            <UserX className="h-3 w-3" />
+                            blocked
+                          </>
                         ) : (
-                          <UserX className="h-3 w-3" />
+                          <>
+                            <UserCheck className="h-3 w-3" />
+                            active
+                          </>
                         )}
-                        {user.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-gray-600">{user.enrolledCourses}</td>

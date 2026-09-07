@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import {
   GraduationCap,
@@ -30,6 +30,8 @@ const testimonials = LOGIN_TESTIMONIALS;
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const blocked = searchParams.get("blocked") === "true";
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -176,6 +178,11 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {blocked && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              Your account has been blocked. Please contact support for assistance.
+            </div>
+          )}
           {serverError && (
             <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">
               {serverError}

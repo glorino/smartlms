@@ -62,6 +62,11 @@ export default auth((req) => {
     }
   }
 
+  // Block all access for blocked users
+  if (req.auth && (req.auth.user as any)?.isBlocked) {
+    return NextResponse.redirect(new URL("/login?blocked=true", req.nextUrl.origin));
+  }
+
   if (pathname.startsWith("/dashboard")) {
     if (!req.auth) {
       return NextResponse.redirect(new URL("/login", req.nextUrl.origin));
