@@ -6,7 +6,7 @@ import { sendEmail, enrollmentConfirmation } from "@/lib/email";
 
 export async function GET(request: Request) {
   try {
-    if (!await checkRateLimit("enrollments", 10, 3600000, request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown")) {
+    if (!await checkRateLimit("enrollments", 100, 3600000, request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown")) {
       return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
     }
     const session = await auth();
@@ -66,7 +66,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    if (!await checkRateLimit("enrollments-post", 10, 3600000, request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown")) {
+    if (!await checkRateLimit("enrollments-post", 20, 3600000, request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown")) {
       return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
     }
     const session = await auth();

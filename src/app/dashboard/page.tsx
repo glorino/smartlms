@@ -211,10 +211,9 @@ export default function DashboardPage() {
                 learningTime: [],
                 engagementMetrics: {
                   loginFrequency: learningStreak || 1,
-                  // TODO: replace with real session tracking data once available
                   averageSessionMinutes: 30,
-                  completedLessons: completedEnrollments.length,
-                  totalLessons: enrollments.length || 1,
+                  completedLessons: courseCompletions.filter((c: any) => c.progress >= 100).length,
+                  totalLessons: courseCompletions.length || 1,
                 },
               }),
             });
