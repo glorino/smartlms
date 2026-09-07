@@ -25,6 +25,7 @@ import {
   Smartphone,
   RefreshCw,
   Loader2,
+  ClipboardCheck,
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
@@ -320,7 +321,8 @@ export default function CourseDetailPage() {
       ? course.prerequisites
       : ["No prior experience required", "A computer with internet access", "Willingness to learn"];
 
-  const quizCount = course.quizzes?.length || 0;
+  const quizCount = course.quizzes?.length || course.sections?.reduce((acc: number, s: any) => acc + (s.lessons?.reduce((la: number, l: any) => la + (l.quizzes?.length || 0), 0) || 0), 0) || 0;
+  const assignmentCount = course.sections?.reduce((acc: number, s: any) => acc + s.lessons?.filter((l: any) => l.type === "ASSIGNMENT")?.length || 0, 0) || 0;
   const reviews = course.reviews || [];
 
   return (
@@ -818,7 +820,8 @@ export default function CourseDetailPage() {
                       },
                       { icon: Users, label: "Students", value: displayTotalStudents.toLocaleString() },
                       { icon: Star, label: "Rating", value: `${displayRating.toFixed(1)} / 5` },
-                      ...(quizCount > 0 ? [{ icon: Target, label: "Quizzes", value: quizCount }] : []),
+                      { icon: Target, label: "Quizzes", value: quizCount },
+                      { icon: ClipboardCheck, label: "Assignments", value: assignmentCount },
                     ].map(({ icon: Icon, label, value }) => (
                       <div key={label} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">

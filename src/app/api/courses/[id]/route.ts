@@ -267,9 +267,11 @@ export async function PUT(
                       title: lData.assignment.title,
                       description: lData.assignment.description,
                       maxScore: lData.assignment.maxScore || 100,
+                      dueDate: lData.assignment.dueDate ? new Date(lData.assignment.dueDate) : null,
                       status: "PENDING",
                       userId: userId,
                       lessonId: lessonRecord.id,
+                      courseId: id,
                     },
                   });
                 }
