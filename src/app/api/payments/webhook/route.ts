@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import crypto from "crypto";
 
-const FLUTTERWAVE_SECRET = process.env.FLUTTERWAVE_SECRET_KEY;
-const FLUTTERWAVE_ENCRYPTION_KEY = process.env.FLUTTERWAVE_ENCRYPTION_KEY;
+const FLUTTERWAVE_SECRET = process.env.FLWSECK;
+const FLUTTERWAVE_ENCRYPTION_KEY = process.env.FLW_ENCRYPTION_KEY;
 
 function verifyFlutterwaveSignature(body: string, signature: string): boolean {
   if (!FLUTTERWAVE_ENCRYPTION_KEY) {

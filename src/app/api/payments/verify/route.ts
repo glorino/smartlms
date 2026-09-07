@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
-const FLUTTERWAVE_SECRET = process.env.FLUTTERWAVE_SECRET_KEY;
+const FLUTTERWAVE_SECRET = process.env.FLWSECK;
 
 export async function GET(request: Request) {
   try {

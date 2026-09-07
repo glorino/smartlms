@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const flutterwaveSecret = process.env.FLUTTERWAVE_SECRET_KEY;
+    const flutterwaveSecret = process.env.FLWSECK;
     if (!flutterwaveSecret) {
       return NextResponse.json(
         { error: "Payment system not configured" },
