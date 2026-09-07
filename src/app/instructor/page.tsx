@@ -120,7 +120,7 @@ export default function InstructorDashboardPage() {
   const statCards = [
     { label: "My Courses", value: stats.totalCourses, icon: BookOpen, color: "bg-blue-500", growth: stats.courseGrowth },
     { label: "Total Students", value: stats.totalStudents, icon: Users, color: "bg-emerald-500", growth: stats.studentGrowth },
-    { label: "Revenue", value: stats.totalRevenue, icon: DollarSign, color: "bg-purple-500", growth: stats.revenueGrowth, prefix: "₦" },
+    { label: "Revenue", value: stats.totalRevenue, icon: DollarSign, color: "bg-purple-500", growth: stats.revenueGrowth, prefix: "₦", decimals: 2 },
     { label: "Avg Rating", value: stats.averageRating, icon: Star, color: "bg-amber-500", growth: 0 },
   ];
 
@@ -150,7 +150,7 @@ export default function InstructorDashboardPage() {
                   <div>
                     <p className="text-sm font-medium text-gray-500">{stat.label}</p>
                     <p className="mt-1 text-3xl font-bold text-gray-900">
-                      {loading ? "—" : `${stat.prefix || ""}${typeof stat.value === 'number' && stat.value % 1 !== 0 ? stat.value.toFixed(1) : stat.value.toLocaleString()}`}
+                      {loading ? "—" : `${stat.prefix || ""}${typeof stat.decimals === 'number' ? stat.value.toLocaleString(undefined, { minimumFractionDigits: stat.decimals, maximumFractionDigits: stat.decimals }) : stat.value.toLocaleString()}`}
                     </p>
                     {stat.growth !== 0 && (
                       <div className="mt-1 flex items-center gap-1">
