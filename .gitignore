@@ -53,3 +53,4 @@ prisma/migrations/
 .idea
 
 .vercel
+.env*

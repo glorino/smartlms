@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 
     const skip = (page - 1) * limit;
 
-    const [messages, total] = await Promise.all([
+    const [messages, total, unreadCount] = await Promise.all([
       prisma.message.findMany({
         where,
         include: {
@@ -43,11 +43,15 @@ export async function GET(request: Request) {
         take: limit,
       }),
       prisma.message.count({ where }),
+      prisma.message.count({
+        where: { receiverId: userId, read: false },
+      }),
     ]);
 
     return NextResponse.json({
       messages,
       total,
+      unreadCount,
       page,
       totalPages: Math.ceil(total / limit),
     });
@@ -112,6 +116,41 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ message }, { status: 201 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+    const body = await request.json();
+    const { action, messageIds } = body;
+
+    if (action === "mark_read") {
+      if (messageIds && messageIds.length > 0) {
+        await prisma.message.updateMany({
+          where: { id: { in: messageIds }, receiverId: userId },
+          data: { read: true },
+        });
+      } else {
+        await prisma.message.updateMany({
+          where: { receiverId: userId, read: false },
+          data: { read: true },
+        });
+      }
+      return NextResponse.json({ success: true });
+    }
+
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
     return NextResponse.json(
       { error: "Internal server error" },

@@ -106,6 +106,8 @@ export default function AdminDashboardPage() {
   const [monthlyEnrollments, setMonthlyEnrollments] = useState<Record<string, number>>({});
   const [seeding, setSeeding] = useState(false);
   const [seedMessage, setSeedMessage] = useState("");
+  const [activityPage, setActivityPage] = useState(1);
+  const ACTIVITY_PER_PAGE = 10;
 
   useEffect(() => {
     async function fetchData() {
@@ -192,6 +194,14 @@ export default function AdminDashboardPage() {
       setSeeding(false);
     }
   }
+
+  const activityTotalPages = Math.ceil(activities.length / ACTIVITY_PER_PAGE);
+  const paginatedActivities = activities.slice(
+    (activityPage - 1) * ACTIVITY_PER_PAGE,
+    activityPage * ACTIVITY_PER_PAGE
+  );
+  const activityStartItem = (activityPage - 1) * ACTIVITY_PER_PAGE + 1;
+  const activityEndItem = Math.min(activityPage * ACTIVITY_PER_PAGE, activities.length);
 
   const revenueData = getMonthlyData(monthlyRevenue, 12);
   const enrollmentData = getMonthlyData(monthlyEnrollments, 12);
@@ -343,8 +353,9 @@ export default function AdminDashboardPage() {
           ) : activities.length === 0 ? (
             <div className="flex justify-center py-8 text-gray-400">No recent activity</div>
           ) : (
+            <>
             <div className="space-y-4">
-              {activities.map((activity, i) => {
+              {paginatedActivities.map((activity, i) => {
                 const iconData = activityIcons[activity.type] || { icon: Activity, color: "bg-gray-100 text-gray-600" };
                 const Icon = iconData.icon;
                 return (
@@ -361,6 +372,28 @@ export default function AdminDashboardPage() {
                 );
               })}
             </div>
+            {activityTotalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
+                <div className="flex flex-1 justify-between sm:hidden">
+                  <button onClick={() => setActivityPage(p => Math.max(1, p - 1))} disabled={activityPage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                  <button onClick={() => setActivityPage(p => Math.min(activityTotalPages, p + 1))} disabled={activityPage === activityTotalPages} className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+                </div>
+                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                  <p className="text-sm text-gray-700">Showing <span className="font-medium">{activityStartItem}</span> to <span className="font-medium">{activityEndItem}</span> of <span className="font-medium">{activities.length}</span></p>
+                  <div className="flex gap-1">
+                    <button onClick={() => setActivityPage(p => Math.max(1, p - 1))} disabled={activityPage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                    {Array.from({length: Math.min(5, activityTotalPages)}, (_, i) => {
+                      const start = Math.max(1, Math.min(activityPage - 2, activityTotalPages - 4));
+                      const p = start + i;
+                      if (p > activityTotalPages) return null;
+                      return <button key={p} onClick={() => setActivityPage(p)} className={`relative inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium ${p === activityPage ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}>{p}</button>;
+                    })}
+                    <button onClick={() => setActivityPage(p => Math.min(activityTotalPages, p + 1))} disabled={activityPage === activityTotalPages} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+                  </div>
+                </div>
+              </div>
+            )}
+            </>
           )}
         </CardContent>
       </Card>

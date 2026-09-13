@@ -51,6 +51,12 @@ export default function AdminUsersPage() {
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editRole, setEditRole] = useState("");
+  const [userPage, setUserPage] = useState(1);
+  const USER_PER_PAGE = 10;
+
+  useEffect(() => {
+    setUserPage(1);
+  }, [searchQuery, roleFilter, statusFilter]);
 
   useEffect(() => {
     async function fetchUsers() {
@@ -75,6 +81,14 @@ export default function AdminUsersPage() {
     const matchesStatus = statusFilter === "all" || user.status === statusFilter;
     return matchesSearch && matchesRole && matchesStatus;
   });
+
+  const userTotalPages = Math.ceil(filteredUsers.length / USER_PER_PAGE);
+  const paginatedUsers = filteredUsers.slice(
+    (userPage - 1) * USER_PER_PAGE,
+    userPage * USER_PER_PAGE
+  );
+  const userStartItem = (userPage - 1) * USER_PER_PAGE + 1;
+  const userEndItem = Math.min(userPage * USER_PER_PAGE, filteredUsers.length);
 
   const totalStudents = users.filter((u) => u.role === "STUDENT").length;
   const totalInstructors = users.filter((u) => u.role === "INSTRUCTOR").length;
@@ -226,7 +240,7 @@ export default function AdminUsersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {filteredUsers.map((user) => (
+                {paginatedUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -332,6 +346,27 @@ export default function AdminUsersPage() {
           {filteredUsers.length === 0 && (
             <div className="py-12 text-center text-gray-500">
               No users found matching your criteria.
+            </div>
+          )}
+          {userTotalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+              <div className="flex flex-1 justify-between sm:hidden">
+                <button onClick={() => setUserPage(p => Math.max(1, p - 1))} disabled={userPage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                <button onClick={() => setUserPage(p => Math.min(userTotalPages, p + 1))} disabled={userPage === userTotalPages} className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+              </div>
+              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <p className="text-sm text-gray-700">Showing <span className="font-medium">{userStartItem}</span> to <span className="font-medium">{userEndItem}</span> of <span className="font-medium">{filteredUsers.length}</span></p>
+                <div className="flex gap-1">
+                  <button onClick={() => setUserPage(p => Math.max(1, p - 1))} disabled={userPage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                  {Array.from({length: Math.min(5, userTotalPages)}, (_, i) => {
+                    const start = Math.max(1, Math.min(userPage - 2, userTotalPages - 4));
+                    const p = start + i;
+                    if (p > userTotalPages) return null;
+                    return <button key={p} onClick={() => setUserPage(p)} className={`relative inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium ${p === userPage ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}>{p}</button>;
+                  })}
+                  <button onClick={() => setUserPage(p => Math.min(userTotalPages, p + 1))} disabled={userPage === userTotalPages} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>

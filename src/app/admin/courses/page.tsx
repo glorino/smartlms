@@ -43,6 +43,12 @@ export default function AdminCoursesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [coursePage, setCoursePage] = useState(1);
+  const COURSE_PER_PAGE = 10;
+
+  useEffect(() => {
+    setCoursePage(1);
+  }, [searchQuery, statusFilter]);
 
   useEffect(() => {
     async function fetchCourses() {
@@ -77,6 +83,14 @@ export default function AdminCoursesPage() {
     const matchesStatus = statusFilter === "all" || course.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const courseTotalPages = Math.ceil(filteredCourses.length / COURSE_PER_PAGE);
+  const paginatedCourses = filteredCourses.slice(
+    (coursePage - 1) * COURSE_PER_PAGE,
+    coursePage * COURSE_PER_PAGE
+  );
+  const courseStartItem = (coursePage - 1) * COURSE_PER_PAGE + 1;
+  const courseEndItem = Math.min(coursePage * COURSE_PER_PAGE, filteredCourses.length);
 
   const totalPublished = courses.filter((c) => c.status === "PUBLISHED").length;
   const totalDraft = courses.filter((c) => c.status === "DRAFT").length;
@@ -228,7 +242,7 @@ export default function AdminCoursesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {filteredCourses.map((course) => (
+                {paginatedCourses.map((course) => (
                   <tr key={course.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -324,6 +338,27 @@ export default function AdminCoursesPage() {
           {filteredCourses.length === 0 && (
             <div className="py-12 text-center text-gray-500">
               No courses found matching your criteria.
+            </div>
+          )}
+          {courseTotalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+              <div className="flex flex-1 justify-between sm:hidden">
+                <button onClick={() => setCoursePage(p => Math.max(1, p - 1))} disabled={coursePage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                <button onClick={() => setCoursePage(p => Math.min(courseTotalPages, p + 1))} disabled={coursePage === courseTotalPages} className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+              </div>
+              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <p className="text-sm text-gray-700">Showing <span className="font-medium">{courseStartItem}</span> to <span className="font-medium">{courseEndItem}</span> of <span className="font-medium">{filteredCourses.length}</span></p>
+                <div className="flex gap-1">
+                  <button onClick={() => setCoursePage(p => Math.max(1, p - 1))} disabled={coursePage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                  {Array.from({length: Math.min(5, courseTotalPages)}, (_, i) => {
+                    const start = Math.max(1, Math.min(coursePage - 2, courseTotalPages - 4));
+                    const p = start + i;
+                    if (p > courseTotalPages) return null;
+                    return <button key={p} onClick={() => setCoursePage(p)} className={`relative inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium ${p === coursePage ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}>{p}</button>;
+                  })}
+                  <button onClick={() => setCoursePage(p => Math.min(courseTotalPages, p + 1))} disabled={coursePage === courseTotalPages} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>

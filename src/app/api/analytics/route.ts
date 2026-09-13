@@ -177,6 +177,37 @@ export async function GET(request: Request) {
       })).sort((a, b) => b.count - a.count);
     }
 
+    // Compute course start rate (enrolled students who started at least one lesson)
+    let courseStartRate = 0;
+    if (totalEnrollments > 0) {
+      const startedCount = await prisma.lessonProgress.count({
+        where: { progress: { gt: 0 } },
+      });
+      const uniqueStartedStudents = await prisma.lessonProgress.groupBy({
+        by: ["userId"],
+        where: { progress: { gt: 0 } },
+      });
+      courseStartRate = Math.round((uniqueStartedStudents.length / Math.max(activeUsers || 1, 1)) * 100);
+      if (courseStartRate > 100) courseStartRate = 100;
+    }
+
+    // Engagement metrics from real data
+    const [avgWatchTime, avgCompletion, dailyActiveUsers] = await Promise.allSettled([
+      prisma.lessonProgress.aggregate({ _avg: { watchTime: true }, where: { watchTime: { gt: 0 } } }),
+      prisma.lessonProgress.aggregate({ _avg: { progress: true } }),
+      prisma.lessonProgress.groupBy({ by: ["userId"], where: { completedAt: { gte: new Date(Date.now() - 86400000) } } }),
+    ]);
+
+    const avgSessionMs = avgWatchTime.status === "fulfilled" ? (avgWatchTime.value._avg.watchTime || 0) : 0;
+    const avgCompRate = avgCompletion.status === "fulfilled" ? (avgCompletion.value._avg.progress || 0) : 0;
+    const dauCount = dailyActiveUsers.status === "fulfilled" ? dailyActiveUsers.value.length : 0;
+
+    const formatDuration = (ms: number) => {
+      const mins = Math.floor(ms / 60000);
+      if (mins < 60) return `${mins}m`;
+      return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+    };
+
     return NextResponse.json({
       totalStudents,
       totalCourses,
@@ -188,6 +219,7 @@ export async function GET(request: Request) {
       revenueGrowth: calcGrowth(currentRevenueAmt, prevRevenueAmt),
       averageRating,
       completionRate: totalEnrollments > 0 ? (completedEnrollments / totalEnrollments) * 100 : 0,
+      courseStartRate,
       monthlyEnrollments,
       monthlyRevenue,
       topCourses,
@@ -196,6 +228,11 @@ export async function GET(request: Request) {
         totalPayments, completedPayments, failedPayments, refundedPayments,
         paymentSuccessRate: totalPayments > 0 ? Math.round((completedPayments / totalPayments) * 100) : 0,
         refundRate: totalPayments > 0 ? Math.round((refundedPayments / totalPayments) * 100) : 0,
+      },
+      engagementMetrics: {
+        avgSessionDuration: formatDuration(avgSessionMs),
+        avgCompletionRate: `${Math.round(avgCompRate)}%`,
+        dailyActiveUsers: dauCount,
       },
       revenueByInstructor,
       categoryDistribution,

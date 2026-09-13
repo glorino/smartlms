@@ -56,6 +56,9 @@ export default function AdminLiveClassesPage() {
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCourse, setFilterCourse] = useState("all");
+  const [upcomingPage, setUpcomingPage] = useState(1);
+  const [pastPage, setPastPage] = useState(1);
+  const CLASS_PER_PAGE = 10;
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newCourseId, setNewCourseId] = useState("");
@@ -198,6 +201,27 @@ export default function AdminLiveClassesPage() {
   const upcomingClasses = filtered.filter((c) => c.status === "upcoming" || c.status === "live");
   const pastClasses = filtered.filter((c) => c.status === "completed");
 
+  const upcomingTotalPages = Math.ceil(upcomingClasses.length / CLASS_PER_PAGE);
+  const paginatedUpcoming = upcomingClasses.slice(
+    (upcomingPage - 1) * CLASS_PER_PAGE,
+    upcomingPage * CLASS_PER_PAGE
+  );
+  const upcomingStartItem = (upcomingPage - 1) * CLASS_PER_PAGE + 1;
+  const upcomingEndItem = Math.min(upcomingPage * CLASS_PER_PAGE, upcomingClasses.length);
+
+  const pastTotalPages = Math.ceil(pastClasses.length / CLASS_PER_PAGE);
+  const paginatedPast = pastClasses.slice(
+    (pastPage - 1) * CLASS_PER_PAGE,
+    pastPage * CLASS_PER_PAGE
+  );
+  const pastStartItem = (pastPage - 1) * CLASS_PER_PAGE + 1;
+  const pastEndItem = Math.min(pastPage * CLASS_PER_PAGE, pastClasses.length);
+
+  useEffect(() => {
+    setUpcomingPage(1);
+    setPastPage(1);
+  }, [searchQuery, filterCourse]);
+
   if (loading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
@@ -332,7 +356,7 @@ export default function AdminLiveClassesPage() {
                 <div>
                   <h3 className="mb-3 text-sm font-semibold text-gray-500 uppercase tracking-wider">Upcoming</h3>
                   <div className="space-y-3">
-                    {upcomingClasses.map((cls) => (
+                    {paginatedUpcoming.map((cls) => (
                       <Card key={cls.id} className={cls.status === "live" ? "border-green-200 bg-green-50/30" : ""}>
                         <CardContent className="p-5">
                           <div className="flex items-start justify-between">
@@ -408,6 +432,48 @@ export default function AdminLiveClassesPage() {
                       </Card>
                     ))}
                   </div>
+                  {pastTotalPages > 1 && (
+                    <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
+                      <div className="flex flex-1 justify-between sm:hidden">
+                        <button onClick={() => setPastPage(p => Math.max(1, p - 1))} disabled={pastPage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                        <button onClick={() => setPastPage(p => Math.min(pastTotalPages, p + 1))} disabled={pastPage === pastTotalPages} className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+                      </div>
+                      <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                        <p className="text-sm text-gray-700">Showing <span className="font-medium">{pastStartItem}</span> to <span className="font-medium">{pastEndItem}</span> of <span className="font-medium">{pastClasses.length}</span></p>
+                        <div className="flex gap-1">
+                          <button onClick={() => setPastPage(p => Math.max(1, p - 1))} disabled={pastPage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                          {Array.from({length: Math.min(5, pastTotalPages)}, (_, i) => {
+                            const start = Math.max(1, Math.min(pastPage - 2, pastTotalPages - 4));
+                            const p = start + i;
+                            if (p > pastTotalPages) return null;
+                            return <button key={p} onClick={() => setPastPage(p)} className={`relative inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium ${p === pastPage ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}>{p}</button>;
+                          })}
+                          <button onClick={() => setPastPage(p => Math.min(pastTotalPages, p + 1))} disabled={pastPage === pastTotalPages} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {upcomingTotalPages > 1 && (
+                    <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
+                      <div className="flex flex-1 justify-between sm:hidden">
+                        <button onClick={() => setUpcomingPage(p => Math.max(1, p - 1))} disabled={upcomingPage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                        <button onClick={() => setUpcomingPage(p => Math.min(upcomingTotalPages, p + 1))} disabled={upcomingPage === upcomingTotalPages} className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+                      </div>
+                      <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                        <p className="text-sm text-gray-700">Showing <span className="font-medium">{upcomingStartItem}</span> to <span className="font-medium">{upcomingEndItem}</span> of <span className="font-medium">{upcomingClasses.length}</span></p>
+                        <div className="flex gap-1">
+                          <button onClick={() => setUpcomingPage(p => Math.max(1, p - 1))} disabled={upcomingPage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                          {Array.from({length: Math.min(5, upcomingTotalPages)}, (_, i) => {
+                            const start = Math.max(1, Math.min(upcomingPage - 2, upcomingTotalPages - 4));
+                            const p = start + i;
+                            if (p > upcomingTotalPages) return null;
+                            return <button key={p} onClick={() => setUpcomingPage(p)} className={`relative inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium ${p === upcomingPage ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}>{p}</button>;
+                          })}
+                          <button onClick={() => setUpcomingPage(p => Math.min(upcomingTotalPages, p + 1))} disabled={upcomingPage === upcomingTotalPages} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -415,7 +481,7 @@ export default function AdminLiveClassesPage() {
                 <div>
                   <h3 className="mb-3 text-sm font-semibold text-gray-500 uppercase tracking-wider">Past</h3>
                   <div className="space-y-3">
-                    {pastClasses.map((cls) => (
+                    {paginatedPast.map((cls) => (
                       <Card key={cls.id} className="opacity-75">
                         <CardContent className="p-5">
                           <div className="flex items-start justify-between">
@@ -457,6 +523,27 @@ export default function AdminLiveClassesPage() {
                       </Card>
                     ))}
                   </div>
+                  {pastTotalPages > 1 && (
+                    <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
+                      <div className="flex flex-1 justify-between sm:hidden">
+                        <button onClick={() => setPastPage(p => Math.max(1, p - 1))} disabled={pastPage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                        <button onClick={() => setPastPage(p => Math.min(pastTotalPages, p + 1))} disabled={pastPage === pastTotalPages} className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+                      </div>
+                      <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                        <p className="text-sm text-gray-700">Showing <span className="font-medium">{pastStartItem}</span> to <span className="font-medium">{pastEndItem}</span> of <span className="font-medium">{pastClasses.length}</span></p>
+                        <div className="flex gap-1">
+                          <button onClick={() => setPastPage(p => Math.max(1, p - 1))} disabled={pastPage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                          {Array.from({length: Math.min(5, pastTotalPages)}, (_, i) => {
+                            const start = Math.max(1, Math.min(pastPage - 2, pastTotalPages - 4));
+                            const p = start + i;
+                            if (p > pastTotalPages) return null;
+                            return <button key={p} onClick={() => setPastPage(p)} className={`relative inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium ${p === pastPage ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}>{p}</button>;
+                          })}
+                          <button onClick={() => setPastPage(p => Math.min(pastTotalPages, p + 1))} disabled={pastPage === pastTotalPages} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

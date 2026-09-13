@@ -337,6 +337,12 @@ export default function NotificationsPage() {
     } catch {}
   };
 
+  useEffect(() => {
+    if (unreadCount > 0) {
+      handleMarkAllRead();
+    }
+  }, [unreadCount]);
+
   const canSendNotifications = role === "ADMIN" || role === "INSTRUCTOR";
 
   return (

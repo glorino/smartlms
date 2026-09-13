@@ -62,7 +62,7 @@ export default function Navbar({ session: propSession }: { session?: Session }) 
 
         if (msgRes.status === "fulfilled" && msgRes.value.ok) {
           const msgData = await msgRes.value.json();
-          setUnreadMessages(msgData.total || 0);
+          setUnreadMessages(msgData.unreadCount || 0);
         }
 
         if (notifRes.status === "fulfilled" && notifRes.value.ok) {
