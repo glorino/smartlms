@@ -31,6 +31,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const range = searchParams.get("range") || "30d";
+    const courseId = searchParams.get("courseId");
 
     const daysMap: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90, "1y": 365 };
     const days = daysMap[range] || 30;
@@ -41,9 +42,15 @@ export async function GET(request: Request) {
     const twelveMonthsAgo = new Date();
     twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
 
-    const iFilter = isInstructor ? { course: { instructorId: userId } } : {};
-    const cFilter = isInstructor ? { instructorId: userId } : {};
-    const eFilter = isInstructor ? { course: { instructorId: userId } } : {};
+    const iFilter: any = isInstructor ? { course: { instructorId: userId } } : {};
+    const cFilter: any = isInstructor ? { instructorId: userId } : {};
+    const eFilter: any = isInstructor ? { course: { instructorId: userId } } : {};
+
+    if (courseId) {
+      iFilter.courseId = courseId;
+      cFilter.id = courseId;
+      eFilter.courseId = courseId;
+    }
 
     // Batch 1: Core counts — ALL in parallel, ALL resilient
     const b1 = await Promise.allSettled([

@@ -144,12 +144,16 @@ export default function AdminAnalyticsPage() {
   const [revenueMonthly, setRevenueMonthly] = useState<MonthlyRevenueRow[]>([]);
   const [revenueLoading, setRevenueLoading] = useState(false);
   const [studentSearch, setStudentSearch] = useState("");
+  const [studentPage, setStudentPage] = useState(1);
+  const STUDENT_PER_PAGE = 10;
 
   useEffect(() => {
     async function fetchAnalytics() {
       setLoading(true);
       try {
-        const res = await fetch(`/api/analytics?range=${dateRange}`);
+        const params = new URLSearchParams({ range: dateRange });
+        if (selectedCourseId !== "all") params.set("courseId", selectedCourseId);
+        const res = await fetch(`/api/analytics?${params}`);
         if (res.ok) {
           const json = await res.json();
           setData(json);
@@ -161,7 +165,7 @@ export default function AdminAnalyticsPage() {
       }
     }
     fetchAnalytics();
-  }, [dateRange]);
+  }, [dateRange, selectedCourseId]);
 
   useEffect(() => {
     async function fetchCourses() {
@@ -180,30 +184,37 @@ export default function AdminAnalyticsPage() {
 
   useEffect(() => {
     async function fetchDetailed() {
-      const params = new URLSearchParams({ type: "students" });
-      if (selectedCourseId !== "all") params.set("courseId", selectedCourseId);
+      const baseParams = new URLSearchParams();
+      if (selectedCourseId !== "all") baseParams.set("courseId", selectedCourseId);
 
       setStudentsLoading(true);
       setEngagementLoading(true);
       setRevenueLoading(true);
 
       try {
-        const [studentsRes, engagementRes, revenueRes] = await Promise.all([
-          fetch(`/api/analytics/detailed?${params}&type=students`),
-          fetch(`/api/analytics/detailed?${params}&type=engagement`),
-          fetch(`/api/analytics/detailed?${params}&type=revenue`),
+        const studentParams = new URLSearchParams(baseParams);
+        studentParams.set("type", "students");
+        const engagementParams = new URLSearchParams(baseParams);
+        engagementParams.set("type", "engagement");
+        const revenueParams = new URLSearchParams(baseParams);
+        revenueParams.set("type", "revenue");
+
+        const [studentsRes, engagementRes, revenueRes] = await Promise.allSettled([
+          fetch(`/api/analytics/detailed?${studentParams}`),
+          fetch(`/api/analytics/detailed?${engagementParams}`),
+          fetch(`/api/analytics/detailed?${revenueParams}`),
         ]);
 
-        if (studentsRes.ok) {
-          const json = await studentsRes.json();
+        if (studentsRes.status === "fulfilled" && studentsRes.value.ok) {
+          const json = await studentsRes.value.json();
           setStudents(json.students || []);
         }
-        if (engagementRes.ok) {
-          const json = await engagementRes.json();
+        if (engagementRes.status === "fulfilled" && engagementRes.value.ok) {
+          const json = await engagementRes.value.json();
           setEngagement(json.summary || null);
         }
-        if (revenueRes.ok) {
-          const json = await revenueRes.json();
+        if (revenueRes.status === "fulfilled" && revenueRes.value.ok) {
+          const json = await revenueRes.value.json();
           setRevenueCourses(json.revenuePerCourse || []);
           setRevenueMonthly(json.monthlyRevenue || []);
         }
@@ -468,6 +479,14 @@ export default function AdminAnalyticsPage() {
       s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
       s.email.toLowerCase().includes(studentSearch.toLowerCase())
   );
+
+  const studentTotalPages = Math.ceil(filteredStudents.length / STUDENT_PER_PAGE);
+  const paginatedStudents = filteredStudents.slice(
+    (studentPage - 1) * STUDENT_PER_PAGE,
+    studentPage * STUDENT_PER_PAGE
+  );
+  const studentStartItem = filteredStudents.length > 0 ? (studentPage - 1) * STUDENT_PER_PAGE + 1 : 0;
+  const studentEndItem = Math.min(studentPage * STUDENT_PER_PAGE, filteredStudents.length);
 
   const metricCards = [
     {
@@ -758,7 +777,9 @@ export default function AdminAnalyticsPage() {
                       height: `${
                         maxRevenue > 0 ? (val / maxRevenue) * 100 : 0
                       }%`,
+                      minHeight: val > 0 ? "4px" : "0px",
                     }}
+                    title={`₦${val.toLocaleString()}`}
                   />
                 </div>
               ))}
@@ -787,7 +808,9 @@ export default function AdminAnalyticsPage() {
                           ? (val / maxEnrollments) * 100
                           : 0
                       }%`,
+                      minHeight: val > 0 ? "4px" : "0px",
                     }}
+                    title={`${val} enrollments`}
                   />
                 </div>
               ))}
@@ -923,7 +946,7 @@ export default function AdminAnalyticsPage() {
                 type="text"
                 placeholder="Search students by name or email..."
                 value={studentSearch}
-                onChange={(e) => setStudentSearch(e.target.value)}
+                onChange={(e) => { setStudentSearch(e.target.value); setStudentPage(1); }}
                 className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
             </div>
@@ -934,6 +957,7 @@ export default function AdminAnalyticsPage() {
               Loading student data...
             </div>
           ) : filteredStudents.length > 0 ? (
+            <>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -962,7 +986,7 @@ export default function AdminAnalyticsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents.map((student) => (
+                  {paginatedStudents.map((student) => (
                     <tr
                       key={student.id}
                       className="border-b border-gray-100 hover:bg-gray-50"
@@ -1037,6 +1061,26 @@ export default function AdminAnalyticsPage() {
                 </tbody>
               </table>
             </div>
+            {studentTotalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3">
+                <p className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{studentStartItem}</span> to <span className="font-medium">{studentEndItem}</span> of <span className="font-medium">{filteredStudents.length}</span> students
+                </p>
+                <div className="flex gap-1">
+                  <button onClick={() => setStudentPage((p) => Math.max(1, p - 1))} disabled={studentPage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                  {Array.from({ length: Math.min(5, studentTotalPages) }, (_, i) => {
+                    const start = Math.max(1, Math.min(studentPage - 2, studentTotalPages - 4));
+                    const p = start + i;
+                    if (p > studentTotalPages) return null;
+                    return (
+                      <button key={p} onClick={() => setStudentPage(p)} className={`relative inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium ${p === studentPage ? "border-indigo-500 bg-indigo-50 text-indigo-600" : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"}`}>{p}</button>
+                    );
+                  })}
+                  <button onClick={() => setStudentPage((p) => Math.min(studentTotalPages, p + 1))} disabled={studentPage === studentTotalPages} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+                </div>
+              </div>
+            )}
+            </>
           ) : (
             <div className="flex justify-center py-8 text-gray-400">
               {studentSearch
