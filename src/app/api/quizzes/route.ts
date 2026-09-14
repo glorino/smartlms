@@ -52,7 +52,7 @@ export async function GET(request: Request) {
         points: true,
         courseId: true,
         isPublished: true,
-        course: { select: { title: true, instructorId: true } },
+        course: { select: { id: true, title: true, instructorId: true } },
         lesson: { select: { section: { select: { course: { select: { id: true, title: true, instructorId: true } } } } } },
         _count: { select: { questions: true } },
       },
