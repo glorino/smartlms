@@ -67,8 +67,8 @@ export default function MyQuizzesPage() {
         if (enrollmentsRes.ok) {
           const enrollData = await enrollmentsRes.json();
           const enrollList = Array.isArray(enrollData) ? enrollData : enrollData.enrollments || enrollData.data || [];
-          enrolledCourseIds = enrollList.map((e: any) => e.courseId).filter(Boolean);
-          enrolledNames = [...new Set(enrollList.map((e: any) => e.course?.title).filter(Boolean))];
+          enrolledCourseIds = enrollList.map((e: any) => e.courseId).filter(Boolean) as string[];
+          enrolledNames = [...new Set(enrollList.map((e: any) => e.course?.title).filter(Boolean) as string[])];
           setEnrolledCourseNames(enrolledNames);
 
           if (enrolledCourseIds.length > 0) {
@@ -162,8 +162,8 @@ export default function MyQuizzesPage() {
                   .then((r) => r.json())
                   .then(async (enrollData) => {
                     const enrollList = Array.isArray(enrollData) ? enrollData : enrollData.enrollments || enrollData.data || [];
-                    const enrolledCourseIds = enrollList.map((e: any) => e.courseId).filter(Boolean);
-                    const enrolledNames = [...new Set(enrollList.map((e: any) => e.course?.title).filter(Boolean))];
+                    const enrolledCourseIds = enrollList.map((e: any) => e.courseId).filter(Boolean) as string[];
+                    const enrolledNames = [...new Set(enrollList.map((e: any) => e.course?.title).filter(Boolean) as string[])];
                     setEnrolledCourseNames(enrolledNames);
                     if (enrolledCourseIds.length > 0) {
                       const quizRes = await fetch(`/api/quizzes?courseIds=${enrolledCourseIds.join(",")}`);
