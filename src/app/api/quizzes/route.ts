@@ -27,16 +27,28 @@ export async function GET(request: Request) {
     if (courseIdsParam) {
       const ids = courseIdsParam.split(",").filter(Boolean);
       if (ids.length > 0) {
-        where.OR = [
+        const courseFilter = [
           { courseId: { in: ids } },
           { lesson: { section: { courseId: { in: ids } } } },
         ];
+        if (where.OR) {
+          where.AND = [{ OR: where.OR }, { OR: courseFilter }];
+          delete where.OR;
+        } else {
+          where.OR = courseFilter;
+        }
       }
     } else if (courseId) {
-      where.OR = [
+      const courseFilter = [
         { courseId },
         { lesson: { section: { courseId } } },
       ];
+      if (where.OR) {
+        where.AND = [{ OR: where.OR }, { OR: courseFilter }];
+        delete where.OR;
+      } else {
+        where.OR = courseFilter;
+      }
     }
 
     const quizzes = await prisma.quiz.findMany({

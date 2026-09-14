@@ -47,6 +47,7 @@ interface QuizAttempt {
 export default function MyQuizzesPage() {
   const [quizzes, setQuizzes] = useState<QuizItem[]>([]);
   const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
+  const [enrolledCourseNames, setEnrolledCourseNames] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [courseFilter, setCourseFilter] = useState("all");
@@ -60,10 +61,15 @@ export default function MyQuizzesPage() {
           fetch("/api/quizzes/attempts"),
         ]);
 
+        let enrolledCourseIds: string[] = [];
+        let enrolledNames: string[] = [];
+
         if (enrollmentsRes.ok) {
           const enrollData = await enrollmentsRes.json();
           const enrollList = Array.isArray(enrollData) ? enrollData : enrollData.enrollments || enrollData.data || [];
-          const enrolledCourseIds = enrollList.map((e: any) => e.courseId).filter(Boolean);
+          enrolledCourseIds = enrollList.map((e: any) => e.courseId).filter(Boolean);
+          enrolledNames = [...new Set(enrollList.map((e: any) => e.course?.title).filter(Boolean))];
+          setEnrolledCourseNames(enrolledNames);
 
           if (enrolledCourseIds.length > 0) {
             const quizRes = await fetch(`/api/quizzes?courseIds=${enrolledCourseIds.join(",")}`);
@@ -97,10 +103,7 @@ export default function MyQuizzesPage() {
     loadData();
   }, []);
 
-  const courseNames = useMemo(
-    () => [...new Set(quizzes.map((q) => q.courseName))],
-    [quizzes]
-  );
+  const courseNames = enrolledCourseNames;
 
   const filteredQuizzes = useMemo(() => {
     return quizzes.filter((q) => {
@@ -160,6 +163,8 @@ export default function MyQuizzesPage() {
                   .then(async (enrollData) => {
                     const enrollList = Array.isArray(enrollData) ? enrollData : enrollData.enrollments || enrollData.data || [];
                     const enrolledCourseIds = enrollList.map((e: any) => e.courseId).filter(Boolean);
+                    const enrolledNames = [...new Set(enrollList.map((e: any) => e.course?.title).filter(Boolean))];
+                    setEnrolledCourseNames(enrolledNames);
                     if (enrolledCourseIds.length > 0) {
                       const quizRes = await fetch(`/api/quizzes?courseIds=${enrolledCourseIds.join(",")}`);
                       if (quizRes.ok) {
@@ -244,9 +249,9 @@ export default function MyQuizzesPage() {
                     No quizzes available
                   </h3>
                   <p className="mt-1 text-sm text-gray-500 max-w-sm text-center">
-                    {quizzes.length === 0
-                      ? "No quizzes have been published yet. Enroll in a course to unlock quizzes."
-                      : "No quizzes match your current filters. Try adjusting your filters."}
+                    {enrolledCourseNames.length === 0
+                      ? "You are not enrolled in any courses yet. Enroll in a course to unlock quizzes."
+                      : "No quizzes found for your enrolled courses yet."}
                   </p>
                   <Link href="/courses" className="mt-4">
                     <Button variant="outline">
