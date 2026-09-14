@@ -11,6 +11,8 @@ export async function GET(request: Request) {
 
     const where: any = {};
 
+    const courseIdsParam = searchParams.get("courseIds");
+
     if (myOnly && session?.user?.id) {
       where.course = { instructorId: session.user.id };
     } else if (session?.user?.id && ((session.user as any).role === "INSTRUCTOR" || (session.user as any).role === "ADMIN")) {
@@ -22,8 +24,19 @@ export async function GET(request: Request) {
       where.isPublished = true;
     }
 
-    if (courseId) {
-      where.courseId = courseId;
+    if (courseIdsParam) {
+      const ids = courseIdsParam.split(",").filter(Boolean);
+      if (ids.length > 0) {
+        where.OR = [
+          { courseId: { in: ids } },
+          { lesson: { section: { courseId: { in: ids } } } },
+        ];
+      }
+    } else if (courseId) {
+      where.OR = [
+        { courseId },
+        { lesson: { section: { courseId } } },
+      ];
     }
 
     const quizzes = await prisma.quiz.findMany({
@@ -40,26 +53,30 @@ export async function GET(request: Request) {
         courseId: true,
         isPublished: true,
         course: { select: { title: true, instructorId: true } },
+        lesson: { select: { section: { select: { course: { select: { id: true, title: true, instructorId: true } } } } } },
         _count: { select: { questions: true } },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    const mapped = quizzes.map((q) => ({
-      id: q.id,
-      title: q.title,
-      description: q.description,
-      timeLimit: q.timeLimit,
-      passingScore: q.passingScore,
-      maxAttempts: q.maxAttempts,
-      difficulty: q.difficulty,
-      points: q.points,
-      courseId: q.courseId,
-      isPublished: q.isPublished,
-      instructorId: q.course?.instructorId || null,
-      totalQuestions: q._count.questions,
-      courseName: q.course?.title || "Unknown Course",
-    }));
+    const mapped = quizzes.map((q) => {
+      const resolvedCourse = q.course || q.lesson?.section?.course;
+      return {
+        id: q.id,
+        title: q.title,
+        description: q.description,
+        timeLimit: q.timeLimit,
+        passingScore: q.passingScore,
+        maxAttempts: q.maxAttempts,
+        difficulty: q.difficulty,
+        points: q.points,
+        courseId: q.courseId || resolvedCourse?.id || null,
+        isPublished: q.isPublished,
+        instructorId: resolvedCourse?.instructorId || null,
+        totalQuestions: q._count.questions,
+        courseName: resolvedCourse?.title || "Unknown Course",
+      };
+    });
 
     return NextResponse.json({ quizzes: mapped });
   } catch (error) {

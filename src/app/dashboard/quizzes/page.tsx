@@ -63,20 +63,16 @@ export default function MyQuizzesPage() {
         if (enrollmentsRes.ok) {
           const enrollData = await enrollmentsRes.json();
           const enrollList = Array.isArray(enrollData) ? enrollData : enrollData.enrollments || enrollData.data || [];
-          const enrolledCourseIds = enrollList.map((e: any) => e.courseId);
+          const enrolledCourseIds = enrollList.map((e: any) => e.courseId).filter(Boolean);
 
           if (enrolledCourseIds.length > 0) {
-            const quizPromises = enrolledCourseIds.map((courseId: string) =>
-              fetch(`/api/quizzes?courseId=${courseId}`).then((r) => (r.ok ? r.json() : null))
-            );
-            const quizResults = await Promise.all(quizPromises);
-            const allQuizzes = quizResults
-              .filter(Boolean)
-              .flatMap((data: any) => {
-                if (Array.isArray(data)) return data;
-                return data.quizzes || data.data || [];
-              });
-            setQuizzes(allQuizzes);
+            const quizRes = await fetch(`/api/quizzes?courseIds=${enrolledCourseIds.join(",")}`);
+            if (quizRes.ok) {
+              const data = await quizRes.json();
+              setQuizzes(data.quizzes || data.data || []);
+            } else {
+              setQuizzes([]);
+            }
           } else {
             setQuizzes([]);
           }
@@ -163,19 +159,15 @@ export default function MyQuizzesPage() {
                   .then((r) => r.json())
                   .then(async (enrollData) => {
                     const enrollList = Array.isArray(enrollData) ? enrollData : enrollData.enrollments || enrollData.data || [];
-                    const enrolledCourseIds = enrollList.map((e: any) => e.courseId);
+                    const enrolledCourseIds = enrollList.map((e: any) => e.courseId).filter(Boolean);
                     if (enrolledCourseIds.length > 0) {
-                      const quizPromises = enrolledCourseIds.map((courseId: string) =>
-                        fetch(`/api/quizzes?courseId=${courseId}`).then((r) => (r.ok ? r.json() : null))
-                      );
-                      const quizResults = await Promise.all(quizPromises);
-                      const allQuizzes = quizResults
-                        .filter(Boolean)
-                        .flatMap((data: any) => {
-                          if (Array.isArray(data)) return data;
-                          return data.quizzes || data.data || [];
-                        });
-                      setQuizzes(allQuizzes);
+                      const quizRes = await fetch(`/api/quizzes?courseIds=${enrolledCourseIds.join(",")}`);
+                      if (quizRes.ok) {
+                        const data = await quizRes.json();
+                        setQuizzes(data.quizzes || data.data || []);
+                      } else {
+                        setQuizzes([]);
+                      }
                     } else {
                       setQuizzes([]);
                     }
