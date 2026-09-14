@@ -20,35 +20,22 @@ export async function GET(request: Request) {
         { isPublished: true },
         { course: { instructorId: session.user.id } },
       ];
-    } else {
-      where.isPublished = true;
-    }
-
-    if (courseIdsParam) {
-      const ids = courseIdsParam.split(",").filter(Boolean);
+    } else if (courseIdsParam || courseId) {
+      const ids = courseIdsParam
+        ? courseIdsParam.split(",").filter(Boolean)
+        : courseId
+          ? [courseId]
+          : [];
       if (ids.length > 0) {
-        const courseFilter = [
-          { courseId: { in: ids } },
+        where.OR = [
+          { isPublished: true, courseId: { in: ids } },
           { lesson: { section: { courseId: { in: ids } } } },
         ];
-        if (where.OR) {
-          where.AND = [{ OR: where.OR }, { OR: courseFilter }];
-          delete where.OR;
-        } else {
-          where.OR = courseFilter;
-        }
-      }
-    } else if (courseId) {
-      const courseFilter = [
-        { courseId },
-        { lesson: { section: { courseId } } },
-      ];
-      if (where.OR) {
-        where.AND = [{ OR: where.OR }, { OR: courseFilter }];
-        delete where.OR;
       } else {
-        where.OR = courseFilter;
+        where.isPublished = true;
       }
+    } else {
+      where.isPublished = true;
     }
 
     const quizzes = await prisma.quiz.findMany({

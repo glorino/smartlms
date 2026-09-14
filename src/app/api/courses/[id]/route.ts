@@ -229,6 +229,7 @@ export async function PUT(
                       showCorrectAnswers: lData.quiz.showCorrectAnswers ?? true,
                       courseId: id,
                       lessonId: lessonRecord.id,
+                      isPublished: true,
                     },
                   });
 

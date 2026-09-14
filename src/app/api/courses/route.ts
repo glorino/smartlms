@@ -238,6 +238,7 @@ export async function POST(request: Request) {
                   showCorrectAnswers: lessonData.quiz.showCorrectAnswers ?? true,
                   courseId: newCourse.id,
                   lessonId: lesson.id,
+                  isPublished: true,
                 },
               });
 
