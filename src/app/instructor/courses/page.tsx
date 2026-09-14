@@ -41,6 +41,12 @@ export default function InstructorCoursesPage() {
   const [filterStatus, setFilterStatus] = useState<"all" | "PUBLISHED" | "DRAFT">("all");
   const [deleting, setDeleting] = useState<string | null>(null);
   const [uniqueStudentCount, setUniqueStudentCount] = useState<number | null>(null);
+  const [coursePage, setCoursePage] = useState(1);
+  const COURSE_PER_PAGE = 10;
+
+  useEffect(() => {
+    setCoursePage(1);
+  }, [searchQuery, filterStatus]);
 
   useEffect(() => {
     async function fetchCourses() {
@@ -76,6 +82,11 @@ export default function InstructorCoursesPage() {
     const matchesFilter = filterStatus === "all" || course.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
+
+  const courseTotalPages = Math.ceil(filtered.length / COURSE_PER_PAGE);
+  const courseStartItem = filtered.length === 0 ? 0 : (coursePage - 1) * COURSE_PER_PAGE + 1;
+  const courseEndItem = Math.min(coursePage * COURSE_PER_PAGE, filtered.length);
+  const paginatedCourses = filtered.slice((coursePage - 1) * COURSE_PER_PAGE, coursePage * COURSE_PER_PAGE);
 
   const stats = {
     totalCourses: courses.length,
@@ -225,7 +236,7 @@ export default function InstructorCoursesPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {filtered.map((course) => (
+              {paginatedCourses.map((course) => (
                 <div
                   key={course.id}
                   className="flex items-center gap-4 rounded-lg border border-gray-200 p-4 transition-shadow hover:shadow-md"
@@ -290,6 +301,25 @@ export default function InstructorCoursesPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+          {courseTotalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
+              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <p className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{courseStartItem}</span> to <span className="font-medium">{courseEndItem}</span> of <span className="font-medium">{filtered.length}</span> items
+                </p>
+                <div className="flex gap-1">
+                  <button onClick={() => setCoursePage(p => Math.max(1, p - 1))} disabled={coursePage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                  {Array.from({length: Math.min(5, courseTotalPages)}, (_, i) => {
+                    const start = Math.max(1, Math.min(coursePage - 2, courseTotalPages - 4));
+                    const p = start + i;
+                    if (p > courseTotalPages) return null;
+                    return <button key={p} onClick={() => setCoursePage(p)} className={`relative inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium ${p === coursePage ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}>{p}</button>;
+                  })}
+                  <button onClick={() => setCoursePage(p => Math.min(courseTotalPages, p + 1))} disabled={coursePage === courseTotalPages} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>

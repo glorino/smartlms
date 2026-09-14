@@ -95,6 +95,12 @@ export default function InstructorQuizzesPage() {
   const [showAIModal, setShowAIModal] = useState(false);
   const [aiCourseId, setAiCourseId] = useState("");
   const [aiCourseName, setAiCourseName] = useState("");
+  const [quizPage, setQuizPage] = useState(1);
+  const QUIZ_PER_PAGE = 10;
+
+  useEffect(() => {
+    setQuizPage(1);
+  }, [searchQuery, filterCourse]);
 
   useEffect(() => {
     async function fetchData() {
@@ -125,6 +131,11 @@ export default function InstructorQuizzesPage() {
     const matchesCourse = filterCourse === "all" || q.courseId === filterCourse;
     return matchesSearch && matchesCourse;
   });
+
+  const quizTotalPages = Math.ceil(filtered.length / QUIZ_PER_PAGE);
+  const quizStartItem = filtered.length === 0 ? 0 : (quizPage - 1) * QUIZ_PER_PAGE + 1;
+  const quizEndItem = Math.min(quizPage * QUIZ_PER_PAGE, filtered.length);
+  const paginatedQuizzes = filtered.slice((quizPage - 1) * QUIZ_PER_PAGE, quizPage * QUIZ_PER_PAGE);
 
   const resetForm = () => {
     setFormTitle("");
@@ -673,7 +684,7 @@ export default function InstructorQuizzesPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {filtered.map((quiz) => (
+              {paginatedQuizzes.map((quiz) => (
                 <div
                   key={quiz.id}
                   className="flex items-center gap-4 rounded-lg border border-gray-200 p-4 transition-shadow hover:shadow-md"
@@ -733,6 +744,25 @@ export default function InstructorQuizzesPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+          {quizTotalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
+              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <p className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{quizStartItem}</span> to <span className="font-medium">{quizEndItem}</span> of <span className="font-medium">{filtered.length}</span> items
+                </p>
+                <div className="flex gap-1">
+                  <button onClick={() => setQuizPage(p => Math.max(1, p - 1))} disabled={quizPage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                  {Array.from({length: Math.min(5, quizTotalPages)}, (_, i) => {
+                    const start = Math.max(1, Math.min(quizPage - 2, quizTotalPages - 4));
+                    const p = start + i;
+                    if (p > quizTotalPages) return null;
+                    return <button key={p} onClick={() => setQuizPage(p)} className={`relative inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium ${p === quizPage ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}>{p}</button>;
+                  })}
+                  <button onClick={() => setQuizPage(p => Math.min(quizTotalPages, p + 1))} disabled={quizPage === quizTotalPages} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>
