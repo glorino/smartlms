@@ -55,16 +55,32 @@ export default function MyQuizzesPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [quizzesRes, attemptsRes] = await Promise.all([
-          fetch("/api/quizzes"),
+        const [enrollmentsRes, attemptsRes] = await Promise.all([
+          fetch("/api/enrollments"),
           fetch("/api/quizzes/attempts"),
         ]);
 
-        if (quizzesRes.ok) {
-          const data = await quizzesRes.json();
-          const quizList = Array.isArray(data) ? data : data.quizzes || data.data || [];
-          setQuizzes(quizList);
-        } else if (quizzesRes.status === 500) {
+        if (enrollmentsRes.ok) {
+          const enrollData = await enrollmentsRes.json();
+          const enrollList = Array.isArray(enrollData) ? enrollData : enrollData.enrollments || enrollData.data || [];
+          const enrolledCourseIds = enrollList.map((e: any) => e.courseId);
+
+          if (enrolledCourseIds.length > 0) {
+            const quizPromises = enrolledCourseIds.map((courseId: string) =>
+              fetch(`/api/quizzes?courseId=${courseId}`).then((r) => (r.ok ? r.json() : null))
+            );
+            const quizResults = await Promise.all(quizPromises);
+            const allQuizzes = quizResults
+              .filter(Boolean)
+              .flatMap((data: any) => {
+                if (Array.isArray(data)) return data;
+                return data.quizzes || data.data || [];
+              });
+            setQuizzes(allQuizzes);
+          } else {
+            setQuizzes([]);
+          }
+        } else {
           setError("Failed to load quizzes. Please try again later.");
         }
 
@@ -143,11 +159,26 @@ export default function MyQuizzesPage() {
               onClick={() => {
                 setLoading(true);
                 setError(null);
-                fetch("/api/quizzes")
+                fetch("/api/enrollments")
                   .then((r) => r.json())
-                  .then((data) => {
-                    const list = Array.isArray(data) ? data : data.quizzes || data.data || [];
-                    setQuizzes(list);
+                  .then(async (enrollData) => {
+                    const enrollList = Array.isArray(enrollData) ? enrollData : enrollData.enrollments || enrollData.data || [];
+                    const enrolledCourseIds = enrollList.map((e: any) => e.courseId);
+                    if (enrolledCourseIds.length > 0) {
+                      const quizPromises = enrolledCourseIds.map((courseId: string) =>
+                        fetch(`/api/quizzes?courseId=${courseId}`).then((r) => (r.ok ? r.json() : null))
+                      );
+                      const quizResults = await Promise.all(quizPromises);
+                      const allQuizzes = quizResults
+                        .filter(Boolean)
+                        .flatMap((data: any) => {
+                          if (Array.isArray(data)) return data;
+                          return data.quizzes || data.data || [];
+                        });
+                      setQuizzes(allQuizzes);
+                    } else {
+                      setQuizzes([]);
+                    }
                   })
                   .catch(() => setError("Failed to connect to the server."))
                   .finally(() => setLoading(false));

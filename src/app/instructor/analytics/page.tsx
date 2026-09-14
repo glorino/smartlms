@@ -122,6 +122,8 @@ export default function InstructorAnalyticsPage() {
   >([]);
   const [aiInsightsLoading, setAiInsightsLoading] = useState(false);
   const [aiInsightsLoaded, setAiInsightsLoaded] = useState(false);
+  const [studentPage, setStudentPage] = useState(1);
+  const STUDENT_PER_PAGE = 10;
 
   useEffect(() => {
     async function fetchAnalytics() {
@@ -159,8 +161,17 @@ export default function InstructorAnalyticsPage() {
 
   useEffect(() => {
     async function fetchDetailed() {
-      const params = new URLSearchParams({ type: "students" });
-      if (selectedCourseId !== "all") params.set("courseId", selectedCourseId);
+      const baseParams = new URLSearchParams();
+      if (selectedCourseId !== "all") baseParams.set("courseId", selectedCourseId);
+
+      const studentParams = new URLSearchParams(baseParams);
+      studentParams.set("type", "students");
+      const engagementParams = new URLSearchParams(baseParams);
+      engagementParams.set("type", "engagement");
+      const revenueParams = new URLSearchParams(baseParams);
+      revenueParams.set("type", "revenue");
+      const completionParams = new URLSearchParams(baseParams);
+      completionParams.set("type", "completion");
 
       setStudentsLoading(true);
       setEngagementLoading(true);
@@ -168,28 +179,28 @@ export default function InstructorAnalyticsPage() {
       setCompletionLoading(true);
 
       try {
-        const [studentsRes, engagementRes, revenueRes, completionRes] = await Promise.all([
-          fetch(`/api/analytics/detailed?${params}&type=students`),
-          fetch(`/api/analytics/detailed?${params}&type=engagement`),
-          fetch(`/api/analytics/detailed?${params}&type=revenue`),
-          fetch(`/api/analytics/detailed?${params}&type=completion`),
+        const [studentsRes, engagementRes, revenueRes, completionRes] = await Promise.allSettled([
+          fetch(`/api/analytics/detailed?${studentParams}`),
+          fetch(`/api/analytics/detailed?${engagementParams}`),
+          fetch(`/api/analytics/detailed?${revenueParams}`),
+          fetch(`/api/analytics/detailed?${completionParams}`),
         ]);
 
-        if (studentsRes.ok) {
-          const json = await studentsRes.json();
+        if (studentsRes.status === "fulfilled" && studentsRes.value.ok) {
+          const json = await studentsRes.value.json();
           setStudents(json.students || []);
         }
-        if (engagementRes.ok) {
-          const json = await engagementRes.json();
+        if (engagementRes.status === "fulfilled" && engagementRes.value.ok) {
+          const json = await engagementRes.value.json();
           setEngagement(json.summary || null);
         }
-        if (revenueRes.ok) {
-          const json = await revenueRes.json();
+        if (revenueRes.status === "fulfilled" && revenueRes.value.ok) {
+          const json = await revenueRes.value.json();
           setRevenueCourses(json.revenuePerCourse || []);
           setRevenueMonthly(json.monthlyRevenue || []);
         }
-        if (completionRes.ok) {
-          const json = await completionRes.json();
+        if (completionRes.status === "fulfilled" && completionRes.value.ok) {
+          const json = await completionRes.value.json();
           setCompletionByCourse(json.completionByCourse || []);
         }
       } catch {
@@ -203,6 +214,10 @@ export default function InstructorAnalyticsPage() {
     }
     fetchDetailed();
   }, [selectedCourseId]);
+
+  useEffect(() => {
+    setStudentPage(1);
+  }, [studentSearch]);
 
   async function fetchAiInsights() {
     setAiInsightsLoading(true);
@@ -377,15 +392,15 @@ export default function InstructorAnalyticsPage() {
 
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-  const engagementData = [
-    { day: "Mon", hours: 42 },
-    { day: "Tue", hours: 38 },
-    { day: "Wed", hours: 55 },
-    { day: "Thu", hours: 31 },
-    { day: "Fri", hours: 48 },
-    { day: "Sat", hours: 62 },
-    { day: "Sun", hours: 35 },
-  ];
+  const engagementData = engagement
+    ? [
+        { label: "Engagement Score", value: engagement.engagementScore },
+        { label: "Completion Rate", value: engagement.avgCompletionRate },
+        { label: "Quiz Score", value: engagement.avgQuizScore },
+        { label: "Time/Lesson (m)", value: engagement.avgTimePerLesson },
+        { label: "Drop-off Rate", value: engagement.dropOffRate },
+      ]
+    : [];
 
   const currentYear = new Date().getFullYear();
   const enrollmentData = months.map((m, i) => {
@@ -393,7 +408,7 @@ export default function InstructorAnalyticsPage() {
     return { month: m, enrollments: data?.monthlyEnrollments?.[key] || 0 };
   });
 
-  const maxEngagement = Math.max(...engagementData.map((d) => d.hours));
+  const maxEngagement = Math.max(...engagementData.map((d) => d.value), 1);
   const maxEnrollments = Math.max(...enrollmentData.map((e) => e.enrollments), 1);
 
   const filteredStudents = students.filter(
@@ -401,6 +416,11 @@ export default function InstructorAnalyticsPage() {
       s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
       s.email.toLowerCase().includes(studentSearch.toLowerCase())
   );
+
+  const studentTotalPages = Math.ceil(filteredStudents.length / STUDENT_PER_PAGE);
+  const studentStartItem = filteredStudents.length === 0 ? 0 : (studentPage - 1) * STUDENT_PER_PAGE + 1;
+  const studentEndItem = Math.min(studentPage * STUDENT_PER_PAGE, filteredStudents.length);
+  const paginatedStudents = filteredStudents.slice(studentStartItem - 1, studentEndItem);
 
   return (
     <div className="space-y-6">
@@ -624,21 +644,27 @@ export default function InstructorAnalyticsPage() {
               <Activity className="h-5 w-5 text-blue-500" />
               Student Engagement
             </CardTitle>
-            <CardDescription>Average daily learning hours</CardDescription>
+            <CardDescription>Key engagement metrics</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-end gap-3 h-48">
-              {engagementData.map((day) => (
-                <div key={day.day} className="flex flex-1 flex-col items-center gap-1">
-                  <span className="text-xs font-medium text-gray-600">{day.hours}h</span>
-                  <div
-                    className="w-full rounded-t-md bg-gradient-to-t from-indigo-500 to-indigo-400 transition-all duration-300"
-                    style={{ height: `${(day.hours / maxEngagement) * 140}px` }}
-                  />
-                  <span className="text-xs text-gray-500">{day.day}</span>
-                </div>
-              ))}
-            </div>
+            {engagementLoading ? (
+              <div className="flex justify-center py-8 text-gray-400">Loading engagement data...</div>
+            ) : engagementData.length > 0 ? (
+              <div className="flex items-end gap-3 h-48">
+                {engagementData.map((item) => (
+                  <div key={item.label} className="flex flex-1 flex-col items-center gap-1">
+                    <span className="text-xs font-medium text-gray-600">{item.value}{item.label.includes("Rate") || item.label.includes("Score") ? "%" : ""}</span>
+                    <div
+                      className="w-full rounded-t-md bg-gradient-to-t from-indigo-500 to-indigo-400 transition-all duration-300"
+                      style={{ height: `${(item.value / maxEngagement) * 140}px` }}
+                    />
+                    <span className="text-xs text-gray-500 text-center leading-tight">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex justify-center py-8 text-gray-400">No engagement data available</div>
+            )}
           </CardContent>
         </Card>
 
@@ -845,6 +871,7 @@ export default function InstructorAnalyticsPage() {
           {studentsLoading ? (
             <div className="flex justify-center py-8 text-gray-400">Loading student data...</div>
           ) : filteredStudents.length > 0 ? (
+            <>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -859,7 +886,7 @@ export default function InstructorAnalyticsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents.map((student) => (
+                  {paginatedStudents.map((student) => (
                     <tr
                       key={student.id}
                       className="border-b border-gray-100 hover:bg-gray-50"
@@ -920,6 +947,26 @@ export default function InstructorAnalyticsPage() {
                 </tbody>
               </table>
             </div>
+            {studentTotalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 mt-4">
+                <p className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{studentStartItem}</span> to <span className="font-medium">{studentEndItem}</span> of <span className="font-medium">{filteredStudents.length}</span> students
+                </p>
+                <div className="flex gap-1">
+                  <button onClick={() => setStudentPage((p) => Math.max(1, p - 1))} disabled={studentPage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                  {Array.from({ length: Math.min(5, studentTotalPages) }, (_, i) => {
+                    const start = Math.max(1, Math.min(studentPage - 2, studentTotalPages - 4));
+                    const p = start + i;
+                    if (p > studentTotalPages) return null;
+                    return (
+                      <button key={p} onClick={() => setStudentPage(p)} className={`relative inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium ${p === studentPage ? "border-indigo-500 bg-indigo-50 text-indigo-600" : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"}`}>{p}</button>
+                    );
+                  })}
+                  <button onClick={() => setStudentPage((p) => Math.min(studentTotalPages, p + 1))} disabled={studentPage === studentTotalPages} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+                </div>
+              </div>
+            )}
+            </>
           ) : (
             <div className="flex justify-center py-8 text-gray-400">
               {studentSearch

@@ -14,6 +14,7 @@ export async function POST(request: Request) {
       name,
       email,
       password,
+      role,
     } = body;
 
     if (!name || !email || !password) {
@@ -22,6 +23,9 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    const allowedRoles = ["STUDENT", "INSTRUCTOR"];
+    const userRole = allowedRoles.includes(role) ? role : "STUDENT";
 
     if (typeof password !== "string" || password.length < 8) {
       return NextResponse.json(
@@ -66,7 +70,7 @@ export async function POST(request: Request) {
         name,
         email,
         password: hashedPassword,
-        role: "STUDENT",
+        role: userRole,
       },
     });
 

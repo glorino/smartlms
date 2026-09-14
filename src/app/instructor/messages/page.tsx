@@ -78,6 +78,9 @@ export default function InstructorMessagesPage() {
   const [userSearchLoading, setUserSearchLoading] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
+  const [convPage, setConvPage] = useState(1);
+  const CONV_PER_PAGE = 10;
+
   const fetchMessages = async () => {
     setLoading(true);
     try {
@@ -178,6 +181,15 @@ export default function InstructorMessagesPage() {
   }, [messages, userId, searchQuery]);
 
   const totalUnread = conversations.reduce((acc, c) => acc + c.unreadCount, 0);
+
+  const convTotalPages = Math.ceil(conversations.length / CONV_PER_PAGE);
+  const convStartItem = conversations.length === 0 ? 0 : (convPage - 1) * CONV_PER_PAGE + 1;
+  const convEndItem = Math.min(convPage * CONV_PER_PAGE, conversations.length);
+  const paginatedConversations = conversations.slice(convStartItem - 1, convEndItem);
+
+  useEffect(() => {
+    setConvPage(1);
+  }, [searchQuery]);
 
   const handleSend = async () => {
     if (!composeRecipient.trim() || !composeContent.trim()) return;
@@ -544,8 +556,9 @@ export default function InstructorMessagesPage() {
           </CardContent>
         </Card>
       ) : (
+        <>
         <div className="space-y-2">
-          {conversations.map((conv) => (
+          {paginatedConversations.map((conv) => (
             <Card
               key={conv.peerId}
               className="cursor-pointer transition-colors hover:bg-gray-50"
@@ -582,6 +595,26 @@ export default function InstructorMessagesPage() {
             </Card>
           ))}
         </div>
+        {convTotalPages > 1 && (
+          <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+              <p className="text-sm text-gray-700">
+                Showing <span className="font-medium">{convStartItem}</span> to <span className="font-medium">{convEndItem}</span> of <span className="font-medium">{conversations.length}</span> conversations
+              </p>
+              <div className="flex gap-1">
+                <button onClick={() => setConvPage(p => Math.max(1, p - 1))} disabled={convPage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                {Array.from({length: Math.min(5, convTotalPages)}, (_, i) => { 
+                  const start = Math.max(1, Math.min(convPage - 2, convTotalPages - 4));
+                  const p = start + i;
+                  if (p > convTotalPages) return null;
+                  return <button key={p} onClick={() => setConvPage(p)} className={`relative inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium ${p === convPage ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}>{p}</button>; 
+                })}
+                <button onClick={() => setConvPage(p => Math.min(convTotalPages, p + 1))} disabled={convPage === convTotalPages} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+              </div>
+            </div>
+          </div>
+        )}
+        </>
       )}
     </div>
   );
