@@ -94,11 +94,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id as string },
-            select: { avatar: true, name: true },
+            select: { avatar: true, name: true, theme: true, notificationPreferences: true },
           });
           if (dbUser) {
             session.user.image = dbUser.avatar;
             if (dbUser.name) session.user.name = dbUser.name;
+            (session.user as any).theme = dbUser.theme || "light";
+            (session.user as any).notificationPreferences = dbUser.notificationPreferences || {};
           }
         } catch {}
       }

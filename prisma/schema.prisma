@@ -104,6 +104,8 @@ model User {
   forumReplies         ForumReply[]
   forumLikes           ForumLike[]
   payouts              Payout[]
+  notificationPreferences Json?    @default("{}")
+  theme                    String?  @default("light")
 
   @@index([email])
   @@index([role])

@@ -10,12 +10,14 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const { name, email, avatar } = body;
+    const { name, email, avatar, notifications, theme } = body;
 
     const updateData: Record<string, any> = {};
     if (name !== undefined) updateData.name = name;
     if (email !== undefined) updateData.email = email;
     if (avatar !== undefined) updateData.avatar = avatar;
+    if (notifications !== undefined) updateData.notificationPreferences = notifications;
+    if (theme !== undefined) updateData.theme = theme;
 
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json({ error: "No fields to update" }, { status: 400 });

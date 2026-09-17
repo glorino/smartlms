@@ -62,6 +62,12 @@ export default function SettingsPage() {
         email: (session.user as any).email || "",
         avatar: (session.user as any).image || "",
       });
+      if ((session.user as any).theme) {
+        setTheme((session.user as any).theme);
+      }
+      if ((session.user as any).notificationPreferences) {
+        setNotifications((session.user as any).notificationPreferences);
+      }
     }
     setLoading(false);
   }, [session]);
@@ -121,8 +127,8 @@ export default function SettingsPage() {
       toast.error("Passwords don't match");
       return;
     }
-    if (passwords.new.length < 6) {
-      toast.error("Password must be at least 6 characters");
+    if (passwords.new.length < 8) {
+      toast.error("Password must be at least 8 characters");
       return;
     }
     setChangingPassword(true);
@@ -552,6 +558,27 @@ export default function SettingsPage() {
                     </div>
                   </button>
                 ))}
+              </div>
+              <div className="mt-4 flex justify-end">
+                <Button onClick={async () => {
+                  try {
+                    const res = await fetch("/api/auth/update", {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ theme }),
+                    });
+                    if (res.ok) {
+                      toast.success("Theme saved");
+                      document.documentElement.classList.toggle("dark", theme === "dark");
+                    } else {
+                      toast.error("Failed to save theme");
+                    }
+                  } catch {
+                    toast.error("Failed to save theme");
+                  }
+                }}>
+                  Save Theme
+                </Button>
               </div>
             </CardContent>
           </Card>

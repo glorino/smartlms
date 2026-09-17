@@ -492,7 +492,7 @@ export default function TrainingPage() {
                           Enrolled: {new Date(enrollment.enrolledAt).toLocaleDateString()}
                         </p>
                         <Link
-                          href={`/courses/${enrollment.course.slug || enrollment.course.id}/learn`}
+                          href={`/courses/${enrollment.course.id}/learn`}
                           className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-700 shadow-sm"
                         >
                           {isCompleted ? (
