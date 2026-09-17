@@ -30,15 +30,16 @@ interface Assignment {
   submittedAt?: string;
   gradedAt?: string;
   content?: string;
+  dueDate?: string;
   createdAt: string;
   lesson?: {
     id: string;
     title: string;
-    course?: {
-      id: string;
-      title: string;
-      slug: string;
-    };
+  };
+  course?: {
+    id: string;
+    title: string;
+    slug: string;
   };
 }
 
@@ -160,11 +161,11 @@ export default function AssignmentsPage() {
                             </h3>
                             {statusBadge(assignment.status)}
                           </div>
-                          {assignment.lesson?.course && (
+                          {assignment.course && (
                             <p className="mt-1 text-sm text-gray-500">
                               <BookOpen className="mr-1 inline h-3 w-3" />
-                              {assignment.lesson.course.title}
-                              {assignment.lesson.title &&
+                              {assignment.course.title}
+                              {assignment.lesson?.title &&
                                 ` — ${assignment.lesson.title}`}
                             </p>
                           )}
@@ -177,7 +178,7 @@ export default function AssignmentsPage() {
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
                               Due:{" "}
-                              {new Date(assignment.createdAt).toLocaleDateString()}
+                              {new Date(assignment.dueDate || assignment.createdAt).toLocaleDateString()}
                             </span>
                             {assignment.submittedAt && (
                               <span className="flex items-center gap-1">
@@ -245,9 +246,9 @@ export default function AssignmentsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>{selectedAssignment.title}</CardTitle>
-                {selectedAssignment.lesson?.course && (
+                {selectedAssignment.course && (
                   <p className="text-sm text-gray-500">
-                    {selectedAssignment.lesson.course.title}
+                    {selectedAssignment.course.title}
                   </p>
                 )}
               </CardHeader>
@@ -333,9 +334,9 @@ export default function AssignmentsPage() {
                     </div>
                   )}
                 </div>
-                {selectedAssignment.lesson?.course && (
+                {selectedAssignment.course && (
                   <p className="text-sm text-gray-500">
-                    {selectedAssignment.lesson.course.title}
+                    {selectedAssignment.course.title}
                   </p>
                 )}
               </CardHeader>

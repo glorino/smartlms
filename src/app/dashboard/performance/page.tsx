@@ -3,14 +3,11 @@
 import { useState, useEffect } from "react";
 import {
   TrendingUp,
-  TrendingDown,
   Clock,
   Target,
   BookOpen,
   Award,
   BarChart3,
-  Brain,
-  Zap,
   Calendar,
   CheckCircle2,
   ArrowUpRight,
@@ -88,7 +85,7 @@ export default function PerformancePage() {
   const averageScore = grades.length > 0
     ? Math.round(grades.reduce((acc, g) => acc + g.percentage, 0) / grades.length)
     : quizAttempts.length > 0
-      ? Math.round(quizAttempts.reduce((acc, a) => acc + a.score, 0) / quizAttempts.length)
+      ? Math.round(quizAttempts.reduce((acc, a) => acc + (a.totalPoints > 0 ? (a.score / a.totalPoints) * 100 : 0), 0) / quizAttempts.length)
       : 0;
 
   const totalHours = enrollments.reduce((acc, e) => acc + (e.progress / 100) * 10, 0);
@@ -106,7 +103,7 @@ export default function PerformancePage() {
   const quizHistory = quizAttempts.slice(0, 10).map((a) => ({
     id: a.id,
     name: a.quizTitle,
-    score: Math.round(a.score),
+    score: Math.round(a.totalPoints > 0 ? (a.score / a.totalPoints) * 100 : 0),
     date: new Date(a.completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
     course: a.courseName,
     passed: a.passed,
@@ -114,10 +111,14 @@ export default function PerformancePage() {
 
   const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const now = new Date();
-  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const recentAttempts = quizAttempts.filter((a) => new Date(a.completedAt) >= weekAgo);
+  const rangeStart = timeRange === "week"
+    ? new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    : timeRange === "month"
+      ? new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      : new Date(0);
+  const recentAttempts = quizAttempts.filter((a) => new Date(a.completedAt) >= rangeStart);
   const dailyCounts = daysOfWeek.map((_, i) => {
-    const dayStart = new Date(weekAgo.getTime() + i * 24 * 60 * 60 * 1000);
+    const dayStart = new Date(now.getTime() - (6 - i) * 24 * 60 * 60 * 1000);
     const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
     const count = recentAttempts.filter((a) => {
       const d = new Date(a.completedAt);

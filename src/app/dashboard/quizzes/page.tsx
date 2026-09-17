@@ -111,18 +111,18 @@ export default function MyQuizzesPage() {
         courseFilter === "all" || q.courseName === courseFilter;
       const matchesDifficulty =
         difficultyFilter === "all" ||
-        q.difficulty.toLowerCase() === difficultyFilter;
+        q.difficulty === difficultyFilter;
       return matchesCourse && matchesDifficulty;
     });
   }, [quizzes, courseFilter, difficultyFilter]);
 
   const getDifficultyColor = (d: string) => {
-    switch (d.toLowerCase()) {
-      case "easy":
+    switch (d) {
+      case "EASY":
         return "success";
-      case "medium":
+      case "MEDIUM":
         return "warning";
-      case "hard":
+      case "HARD":
         return "danger";
       default:
         return "secondary";
@@ -221,9 +221,9 @@ export default function MyQuizzesPage() {
             className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none"
           >
             <option value="all">All Difficulties</option>
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
+            <option value="EASY">Easy</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HARD">Hard</option>
           </select>
         </div>
 

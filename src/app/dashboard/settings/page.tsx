@@ -104,6 +104,8 @@ export default function SettingsPage() {
       });
       if (res.ok) {
         toast.success("Notification preferences saved");
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
       } else {
         toast.error("Failed to save preferences");
       }
@@ -112,13 +114,15 @@ export default function SettingsPage() {
     } finally {
       setSavingPrefs(false);
     }
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   };
 
   const handleChangePassword = async () => {
     if (passwords.new !== passwords.confirm) {
       toast.error("Passwords don't match");
+      return;
+    }
+    if (passwords.new.length < 6) {
+      toast.error("Password must be at least 6 characters");
       return;
     }
     setChangingPassword(true);

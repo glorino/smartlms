@@ -27,6 +27,7 @@ interface ActivityItem {
 export default function DashboardActivityPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [filter, setFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchActivity() {
@@ -38,6 +39,8 @@ export default function DashboardActivityPage() {
         }
       } catch {
         setActivities([]);
+      } finally {
+        setLoading(false);
       }
     }
     fetchActivity();
@@ -94,7 +97,7 @@ export default function DashboardActivityPage() {
 
       <div className="flex items-center gap-2">
         <Filter className="h-4 w-4 text-gray-500" />
-        {["all", "course_progress", "certificate", "quiz", "enrollment", "message"].map(
+        {["all", "enrollment", "certificate"].map(
           (f) => (
             <button
               key={f}
@@ -112,7 +115,11 @@ export default function DashboardActivityPage() {
       </div>
 
       <div className="space-y-4">
-        {filtered.map((item) => (
+        {loading ? (
+          <div className="py-12 text-center text-gray-400">
+            Loading activity...
+          </div>
+        ) : filtered.map((item) => (
           <div
             key={item.id}
             className="flex gap-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:shadow-md"
@@ -131,7 +138,7 @@ export default function DashboardActivityPage() {
             </span>
           </div>
         ))}
-        {filtered.length === 0 && (
+        {filtered.length === 0 && !loading && (
           <p className="py-12 text-center text-gray-400">
             No activity found for this filter.
           </p>

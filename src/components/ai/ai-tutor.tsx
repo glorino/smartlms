@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { Send, X, Loader2, MessageSquare, ChevronDown, Bot, User, AlertCircle } from "lucide-react";
+import { Send, X, Loader2, Bot, User, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Message {

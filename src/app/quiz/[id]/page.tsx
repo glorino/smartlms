@@ -278,7 +278,7 @@ export default function QuizPage() {
                   <p className="text-sm text-gray-500">Passing Score</p>
                 </div>
                 <div className="rounded-xl bg-gray-50 p-4 text-center">
-                  <Badge variant={quiz.difficulty === "easy" ? "success" : quiz.difficulty === "hard" ? "danger" : "warning"}>
+                  <Badge variant={quiz.difficulty === "EASY" ? "success" : quiz.difficulty === "HARD" ? "danger" : "warning"}>
                     {quiz.difficulty}
                   </Badge>
                   <p className="mt-1 text-sm text-gray-500">Difficulty</p>

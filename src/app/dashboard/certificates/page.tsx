@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import toast from "react-hot-toast";
 import {
   Award,
   Download,
@@ -56,7 +57,7 @@ export default function MyCertificatesPage() {
         pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
         pdf.save(`SmartLMS-Certificate-${renderCert.certificateId}.pdf`);
       } catch {
-        alert("Failed to generate PDF. Please try again.");
+        toast.error("Failed to generate PDF. Please try again.");
       } finally {
         if (!cancelled) {
           setDownloadingId(null);
