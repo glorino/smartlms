@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { APP_URL } from "@/lib/constants";
+import { getSettings } from "@/lib/settings";
 
 function escapeHtml(str: string): string {
   return str
@@ -10,15 +11,22 @@ function escapeHtml(str: string): string {
     .replace(/'/g, "&#039;");
 }
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: Number(process.env.SMTP_PORT) === 465,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+function createTransporter(settings: {
+  smtpHost?: string;
+  smtpPort?: string;
+  smtpUser?: string;
+  smtpPass?: string;
+}) {
+  return nodemailer.createTransport({
+    host: settings.smtpHost,
+    port: Number(settings.smtpPort) || 587,
+    secure: Number(settings.smtpPort) === 465,
+    auth: {
+      user: settings.smtpUser,
+      pass: settings.smtpPass,
+    },
+  });
+}
 
 interface SendEmailOptions {
   to: string;
@@ -28,13 +36,22 @@ interface SendEmailOptions {
 
 export async function sendEmail({ to, subject, html }: SendEmailOptions): Promise<boolean> {
   try {
-    if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
+    const settings = await getSettings();
+
+    if (!settings.smtpHost || !settings.smtpUser) {
       console.warn("[Email] SMTP not configured, skipping email send");
       return false;
     }
 
+    const fromAddress = settings.fromEmail || "noreply@smartlms.com";
+    const from = settings.fromName
+      ? `"${settings.fromName.replace(/["\\]/g, "")}" <${fromAddress}>`
+      : fromAddress;
+
+    const transporter = createTransporter(settings);
+
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || "noreply@smartlms.com",
+      from,
       to,
       subject,
       html,

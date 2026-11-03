@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { getSettings } from "@/lib/settings";
 
 export async function GET() {
   try {
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const flutterwaveSecret = process.env.FLWSECK;
+    const flutterwaveSecret = (await getSettings()).flwSecretKey;
     if (!flutterwaveSecret) {
       return NextResponse.json(
         { error: "Payment system not configured" },

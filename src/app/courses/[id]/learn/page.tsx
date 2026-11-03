@@ -150,7 +150,7 @@ export default function CourseLearnPage() {
   const [inlineQuizScreen, setInlineQuizScreen] = useState<"info" | "quiz" | "results">("info");
   const [inlineQuizResult, setInlineQuizResult] = useState<{ score: number; totalPoints: number; passed: boolean; correctCount: number; incorrectCount: number; answers: Record<string, string> } | null>(null);
   const [inlineQuizAttemptCount, setInlineQuizAttemptCount] = useState(0);
-  const [inlineQuizPreviousAttempts, setInlineQuizPreviousAttempts] = useState<{ score: number; passed: boolean; completedAt: string }[]>([]);
+  const [inlineQuizPreviousAttempts, setInlineQuizPreviousAttempts] = useState<{ score: number; totalPoints?: number; passed: boolean; completedAt: string }[]>([]);
 
   const [studyToolsOpen, setStudyToolsOpen] = useState(false);
   const [studyToolType, setStudyToolType] = useState<"summary" | "flashcards" | "key_concepts" | "study_guide">("summary");
@@ -387,7 +387,7 @@ export default function CourseLearnPage() {
     setInlineQuizAttemptCount((prev) => prev + 1);
     setInlineQuizPreviousAttempts((prev) => [
       ...prev,
-      { score, passed, completedAt: new Date().toISOString() },
+      { score, totalPoints, passed, completedAt: new Date().toISOString() },
     ]);
 
     if (passed && currentLesson) {
@@ -1334,7 +1334,13 @@ export default function CourseLearnPage() {
                             attempt.passed ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                           }`}
                         >
-                          #{i + 1}: {Math.round(attempt.score)}% — {attempt.passed ? "Passed" : "Failed"}
+                          #{i + 1}:{" "}
+                          {Math.round(
+                            attempt.totalPoints && attempt.totalPoints > 0
+                              ? (attempt.score / attempt.totalPoints) * 100
+                              : attempt.score
+                          )}
+                          % — {attempt.passed ? "Passed" : "Failed"}
                         </span>
                       ))}
                     </div>

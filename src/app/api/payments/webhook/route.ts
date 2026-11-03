@@ -1,17 +1,19 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import crypto from "crypto";
+import { getSettings } from "@/lib/settings";
 
-const FLUTTERWAVE_SECRET = process.env.FLWSECK;
-const FLUTTERWAVE_ENCRYPTION_KEY = process.env.FLW_ENCRYPTION_KEY;
-
-function verifyFlutterwaveSignature(body: string, signature: string): boolean {
-  if (!FLUTTERWAVE_ENCRYPTION_KEY) {
-    console.error("FLUTTERWAVE_ENCRYPTION_KEY not set");
+function verifyFlutterwaveSignature(
+  body: string,
+  signature: string,
+  encryptionKey?: string
+): boolean {
+  if (!encryptionKey) {
+    console.error("Flutterwave encryption key not configured");
     return false;
   }
   const hash = crypto
-    .createHmac("sha256", FLUTTERWAVE_ENCRYPTION_KEY)
+    .createHmac("sha256", encryptionKey)
     .update(body)
     .digest("hex");
   try {
@@ -26,7 +28,9 @@ export async function POST(request: Request) {
     const body = await request.text();
     const signature = request.headers.get("verif-hash") || "";
 
-    if (!verifyFlutterwaveSignature(body, signature)) {
+    const { flwEncryptionKey } = await getSettings();
+
+    if (!verifyFlutterwaveSignature(body, signature, flwEncryptionKey)) {
       console.error("Invalid Flutterwave webhook signature");
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }

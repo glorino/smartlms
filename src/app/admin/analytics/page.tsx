@@ -86,6 +86,12 @@ interface AnalyticsData {
   totalCourses: number;
   totalRevenue: number;
   totalEnrollments: number;
+  totalCertificates: number;
+  funnel: {
+    startedLearning: number;
+    completed100: number;
+    certificatesEarned: number;
+  };
   activeUsers: number;
   userGrowth: number;
   enrollmentGrowth: number;
@@ -250,6 +256,7 @@ export default function AdminAnalyticsPage() {
     lines.push(`Enrollment Growth (%),${escapeCSV(data?.enrollmentGrowth)}`);
     lines.push(`Revenue Growth (%),${escapeCSV(data?.revenueGrowth)}`);
     lines.push(`Completion Rate (%),${escapeCSV(data?.completionRate)}`);
+    lines.push(`Certificates Issued,${escapeCSV(data?.totalCertificates)}`);
     lines.push(`Course Start Rate (%),${escapeCSV(data?.courseStartRate)}`);
     if (data?.engagementMetrics) {
       lines.push(`Avg Session Duration,${escapeCSV(data.engagementMetrics.avgSessionDuration)}`);
@@ -458,21 +465,30 @@ export default function AdminAnalyticsPage() {
     exportToPDF(revenueCourses, columns, "Revenue Report", `revenue-report-${Date.now()}`);
   };
 
-  const months = [
+  const monthLabels = [
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
   ];
 
-  const currentYear = new Date().getFullYear();
-  const revenueData = months.map((m, i) => {
-    const key = `${currentYear}-${String(i + 1).padStart(2, "0")}`;
-    return data?.monthlyRevenue?.[key] || 0;
+  // Rolling 12 months ending with the current month, matching the API's
+  // twelveMonthsAgo window (e.g. Dec of last year is included when relevant)
+  const chartMonths = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - (11 - i));
+    return {
+      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+      label: monthLabels[d.getMonth()],
+    };
   });
 
-  const enrollmentData = months.map((m, i) => {
-    const key = `${currentYear}-${String(i + 1).padStart(2, "0")}`;
-    return data?.monthlyEnrollments?.[key] || 0;
-  });
+  const revenueData = chartMonths.map(
+    (m) => data?.monthlyRevenue?.[m.key] || 0
+  );
+
+  const enrollmentData = chartMonths.map(
+    (m) => data?.monthlyEnrollments?.[m.key] || 0
+  );
 
   const maxRevenue = Math.max(...revenueData, 1);
   const maxEnrollments = Math.max(...enrollmentData, 1);
@@ -558,9 +574,9 @@ export default function AdminAnalyticsPage() {
     },
     {
       label: "Certificates Issued",
-      value: engagement?.avgCompletionRate ? `${Math.round((data?.totalEnrollments || 0) * (engagement.avgCompletionRate / 100))}` : "—",
-      change: data?.enrollmentGrowth || 0,
-      trend: (data?.enrollmentGrowth || 0) >= 0 ? ("up" as const) : ("down" as const),
+      value: data?.totalCertificates != null ? data.totalCertificates.toLocaleString() : "—",
+      change: 0,
+      trend: "up" as const,
       icon: Award,
       color: "bg-amber-500",
     },
@@ -796,8 +812,8 @@ export default function AdminAnalyticsPage() {
               ))}
             </div>
             <div className="mt-4 flex justify-between text-xs text-gray-500">
-              {months.map((m) => (
-                <span key={m}>{m}</span>
+              {chartMonths.map((m) => (
+                <span key={m.key}>{m.label}</span>
               ))}
             </div>
           </CardContent>
@@ -827,8 +843,8 @@ export default function AdminAnalyticsPage() {
               ))}
             </div>
             <div className="mt-4 flex justify-between text-xs text-gray-500">
-              {months.map((m) => (
-                <span key={m}>{m}</span>
+              {chartMonths.map((m) => (
+                <span key={m.key}>{m.label}</span>
               ))}
             </div>
           </CardContent>
@@ -1202,15 +1218,15 @@ export default function AdminAnalyticsPage() {
               {
                 icon: Rocket,
                 color: "from-purple-500 to-pink-500",
-                title: "Revenue Forecast",
+                title: "Projected Revenue (Estimated)",
                 insight: data?.totalRevenue
                   ? (() => {
                       const monthlyGrowth = data.revenueGrowth || 0;
                       const multiplier = 1 + Math.max(-0.5, Math.min(2, monthlyGrowth / 100));
                       const projected = Math.round(data.totalRevenue * multiplier);
-                      return `Projected revenue for next month is ₦${projected.toLocaleString()} (${monthlyGrowth >= 0 ? "+" : ""}${monthlyGrowth}% based on recent growth).`;
+                      return `Projection only — not an actual figure. Based on the recent growth trend (${monthlyGrowth >= 0 ? "+" : ""}${monthlyGrowth}%), revenue next month could be around ₦${projected.toLocaleString()}.`;
                     })()
-                  : "Revenue forecast will appear once payment data is available.",
+                  : "Revenue projection will appear once payment data is available.",
                 action: "View detailed forecast",
               },
               {
@@ -1246,7 +1262,7 @@ export default function AdminAnalyticsPage() {
                     <button
                       className="mt-2 text-xs font-medium text-indigo-600 hover:text-indigo-700"
                       onClick={() => {
-                        if (item.title === "Revenue Forecast" || item.title === "Payment Health") {
+                        if (item.title === "Projected Revenue (Estimated)" || item.title === "Payment Health") {
                           handleExportAll();
                         } else {
                           window.location.href = "/admin/courses";
@@ -1278,9 +1294,9 @@ export default function AdminAnalyticsPage() {
                 { stage: "Total Students", count: data?.totalStudents || 0, pct: 100, color: "bg-indigo-500" },
                 { stage: "Active (30d)", count: data?.activeUsers || 0, pct: data?.totalStudents ? Math.round(((data?.activeUsers || 0) / data.totalStudents) * 100) : 0, color: "bg-blue-500" },
                 { stage: "Enrolled", count: data?.totalEnrollments || 0, pct: data?.totalStudents ? Math.round(((data?.totalEnrollments || 0) / data.totalStudents) * 100) : 0, color: "bg-purple-500" },
-                { stage: "Started Learning", count: data?.totalEnrollments ? Math.round(data.totalEnrollments * ((data?.courseStartRate || 0) / 100)) : 0, pct: data?.courseStartRate || 0, color: "bg-amber-500" },
-                { stage: "Completed 100%", count: data?.totalEnrollments ? Math.round(data.totalEnrollments * ((data?.completionRate || 0) / 100)) : 0, pct: Math.round(data?.completionRate || 0), color: "bg-emerald-500" },
-                { stage: "Earned Certificate", count: data?.totalEnrollments ? Math.round(data.totalEnrollments * ((data?.completionRate || 0) / 100)) : 0, pct: Math.round(data?.completionRate || 0), color: "bg-green-500" },
+                { stage: "Started Learning", count: data?.funnel?.startedLearning || 0, pct: data?.totalEnrollments ? Math.round(((data?.funnel?.startedLearning || 0) / data.totalEnrollments) * 100) : 0, color: "bg-amber-500" },
+                { stage: "Completed 100%", count: data?.funnel?.completed100 || 0, pct: data?.totalEnrollments ? Math.round(((data?.funnel?.completed100 || 0) / data.totalEnrollments) * 100) : 0, color: "bg-emerald-500" },
+                { stage: "Earned Certificate", count: data?.funnel?.certificatesEarned ?? data?.totalCertificates ?? 0, pct: data?.totalEnrollments ? Math.round(((data?.funnel?.certificatesEarned ?? data?.totalCertificates ?? 0) / data.totalEnrollments) * 100) : 0, color: "bg-green-500" },
               ].map((item) => (
                 <div key={item.stage} className="flex items-center gap-3">
                   <span className="w-36 text-xs font-medium text-gray-600 shrink-0">{item.stage}</span>

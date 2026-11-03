@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { invalidateSettingsCache } from "@/lib/settings";
 
 export async function GET() {
   try {
@@ -67,6 +68,9 @@ export async function PUT(request: Request) {
     }
 
     await Promise.all(updates);
+
+    // Make the updated settings take effect immediately for this server
+    invalidateSettingsCache();
 
     const allSettings = await prisma.siteSettings.findMany();
     const settingsMap: Record<string, any> = {};

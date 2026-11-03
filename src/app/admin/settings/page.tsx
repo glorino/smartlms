@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import {
   Settings,
@@ -94,23 +94,31 @@ export default function AdminSettingsPage() {
   });
 
   const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  // Tracks whether the admin has already edited the form so a slow GET
+  // response can never overwrite their in-progress changes
+  const dirtyRef = useRef(false);
 
   useEffect(() => {
+    if (loaded) return;
     async function loadSettings() {
       try {
         const res = await fetch("/api/admin/settings");
         if (res.ok) {
           const { settings } = await res.json();
-          if (settings.platform) setPlatform(settings.platform);
-          if (settings.email) setEmail(settings.email);
-          if (settings.payment) setPayment(settings.payment);
-          if (settings.features) setFeatures(settings.features);
-          if (settings.apiKeys) setApiKeys(settings.apiKeys);
+          if (!loaded && !dirtyRef.current) {
+            if (settings.platform) setPlatform(settings.platform);
+            if (settings.email) setEmail(settings.email);
+            if (settings.payment) setPayment(settings.payment);
+            if (settings.features) setFeatures(settings.features);
+            if (settings.apiKeys) setApiKeys(settings.apiKeys);
+          }
         }
       } catch {}
+      setLoaded(true);
     }
     loadSettings();
-  }, []);
+  }, [loaded]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -151,7 +159,12 @@ export default function AdminSettingsPage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div
+      className="space-y-8"
+      onChangeCapture={() => {
+        dirtyRef.current = true;
+      }}
+    >
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Admin Settings</h1>
         <p className="mt-1 text-gray-500">Configure platform settings</p>
@@ -436,9 +449,10 @@ export default function AdminSettingsPage() {
                     <p className="text-sm text-gray-500">{feature.description}</p>
                   </div>
                   <button
-                    onClick={() =>
-                      setFeatures({ ...features, [feature.key]: !features[feature.key] })
-                    }
+                    onClick={() => {
+                      dirtyRef.current = true;
+                      setFeatures({ ...features, [feature.key]: !features[feature.key] });
+                    }}
                     className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
                       features[feature.key] ? "bg-indigo-600" : "bg-gray-200"
                     }`}

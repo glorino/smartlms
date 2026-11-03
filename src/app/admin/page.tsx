@@ -141,7 +141,8 @@ export default function AdminDashboardPage() {
         const [usersRes, coursesRes, enrollmentsRes] = await Promise.allSettled([
           fetch("/api/users?role=STUDENT&limit=1"),
           fetch("/api/courses?allStatus=true&limit=1"),
-          fetch("/api/enrollments"),
+          // ?all=true returns every platform enrollment (admin-only) for stats
+          fetch("/api/enrollments?all=true"),
         ]);
 
         let totalStudents = 0;

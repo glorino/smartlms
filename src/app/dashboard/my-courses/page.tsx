@@ -123,7 +123,7 @@ export default function MyCoursesPage() {
                     />
                   </div>
                   <p className="mt-1 text-xs font-medium text-white drop-shadow">
-                    {enrollment.progress || 0}% complete
+                    {Math.round(enrollment.progress || 0)}% complete
                   </p>
                 </div>
               </div>

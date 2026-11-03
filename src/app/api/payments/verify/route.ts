@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-
-const FLUTTERWAVE_SECRET = process.env.FLWSECK;
+import { getSettings } from "@/lib/settings";
 
 export async function GET(request: Request) {
   try {
@@ -29,12 +28,14 @@ export async function GET(request: Request) {
       );
     }
 
+    const { flwSecretKey } = await getSettings();
+
     const verifyResponse = await fetch(
       `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${tx_ref}`,
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${FLUTTERWAVE_SECRET}`,
+          Authorization: `Bearer ${flwSecretKey}`,
           "Content-Type": "application/json",
         },
       }

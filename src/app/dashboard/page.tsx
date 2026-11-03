@@ -113,7 +113,11 @@ export default function DashboardPage() {
           fetch("/api/enrollments"),
           fetch("/api/quizzes/attempts"),
           fetch("/api/certificates"),
-          fetch("/api/courses?limit=6"),
+          fetch(
+            role === "ADMIN"
+              ? "/api/courses?limit=6&allStatus=true&sort=newest"
+              : "/api/courses?limit=6"
+          ),
           fetch("/api/lesson-progress"),
         ];
         if (role === "ADMIN" || role === "INSTRUCTOR") {
@@ -225,8 +229,14 @@ export default function DashboardPage() {
 
   const completedEnrollments = enrollments.filter((e) => e.status === "COMPLETED");
   const activeEnrollments = enrollments.filter((e) => e.status === "ACTIVE");
+  // Quiz attempt scores are stored as raw points; convert to a percentage
   const avgScore = quizAttempts.length > 0
-    ? Math.round(quizAttempts.reduce((acc, a) => acc + a.score, 0) / quizAttempts.length)
+    ? Math.round(
+        quizAttempts.reduce(
+          (acc, a) => acc + (a.totalPoints > 0 ? (a.score / a.totalPoints) * 100 : 0),
+          0
+        ) / quizAttempts.length
+      )
     : 0;
 
   // For instructors: compute fallback stats from enrollment data if analytics fails
@@ -262,7 +272,7 @@ export default function DashboardPage() {
       title: `Quiz: ${a.quizTitle}`,
       course: a.courseName,
       time: a.completedAt,
-      score: Math.round(a.score),
+      score: Math.round(a.totalPoints > 0 ? (a.score / a.totalPoints) * 100 : 0),
       icon: FileCheck,
       color: "bg-blue-100 text-blue-600",
     })),
@@ -277,25 +287,40 @@ export default function DashboardPage() {
     })),
   ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 4);
 
-  const recentCourses = role === "INSTRUCTOR"
-    ? enrollments.slice(0, 3).map((e) => ({
-        id: e.courseId,
-        title: e.course.title,
-        students: enrollments.filter((en: any) => en.courseId === e.courseId).length,
-        status: "Published",
-        progress: Math.round(e.progress),
+  // For admins, "My Courses" is replaced by recently created platform courses
+  // (admins are not enrolled in courses themselves).
+  const recentCourses = role === "ADMIN"
+    ? recommendedCourses.slice(0, 3).map((course) => ({
+        id: course.id,
+        title: course.title,
+        progress: 0,
         lastAccessed: "",
         lastLesson: "",
+        students: course.totalStudents,
+        status: course.status,
+        isPlatformCourse: true,
       }))
-    : activeEnrollments.slice(0, 3).map((e) => ({
-        id: e.courseId,
-        title: e.course.title,
-        progress: Math.round(e.progress),
-        lastAccessed: e.enrolledAt,
-        lastLesson: "Continue learning",
-        students: enrollments.filter((en: any) => en.courseId === e.courseId).length,
-        status: "",
-      }));
+    : role === "INSTRUCTOR"
+      ? enrollments.slice(0, 3).map((e) => ({
+          id: e.courseId,
+          title: e.course.title,
+          students: enrollments.filter((en: any) => en.courseId === e.courseId).length,
+          status: "Published",
+          progress: Math.round(e.progress),
+          lastAccessed: "",
+          lastLesson: "",
+          isPlatformCourse: false,
+        }))
+      : activeEnrollments.slice(0, 3).map((e) => ({
+          id: e.courseId,
+          title: e.course.title,
+          progress: Math.round(e.progress),
+          lastAccessed: e.enrolledAt,
+          lastLesson: "Continue learning",
+          students: enrollments.filter((en: any) => en.courseId === e.courseId).length,
+          status: "",
+          isPlatformCourse: false,
+        }));
 
   const quickActions =
     role === "ADMIN"
@@ -406,9 +431,17 @@ export default function DashboardPage() {
           <div className="lg:col-span-2">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>My Courses</CardTitle>
+                <CardTitle>
+                  {role === "ADMIN" ? "Recent Courses" : "My Courses"}
+                </CardTitle>
                 <Link
-                  href={role === "INSTRUCTOR" ? "/instructor/courses" : "/courses"}
+                  href={
+                    role === "ADMIN"
+                      ? "/admin/courses"
+                      : role === "INSTRUCTOR"
+                        ? "/instructor/courses"
+                        : "/courses"
+                  }
                   className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
                 >
                   View All <ChevronRight className="inline h-4 w-4" />
@@ -431,16 +464,40 @@ export default function DashboardPage() {
                           <h4 className="truncate font-medium text-gray-900">
                             {course.title}
                           </h4>
-                          <div className="mt-2">
-                            <Progress value={course.progress} className="h-2" />
-                            <p className="mt-1 text-xs text-gray-400">
-                              {course.progress}% complete
-                              {course.lastAccessed && ` · ${formatTimeAgo(course.lastAccessed)}`}
-                            </p>
-                          </div>
+                          {course.isPlatformCourse ? (
+                            <div className="mt-2 flex items-center gap-2">
+                              <Badge
+                                variant={
+                                  course.status === "PUBLISHED"
+                                    ? "success"
+                                    : "secondary"
+                                }
+                                className="text-[10px]"
+                              >
+                                {course.status}
+                              </Badge>
+                              <span className="text-xs text-gray-400">
+                                {course.students}{" "}
+                                {course.students === 1 ? "student" : "students"}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="mt-2">
+                              <Progress value={course.progress} className="h-2" />
+                              <p className="mt-1 text-xs text-gray-400">
+                                {course.progress}% complete
+                                {course.lastAccessed &&
+                                  ` · ${formatTimeAgo(course.lastAccessed)}`}
+                              </p>
+                            </div>
+                          )}
                         </div>
                         <Link
-                          href={`/courses/${course.id}/learn`}
+                          href={
+                            course.isPlatformCourse
+                              ? `/courses/${course.id}`
+                              : `/courses/${course.id}/learn`
+                          }
                           className="shrink-0 rounded-lg bg-indigo-600 p-2 text-white transition-colors hover:bg-indigo-700"
                         >
                           <Play className="h-4 w-4" />
@@ -453,10 +510,10 @@ export default function DashboardPage() {
                     <BookOpen className="mx-auto h-12 w-12 text-gray-300" />
                     <p className="mt-4 text-gray-500">No courses yet</p>
                     <Link
-                      href="/courses"
+                      href={role === "ADMIN" ? "/admin/courses" : "/courses"}
                       className="mt-4 inline-block rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
                     >
-                      Browse Courses
+                      {role === "ADMIN" ? "Manage Courses" : "Browse Courses"}
                     </Link>
                   </div>
                 )}

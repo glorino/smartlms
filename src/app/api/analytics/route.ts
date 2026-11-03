@@ -45,11 +45,15 @@ export async function GET(request: Request) {
     const iFilter: any = isInstructor ? { course: { instructorId: userId } } : {};
     const cFilter: any = isInstructor ? { instructorId: userId } : {};
     const eFilter: any = isInstructor ? { course: { instructorId: userId } } : {};
+    const certFilter: { course?: { instructorId?: string }; courseId?: string } = isInstructor
+      ? { course: { instructorId: userId } }
+      : {};
 
     if (courseId) {
       iFilter.courseId = courseId;
       cFilter.id = courseId;
       eFilter.courseId = courseId;
+      certFilter.courseId = courseId;
     }
 
     // Batch 1: Core counts — ALL in parallel, ALL resilient
@@ -67,6 +71,14 @@ export async function GET(request: Request) {
       prisma.enrollment.count({ where: { enrolledAt: { gte: prevSinceDate, lt: sinceDate }, ...eFilter } }),
       prisma.purchase.aggregate({ where: { status: "COMPLETED", createdAt: { gte: sinceDate }, ...iFilter }, _sum: { amount: true } }),
       prisma.purchase.aggregate({ where: { status: "COMPLETED", createdAt: { gte: prevSinceDate, lt: sinceDate }, ...iFilter }, _sum: { amount: true } }),
+      prisma.certificate.count({ where: certFilter }),
+      prisma.enrollment.count({ where: { progress: { gt: 0 }, ...eFilter } }),
+      prisma.enrollment.count({
+        where: {
+          OR: [{ progress: { gte: 100 } }, { status: "COMPLETED" }],
+          ...eFilter,
+        },
+      }),
     ]);
 
     const totalStudents = ok(b1[0], 0);
@@ -80,6 +92,9 @@ export async function GET(request: Request) {
     const prevEnrollments = ok(b1[8], 0);
     const currentRevenueAmt = okNum(b1[9]);
     const prevRevenueAmt = okNum(b1[10]);
+    const totalCertificates = ok(b1[11], 0);
+    const startedEnrollments = ok(b1[12], 0);
+    const completedEnrollmentsFull = ok(b1[13], 0);
 
     const calcGrowth = (c: number, p: number) => {
       if (p === 0) return c > 0 ? 100 : 0;
@@ -241,6 +256,12 @@ export async function GET(request: Request) {
       averageRating,
       completionRate: totalEnrollments > 0 ? (completedEnrollments / totalEnrollments) * 100 : 0,
       courseStartRate,
+      totalCertificates,
+      funnel: {
+        startedLearning: startedEnrollments,
+        completed100: completedEnrollmentsFull,
+        certificatesEarned: totalCertificates,
+      },
       monthlyEnrollments,
       monthlyRevenue,
       topCourses,

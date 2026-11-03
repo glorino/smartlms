@@ -1,14 +1,17 @@
 import OpenAI from "openai";
+import { getSettings } from "@/lib/settings";
 
 let openai: OpenAI | null = null;
+let openaiKey: string | null = null;
 
-export function getOpenAI(): OpenAI {
-  if (!openai) {
-    const key = process.env.OPENAI_API_KEY;
-    if (!key || key === "sk_placeholder") {
-      throw new Error("OPENAI_API_KEY is not configured");
-    }
+export async function getOpenAI(): Promise<OpenAI> {
+  const key = (await getSettings()).openaiKey;
+  if (!key || key === "sk_placeholder") {
+    throw new Error("OPENAI_API_KEY is not configured");
+  }
+  if (!openai || key !== openaiKey) {
     openai = new OpenAI({ apiKey: key });
+    openaiKey = key;
   }
   return openai;
 }
@@ -17,7 +20,7 @@ export async function chatCompletion(
   messages: { role: "system" | "user" | "assistant"; content: string }[],
   options?: { model?: string; maxTokens?: number; temperature?: number }
 ): Promise<string> {
-  const client = getOpenAI();
+  const client = await getOpenAI();
   const response = await client.chat.completions.create({
     model: options?.model || "gpt-4o-mini",
     messages,
@@ -31,7 +34,7 @@ export async function generateJSON<T>(
   messages: { role: "system" | "user" | "assistant"; content: string }[],
   options?: { model?: string; maxTokens?: number }
 ): Promise<T> {
-  const client = getOpenAI();
+  const client = await getOpenAI();
   const response = await client.chat.completions.create({
     model: options?.model || "gpt-4o-mini",
     messages: [...messages, { role: "user" as const, content: "Respond ONLY with valid JSON, no markdown, no explanation." }],

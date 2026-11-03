@@ -116,8 +116,9 @@ export default function DashboardActivityPage() {
 
       <div className="space-y-4">
         {loading ? (
-          <div className="py-12 text-center text-gray-400">
-            Loading activity...
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+            <p className="mt-4 text-sm text-gray-500">Loading activity...</p>
           </div>
         ) : filtered.map((item) => (
           <div

@@ -18,7 +18,7 @@ type QuizEngineProps = {
   quiz: AppQuiz;
   maxAttempts?: number | null;
   currentAttempt?: number;
-  previousAttempts?: { score: number; passed: boolean; completedAt: string }[];
+  previousAttempts?: { score: number; totalPoints?: number; passed: boolean; completedAt: string }[];
   onSubmit?: (answers: Record<string, string | string[] | Record<string, string>>, attemptNumber: number) => void;
 };
 
@@ -293,7 +293,13 @@ export default function QuizEngine({
                     ) : (
                       <X className="h-3 w-3" />
                     )}
-                    #{i + 1}: {Math.round(attempt.score)}%
+                    #{i + 1}:{" "}
+                    {Math.round(
+                      attempt.totalPoints && attempt.totalPoints > 0
+                        ? (attempt.score / attempt.totalPoints) * 100
+                        : attempt.score
+                    )}
+                    %
                   </span>
                 ))}
               </div>

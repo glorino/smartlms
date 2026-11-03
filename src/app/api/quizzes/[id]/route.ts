@@ -70,6 +70,7 @@ export async function GET(
           },
           select: {
             score: true,
+            totalPoints: true,
             passed: true,
             completedAt: true,
           },
@@ -330,7 +331,9 @@ export async function POST(
       data: {
         userId,
         quizId: id,
-        score: scorePercentage,
+        // Store raw points earned (0..totalPoints), not the percentage.
+        // Consumers compute (score / totalPoints) * 100.
+        score: totalScore,
         totalPoints,
         passed,
         answers,
@@ -378,7 +381,8 @@ export async function POST(
     return NextResponse.json({
       attempt,
       results,
-      score: scorePercentage,
+      // Raw points earned; combine with totalPoints for a percentage
+      score: totalScore,
       totalScore,
       totalPoints,
       passed,

@@ -36,7 +36,43 @@ export async function GET() {
       take: 10,
     });
 
-    return NextResponse.json({ careerPaths });
+    // Recompute matching courses from the stored career paths so they
+    // survive a page reload (POST returns them, but they aren't persisted)
+    const allGapSkills = Array.from(
+      new Set(
+        careerPaths.flatMap((cp) => {
+          const rec = cp.recommendations as { gapSkills?: unknown } | null | undefined;
+          const gap = rec?.gapSkills;
+          return Array.isArray(gap)
+            ? gap.filter((s: unknown): s is string => typeof s === "string")
+            : [];
+        })
+      )
+    );
+
+    const matchingCourses =
+      allGapSkills.length > 0
+        ? await prisma.course.findMany({
+            where: {
+              status: "PUBLISHED",
+              OR: [
+                { category: { in: allGapSkills } },
+                { tags: { hasSome: allGapSkills } },
+                { title: { contains: allGapSkills[0], mode: "insensitive" } },
+              ],
+            },
+            select: {
+              id: true,
+              title: true,
+              category: true,
+              level: true,
+              tags: true,
+            },
+            take: 10,
+          })
+        : [];
+
+    return NextResponse.json({ careerPaths, matchingCourses });
   } catch (error) {
     console.error("Career path fetch error:", error);
     return NextResponse.json(

@@ -3,8 +3,7 @@ import { auth } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rate-limit";
 import prisma from "@/lib/prisma";
 import { APP_URL } from "@/lib/constants";
-
-const FLUTTERWAVE_SECRET = process.env.FLWSECK;
+import { getSettings } from "@/lib/settings";
 
 export async function POST(request: Request) {
   try {
@@ -14,6 +13,15 @@ export async function POST(request: Request) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const settings = await getSettings();
+    const flutterwaveSecret = settings.flwSecretKey;
+    if (!flutterwaveSecret) {
+      return NextResponse.json(
+        { error: "Payment system not configured" },
+        { status: 503 }
+      );
     }
 
     const body = await request.json();
@@ -60,7 +68,7 @@ export async function POST(request: Request) {
     const response = await fetch("https://api.flutterwave.com/v3/payments", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${FLUTTERWAVE_SECRET}`,
+        Authorization: `Bearer ${flutterwaveSecret}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(flutterwavePayload),

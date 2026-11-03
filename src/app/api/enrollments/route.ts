@@ -18,14 +18,18 @@ export async function GET(request: Request) {
     const userRole = (session.user as any).role;
     const { searchParams } = new URL(request.url);
     const instructorId = searchParams.get("instructorId") || "";
+    const includeAll = searchParams.get("all") === "true" && userRole === "ADMIN";
 
     const where: any = {};
 
     if (userRole === "INSTRUCTOR") {
+      // Instructors see enrollments for the courses they teach (their students)
       where.course = { instructorId: userId };
     } else if (instructorId) {
       where.course = { instructorId };
-    } else if (userRole !== "ADMIN") {
+    } else if (!includeAll) {
+      // Students and admins only see the current user's own enrollments.
+      // (Admins can opt into the full list with ?all=true for platform stats.)
       where.userId = userId;
     }
 

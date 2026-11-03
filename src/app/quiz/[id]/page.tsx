@@ -33,6 +33,7 @@ interface QuizResult {
 
 interface AttemptHistory {
   score: number;
+  totalPoints?: number;
   passed: boolean;
   completedAt: string;
 }
@@ -250,7 +251,13 @@ export default function QuizPage() {
                         ) : (
                           <AlertCircle className="h-3 w-3" />
                         )}
-                        #{i + 1}: {Math.round(attempt.score)}% —{" "}
+                        #{i + 1}:{" "}
+                        {Math.round(
+                          attempt.totalPoints && attempt.totalPoints > 0
+                            ? (attempt.score / attempt.totalPoints) * 100
+                            : attempt.score
+                        )}
+                        % —{" "}
                         {attempt.passed ? "Passed" : "Failed"}
                       </div>
                     ))}

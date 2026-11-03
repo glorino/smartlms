@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { SITE_CONFIG } from "@/lib/constants";
 import { auth } from "@/lib/auth";
+import { getSettings } from "@/lib/settings";
 
 interface ChatRequest {
   message: string;
@@ -72,7 +73,7 @@ function getSmartResponse(message: string): string {
 }
 
 async function getAIResponse(message: string): Promise<string | null> {
-  const openaiKey = process.env.OPENAI_API_KEY;
+  const openaiKey = (await getSettings()).openaiKey;
   if (!openaiKey || openaiKey === "sk_placeholder") {
     return null;
   }

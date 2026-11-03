@@ -141,7 +141,7 @@ function generateInsights(data: StudentPerformanceData) {
     recommendations.push({
       priority: c.daysInactive > 7 ? "high" : "medium",
       category: "Course Progress",
-      message: `"${c.title}" is at ${c.progress}% completion with ${c.daysInactive} days of inactivity.`,
+      message: `"${c.title}" is at ${Math.round(c.progress)}% completion with ${c.daysInactive} days of inactivity.`,
       action: c.recommendation,
     });
   });

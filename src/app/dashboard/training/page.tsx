@@ -163,7 +163,7 @@ export default function TrainingPage() {
       escapeCSV(e.course.category || ""),
       escapeCSV(e.course.level),
       escapeCSV(e.status),
-      escapeCSV(`${e.progress}%`),
+      escapeCSV(`${Math.round(e.progress)}%`),
       escapeCSV(new Date(e.enrolledAt).toLocaleDateString()),
     ]);
     const csv = [headers.map(escapeCSV).join(","), ...rows.map((r) => r.join(","))].join("\n");
@@ -472,7 +472,7 @@ export default function TrainingPage() {
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-gray-500">Progress</span>
                           <span className="font-medium text-gray-700">
-                            {enrollment.progress}%
+                            {Math.round(enrollment.progress)}%
                           </span>
                         </div>
                         <Progress
@@ -573,7 +573,7 @@ export default function TrainingPage() {
                       </td>
                       <td className="py-4">
                         <Badge variant="success" className="text-xs">
-                          {enrollment.progress}%
+                          {Math.round(enrollment.progress)}%
                         </Badge>
                       </td>
                       <td className="py-4 text-sm text-gray-500">
@@ -627,7 +627,7 @@ export default function TrainingPage() {
               <div className="rounded-lg bg-gray-50 p-3">
                 <div className="flex items-center justify-between">
                   <p className="text-gray-500">Progress</p>
-                  <p className="font-medium">{viewingEnrollment.progress}%</p>
+                  <p className="font-medium">{Math.round(viewingEnrollment.progress)}%</p>
                 </div>
                 <div className="mt-2 h-2 w-full rounded-full bg-gray-200">
                   <div

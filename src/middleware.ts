@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
+import { getSettings } from "@/lib/settings";
 
 const publicRoutes = [
   "/",
@@ -26,6 +27,7 @@ const publicRoutes = [
   "/payment/success",
   "/payment/failed",
   "/contact",
+  "/maintenance",
 ];
 const publicPageRoutes = [
   /^\/certificate\/[^/]+$/,
@@ -46,9 +48,37 @@ const publicApiRoutes = [
   { path: /^\/api\/payments\/webhook$/, method: "POST" },
 ];
 
-export default auth((req) => {
+export default auth(async (req) => {
   const { pathname } = req.nextUrl;
   const method = req.method;
+
+  // Maintenance mode: block non-admins (admins keep access so they can turn it off).
+  const maintenanceExempt =
+    pathname === "/maintenance" ||
+    pathname === "/login" ||
+    pathname.startsWith("/api/auth/") ||
+    pathname.startsWith("/api/payments/webhook");
+  if (!maintenanceExempt) {
+    try {
+      const settings = await getSettings();
+      if (settings.maintenanceMode) {
+        const role = (req.auth?.user as any)?.role;
+        if (role !== "ADMIN") {
+          if (pathname.startsWith("/api/")) {
+            return NextResponse.json(
+              { error: "Platform is under maintenance" },
+              { status: 503 }
+            );
+          }
+          return NextResponse.redirect(
+            new URL("/maintenance", req.nextUrl.origin)
+          );
+        }
+      }
+    } catch {
+      // Fail open: never block the app because settings could not be read.
+    }
+  }
 
   if (publicRoutes.includes(pathname)) return NextResponse.next();
 
@@ -120,6 +150,8 @@ export default auth((req) => {
 });
 
 export const config = {
+  // Prisma (used for the maintenance-mode settings lookup) needs the Node runtime.
+  runtime: "nodejs",
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|public).*)",
   ],
