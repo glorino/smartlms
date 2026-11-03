@@ -299,10 +299,10 @@ export default function AdminDashboardPage() {
           <CardContent>
             <div className="flex h-48 items-end gap-2">
               {revenueData.values.map((val, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center">
+                <div key={i} className="flex h-full flex-1 flex-col justify-end">
                   <div
                     className="w-full rounded-t-md bg-gradient-to-t from-purple-500 to-purple-400 transition-all hover:from-purple-600 hover:to-purple-500"
-                    style={{ height: `${(val / maxRevenue) * 100}%`, minHeight: val > 0 ? "4px" : "0px" }}
+                    style={{ height: `${maxRevenue > 0 ? (val / maxRevenue) * 100 : 0}%`, minHeight: val > 0 ? "8px" : "0px" }}
                     title={`₦${val.toLocaleString()}`}
                   />
                 </div>
@@ -324,10 +324,10 @@ export default function AdminDashboardPage() {
           <CardContent>
             <div className="flex h-48 items-end gap-2">
               {enrollmentData.values.map((val, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center">
+                <div key={i} className="flex h-full flex-1 flex-col justify-end">
                   <div
                     className="w-full rounded-t-md bg-gradient-to-t from-blue-500 to-blue-400 transition-all hover:from-blue-600 hover:to-blue-500"
-                    style={{ height: `${(val / maxEnrollment) * 100}%`, minHeight: val > 0 ? "4px" : "0px" }}
+                    style={{ height: `${maxEnrollment > 0 ? (val / maxEnrollment) * 100 : 0}%`, minHeight: val > 0 ? "8px" : "0px" }}
                     title={`${val} enrollments`}
                   />
                 </div>

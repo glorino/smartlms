@@ -24,7 +24,6 @@ interface InstructorStats {
   totalRevenue: number;
   averageRating: number;
   courseGrowth: number;
-  studentGrowth: number;
   revenueGrowth: number;
 }
 
@@ -34,7 +33,9 @@ function getMonthlyData(monthlyObj: Record<string, number>, months: number): { l
   const now = new Date();
   for (let i = months - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = d.toISOString().slice(0, 7);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const key = `${year}-${month}`;
     const label = d.toLocaleString("default", { month: "short" });
     labels.push(label);
     values.push(monthlyObj[key] || 0);
@@ -49,7 +50,6 @@ export default function InstructorDashboardPage() {
     totalRevenue: 0,
     averageRating: 0,
     courseGrowth: 0,
-    studentGrowth: 0,
     revenueGrowth: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -71,7 +71,6 @@ export default function InstructorDashboardPage() {
             totalRevenue: data.totalRevenue || 0,
             averageRating: data.averageRating || 0,
             courseGrowth: data.courseGrowth || 0,
-            studentGrowth: data.enrollmentGrowth || 0,
             revenueGrowth: data.revenueGrowth || 0,
           });
           setMonthlyRevenue(data.monthlyRevenue || {});
@@ -88,7 +87,6 @@ export default function InstructorDashboardPage() {
               totalRevenue: earningsData.totalEarnings || 0,
               averageRating: 0,
               courseGrowth: 0,
-              studentGrowth: 0,
               revenueGrowth: 0,
             });
             if (earningsData.monthlyData) {
@@ -98,7 +96,7 @@ export default function InstructorDashboardPage() {
                 const monthIndex = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].indexOf(item.month);
                 if (monthIndex >= 0) {
                   const d = new Date(now.getFullYear(), monthIndex, 1);
-                  revMap[d.toISOString().slice(0, 7)] = item.amount;
+                  revMap[`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`] = item.amount;
                 }
               }
               setMonthlyRevenue(revMap);
@@ -119,7 +117,7 @@ export default function InstructorDashboardPage() {
 
   const statCards = [
     { label: "My Courses", value: stats.totalCourses, icon: BookOpen, color: "bg-blue-500", growth: stats.courseGrowth },
-    { label: "Total Students", value: stats.totalStudents, icon: Users, color: "bg-emerald-500", growth: stats.studentGrowth },
+    { label: "Total Students", value: stats.totalStudents, icon: Users, color: "bg-emerald-500", growth: 0 },
     { label: "Revenue", value: stats.totalRevenue, icon: DollarSign, color: "bg-purple-500", growth: stats.revenueGrowth, prefix: "₦", decimals: 2 },
     { label: "Avg Rating", value: stats.averageRating, icon: Star, color: "bg-amber-500", growth: 0 },
   ];
@@ -220,13 +218,13 @@ export default function InstructorDashboardPage() {
           <CardContent>
             <div className="flex h-48 items-end gap-2">
               {revenueData.values.map((val, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center">
+                <div key={i} className="flex h-full flex-1 flex-col justify-end">
                   <div
                     className="w-full rounded-t-md bg-gradient-to-t from-indigo-500 to-indigo-400 transition-all hover:from-indigo-600 hover:to-indigo-500"
-                    style={{ height: `${(val / maxRevenue) * 100}%`, minHeight: val > 0 ? "4px" : "0px" }}
+                    style={{ height: `${maxRevenue > 0 ? (val / maxRevenue) * 100 : 0}%`, minHeight: val > 0 ? "8px" : "0px" }}
                     title={`₦${val.toLocaleString()}`}
                   />
-                  <span className="mt-2 text-[10px] text-gray-400">{revenueData.labels[i]}</span>
+                  <span className="mt-2 text-center text-[10px] text-gray-400">{revenueData.labels[i]}</span>
                 </div>
               ))}
             </div>

@@ -115,7 +115,7 @@ function getVideoType(url: string | null): string | null {
 function getEmbedUrl(url: string, type: string): string {
   if (type === "youtube") {
     const match = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
-    if (match) return `https://www.youtube.com/embed/${match[1]}`;
+    if (match) return `https://www.youtube.com/embed/${match[1]}?rel=0&modestbranding=1&playsinline=1`;
     return url;
   }
   if (type === "vimeo") {
@@ -547,10 +547,10 @@ export default function CourseLearnPage() {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-4">
         <p className="text-gray-500">Course not found</p>
-        <Link href="/courses">
+        <Link href="/">
           <Button variant="outline">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Courses
+            Go Home
           </Button>
         </Link>
       </div>
@@ -940,21 +940,10 @@ export default function CourseLearnPage() {
             </div>
 
             {/* Resources */}
-            {(currentLesson.videoUrl || (currentLesson as any).pdfUrl) && (
+            {(currentLesson as any).pdfUrl && (
               <div className="border-b border-gray-800 bg-gray-900 px-6 py-4">
                 <h3 className="mb-3 text-sm font-semibold text-white">Resources</h3>
                 <div className="flex flex-wrap gap-2">
-                  {currentLesson.videoUrl && (
-                    <a
-                      href={currentLesson.videoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 rounded-lg border border-gray-700 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800"
-                    >
-                      <Video className="h-4 w-4" />
-                      Video Resource
-                    </a>
-                  )}
                   {(currentLesson as any).pdfUrl && (
                     <a
                       href={(currentLesson as any).pdfUrl}

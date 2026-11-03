@@ -107,13 +107,15 @@ export async function GET(request: Request) {
 
     const monthlyEnrollments: Record<string, number> = {};
     for (const e of enrollmentsByMonth) {
-      const key = e.enrolledAt.toISOString().slice(0, 7);
+      const d = e.enrolledAt;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       monthlyEnrollments[key] = (monthlyEnrollments[key] || 0) + 1;
     }
 
     const monthlyRevenue: Record<string, number> = {};
     for (const r of revenueByMonthRaw) {
-      const key = r.createdAt.toISOString().slice(0, 7);
+      const d = r.createdAt;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       monthlyRevenue[key] = (monthlyRevenue[key] || 0) + r.amount;
     }
 
@@ -215,6 +217,17 @@ export async function GET(request: Request) {
       return `${Math.floor(mins / 60)}h ${mins % 60}m`;
     };
 
+    // Course growth: courses created in last 30 days vs previous 30 days
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+    const courseGrowthCounts = await Promise.allSettled([
+      prisma.course.count({ where: { createdAt: { gte: thirtyDaysAgo }, ...cFilter } }),
+      prisma.course.count({ where: { createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo }, ...cFilter } }),
+    ]);
+    const recentCourses = ok(courseGrowthCounts[0], 0);
+    const prevCourses = ok(courseGrowthCounts[1], 0);
+    const courseGrowth = prevCourses > 0 ? Math.round(((recentCourses - prevCourses) / prevCourses) * 100) : (recentCourses > 0 ? 100 : 0);
+
     return NextResponse.json({
       totalStudents,
       totalCourses,
@@ -224,6 +237,7 @@ export async function GET(request: Request) {
       userGrowth: calcGrowth(activeUsers, prevActiveUsers),
       enrollmentGrowth: calcGrowth(currentEnrollments, prevEnrollments),
       revenueGrowth: calcGrowth(currentRevenueAmt, prevRevenueAmt),
+      courseGrowth,
       averageRating,
       completionRate: totalEnrollments > 0 ? (completedEnrollments / totalEnrollments) * 100 : 0,
       courseStartRate,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   TrendingUp,
   Clock,
@@ -8,7 +9,6 @@ import {
   BookOpen,
   Award,
   BarChart3,
-  Calendar,
   CheckCircle2,
   ArrowUpRight,
   ArrowDownRight,
@@ -45,20 +45,28 @@ interface Enrollment {
   course: { id: string; title: string };
 }
 
+interface LessonProgress {
+  id: string;
+  completedAt: string | null;
+  completed: boolean;
+}
+
 export default function PerformancePage() {
   const [timeRange, setTimeRange] = useState<"week" | "month" | "all">("week");
   const [quizAttempts, setQuizAttempts] = useState<QuizAttempt[]>([]);
   const [grades, setGrades] = useState<Grade[]>([]);
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [lessonProgress, setLessonProgress] = useState<LessonProgress[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [quizRes, gradeRes, enrollRes] = await Promise.allSettled([
+        const [quizRes, gradeRes, enrollRes, lessonRes] = await Promise.allSettled([
           fetch("/api/quizzes/attempts"),
           fetch("/api/grades"),
           fetch("/api/enrollments"),
+          fetch("/api/lesson-progress"),
         ]);
 
         if (quizRes.status === "fulfilled" && quizRes.value.ok) {
@@ -73,6 +81,10 @@ export default function PerformancePage() {
           const data = await enrollRes.value.json();
           setEnrollments(data.enrollments || []);
         }
+        if (lessonRes.status === "fulfilled" && lessonRes.value.ok) {
+          const data = await lessonRes.value.json();
+          setLessonProgress(data.progress || []);
+        }
       } catch {
         // Use empty state
       } finally {
@@ -82,13 +94,28 @@ export default function PerformancePage() {
     fetchData();
   }, []);
 
-  const averageScore = grades.length > 0
-    ? Math.round(grades.reduce((acc, g) => acc + g.percentage, 0) / grades.length)
-    : quizAttempts.length > 0
-      ? Math.round(quizAttempts.reduce((acc, a) => acc + (a.totalPoints > 0 ? (a.score / a.totalPoints) * 100 : 0), 0) / quizAttempts.length)
+  // Average score: quiz attempts are primary (the Quiz Scores card uses them),
+  // with grades as a fallback so the two never conflict.
+  const averageScore = quizAttempts.length > 0
+    ? Math.round(quizAttempts.reduce((acc, a) => acc + (a.totalPoints > 0 ? (a.score / a.totalPoints) * 100 : 0), 0) / quizAttempts.length)
+    : grades.length > 0
+      ? Math.round(grades.reduce((acc, g) => acc + g.percentage, 0) / grades.length)
       : 0;
 
-  const totalHours = enrollments.reduce((acc, e) => acc + (e.progress / 100) * 10, 0);
+  const averageScoreSource = quizAttempts.length > 0
+    ? "Based on quiz performance"
+    : grades.length > 0
+      ? "Based on graded work"
+      : "No data yet";
+
+  // Real lesson completions (the /api/lesson-progress endpoint returns one
+  // record per lesson with `completed` and `completedAt`).
+  const completedLessons = lessonProgress.filter((p) => p.completed && p.completedAt);
+
+  // No per-lesson duration is exposed by the API, so use a fixed estimate
+  // per completed lesson instead of inventing per-day numbers.
+  const HOURS_PER_LESSON = 0.5;
+  const totalHours = completedLessons.length * HOURS_PER_LESSON;
 
   const completedCourses = enrollments.filter((e) => e.status === "COMPLETED").length;
   const totalCourses = enrollments.length;
@@ -109,30 +136,86 @@ export default function PerformancePage() {
     passed: a.passed,
   }));
 
-  const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  // Bucket real lesson completions by day/week/month depending on the range.
+  interface TimeBucket {
+    label: string;
+    start: Date;
+    end: Date;
+  }
   const now = new Date();
-  const rangeStart = timeRange === "week"
-    ? new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-    : timeRange === "month"
-      ? new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-      : new Date(0);
-  const recentAttempts = quizAttempts.filter((a) => new Date(a.completedAt) >= rangeStart);
-  const dailyCounts = daysOfWeek.map((_, i) => {
-    const dayStart = new Date(now.getTime() - (6 - i) * 24 * 60 * 60 * 1000);
-    const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
-    const count = recentAttempts.filter((a) => {
-      const d = new Date(a.completedAt);
-      return d >= dayStart && d < dayEnd;
-    }).length;
-    return count;
-  });
-  const activeDays = enrollments.filter((e) => e.status === "ACTIVE").length;
-  const learningData = daysOfWeek.map((day, i) => ({
-    day,
-    hours: dailyCounts[i] > 0 ? dailyCounts[i] * 0.5 + activeDays * 0.3 : activeDays * 0.1,
+  const startOfDay = (d: Date) => {
+    const s = new Date(d);
+    s.setHours(0, 0, 0, 0);
+    return s;
+  };
+  const endOfDay = (d: Date) => {
+    const e = new Date(d);
+    e.setHours(23, 59, 59, 999);
+    return e;
+  };
+
+  let buckets: TimeBucket[] = [];
+  if (timeRange === "week") {
+    // Last 7 days, one bucket per day, oldest first
+    buckets = Array.from({ length: 7 }, (_, i) => {
+      const day = new Date(now);
+      day.setDate(now.getDate() - (6 - i));
+      return {
+        label: day.toLocaleDateString("en-US", { weekday: "short" }),
+        start: startOfDay(day),
+        end: endOfDay(day),
+      };
+    });
+  } else if (timeRange === "month") {
+    // Last 30 days grouped by week
+    const firstDay = startOfDay(new Date(now.getTime() - 29 * 24 * 60 * 60 * 1000));
+    const todayEnd = endOfDay(now);
+    for (let i = 0; i < 5; i++) {
+      const start = new Date(firstDay.getTime() + i * 7 * 24 * 60 * 60 * 1000);
+      if (start > todayEnd) break;
+      const end = new Date(Math.min(start.getTime() + 7 * 24 * 60 * 60 * 1000 - 1, todayEnd.getTime()));
+      buckets.push({
+        label: start.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        start,
+        end,
+      });
+    }
+  } else {
+    // All time: one bucket per month (up to the 12 most recent months)
+    const completionDates = completedLessons
+      .map((p) => new Date(p.completedAt as string))
+      .sort((a, b) => a.getTime() - b.getTime());
+    const earliest = completionDates.length > 0
+      ? completionDates[0]
+      : new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const cursor = new Date(earliest.getFullYear(), earliest.getMonth(), 1);
+    const lastMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    while (cursor <= lastMonth && buckets.length < 12) {
+      const start = new Date(cursor);
+      const end = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0, 23, 59, 59, 999);
+      const label = start.toLocaleDateString("en-US", { month: "short" }) +
+        (start.getFullYear() !== now.getFullYear()
+          ? ` '${String(start.getFullYear()).slice(2)}`
+          : "");
+      buckets.push({ label, start, end });
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+  }
+
+  // Hours per bucket = 0.5h for each lesson completed inside that bucket.
+  // Days/periods with no completions honestly show 0.
+  const learningData = buckets.map((bucket) => ({
+    day: bucket.label,
+    hours: completedLessons.reduce((acc, p) => {
+      const completedAt = new Date(p.completedAt as string);
+      return completedAt >= bucket.start && completedAt <= bucket.end
+        ? acc + HOURS_PER_LESSON
+        : acc;
+    }, 0),
   }));
 
-  const maxHours = Math.max(...learningData.map((d) => d.hours));
+  const maxHours = Math.max(0, ...learningData.map((d) => d.hours));
+  const formatHours = (h: number) => `${Number.isInteger(h) ? h : h.toFixed(1)}h`;
 
   return (
     <div className="space-y-6">
@@ -153,7 +236,7 @@ export default function PerformancePage() {
                 <p className="mt-1 text-3xl font-bold text-gray-900">{loading ? "—" : `${averageScore}%`}</p>
                 <div className="mt-1 flex items-center gap-1 text-xs text-emerald-600">
                   <TrendingUp className="h-3 w-3" />
-                  {grades.length > 0 ? "Based on graded work" : quizAttempts.length > 0 ? "Based on quiz attempts" : "No data yet"}
+                  {averageScoreSource}
                 </div>
               </div>
               <div className="rounded-xl bg-blue-500 p-3">
@@ -184,7 +267,7 @@ export default function PerformancePage() {
               <div>
                 <p className="text-sm font-medium text-gray-500">Learning Hours</p>
                 <p className="mt-1 text-3xl font-bold text-gray-900">{loading ? "—" : `${totalHours.toFixed(1)}h`}</p>
-                <p className="mt-1 text-xs text-gray-400">This week</p>
+                <p className="mt-1 text-xs text-gray-400">All time</p>
               </div>
               <div className="rounded-xl bg-amber-500 p-3">
                 <Clock className="h-6 w-6 text-white" />
@@ -221,7 +304,13 @@ export default function PerformancePage() {
                   <Clock className="h-5 w-5 text-amber-500" />
                   Learning Time
                 </CardTitle>
-                <CardDescription>Hours spent learning each day</CardDescription>
+                <CardDescription>
+                  {timeRange === "week"
+                    ? "Hours from lesson completions each day"
+                    : timeRange === "month"
+                      ? "Hours from lesson completions, grouped by week"
+                      : "Hours from lesson completions, grouped by month"}
+                </CardDescription>
               </div>
               <div className="flex gap-1 rounded-lg border border-gray-200 bg-white p-1">
                 {(["week", "month", "all"] as const).map((range) => (
@@ -242,15 +331,15 @@ export default function PerformancePage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-end gap-2 h-48">
-              {learningData.map((day) => (
-                <div key={day.day} className="flex flex-1 flex-col items-center gap-1">
+              {learningData.map((day, i) => (
+                <div key={`${day.day}-${i}`} className="flex flex-1 flex-col items-center gap-1">
                   <span className="text-xs font-medium text-gray-600">
-                    {day.hours}h
+                    {formatHours(day.hours)}
                   </span>
                   <div
                     className="w-full rounded-t-md bg-gradient-to-t from-indigo-500 to-indigo-400 transition-all duration-300"
                     style={{
-                      height: `${(day.hours / maxHours) * 120}px`,
+                      height: `${maxHours > 0 ? (day.hours / maxHours) * 120 : 0}px`,
                     }}
                   />
                   <span className="text-xs text-gray-500">{day.day}</span>
@@ -435,13 +524,13 @@ export default function PerformancePage() {
                 <p className="mt-1.5 text-xs text-gray-600">
                   You have completed {completedCourses} course{completedCourses !== 1 ? "s" : ""}. Try something new!
                 </p>
-                <a
+                <Link
                   href="/courses"
                   className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
                 >
                   Browse Courses
                   <ArrowUpRight className="h-3.5 w-3.5" />
-                </a>
+                </Link>
               </div>
             )}
             {quizAttempts.length === 0 && (

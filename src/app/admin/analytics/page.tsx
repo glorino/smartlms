@@ -146,6 +146,8 @@ export default function AdminAnalyticsPage() {
   const [studentSearch, setStudentSearch] = useState("");
   const [studentPage, setStudentPage] = useState(1);
   const STUDENT_PER_PAGE = 10;
+  const [revenuePage, setRevenuePage] = useState(1);
+  const REVENUE_PER_PAGE = 10;
 
   useEffect(() => {
     async function fetchAnalytics() {
@@ -190,6 +192,7 @@ export default function AdminAnalyticsPage() {
       setStudentsLoading(true);
       setEngagementLoading(true);
       setRevenueLoading(true);
+      setRevenuePage(1);
 
       try {
         const studentParams = new URLSearchParams(baseParams);
@@ -488,6 +491,14 @@ export default function AdminAnalyticsPage() {
   const studentStartItem = filteredStudents.length > 0 ? (studentPage - 1) * STUDENT_PER_PAGE + 1 : 0;
   const studentEndItem = Math.min(studentPage * STUDENT_PER_PAGE, filteredStudents.length);
 
+  const revenueTotalPages = Math.max(1, Math.ceil(revenueCourses.length / REVENUE_PER_PAGE));
+  const paginatedRevenue = revenueCourses.slice(
+    (revenuePage - 1) * REVENUE_PER_PAGE,
+    revenuePage * REVENUE_PER_PAGE
+  );
+  const revenueStart = (revenuePage - 1) * REVENUE_PER_PAGE + 1;
+  const revenueEnd = Math.min(revenuePage * REVENUE_PER_PAGE, revenueCourses.length);
+
   const metricCards = [
     {
       label: "Revenue",
@@ -770,14 +781,14 @@ export default function AdminAnalyticsPage() {
           <CardContent>
             <div className="flex h-48 items-end gap-2">
               {revenueData.map((val, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center">
+                <div key={i} className="flex h-full flex-1 flex-col justify-end">
                   <div
                     className="w-full rounded-t-md bg-gradient-to-t from-purple-500 to-purple-400 transition-all hover:from-purple-600 hover:to-purple-500"
                     style={{
                       height: `${
                         maxRevenue > 0 ? (val / maxRevenue) * 100 : 0
                       }%`,
-                      minHeight: val > 0 ? "4px" : "0px",
+                      minHeight: val > 0 ? "8px" : "0px",
                     }}
                     title={`₦${val.toLocaleString()}`}
                   />
@@ -799,7 +810,7 @@ export default function AdminAnalyticsPage() {
           <CardContent>
             <div className="flex h-48 items-end gap-2">
               {enrollmentData.map((val, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center">
+                <div key={i} className="flex h-full flex-1 flex-col justify-end">
                   <div
                     className="w-full rounded-t-md bg-gradient-to-t from-blue-500 to-blue-400 transition-all hover:from-blue-600 hover:to-blue-500"
                     style={{
@@ -808,7 +819,7 @@ export default function AdminAnalyticsPage() {
                           ? (val / maxEnrollments) * 100
                           : 0
                       }%`,
-                      minHeight: val > 0 ? "4px" : "0px",
+                      minHeight: val > 0 ? "8px" : "0px",
                     }}
                     title={`${val} enrollments`}
                   />
@@ -858,6 +869,7 @@ export default function AdminAnalyticsPage() {
               Loading revenue data...
             </div>
           ) : revenueCourses.length > 0 ? (
+            <>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -877,7 +889,7 @@ export default function AdminAnalyticsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {revenueCourses.map((row) => (
+                  {paginatedRevenue.map((row) => (
                     <tr
                       key={row.courseId}
                       className="border-b border-gray-100 hover:bg-gray-50"
@@ -899,6 +911,26 @@ export default function AdminAnalyticsPage() {
                 </tbody>
               </table>
             </div>
+            {revenueTotalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3">
+                <p className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{revenueStart}</span> to <span className="font-medium">{revenueEnd}</span> of <span className="font-medium">{revenueCourses.length}</span> courses
+                </p>
+                <div className="flex gap-1">
+                  <button onClick={() => setRevenuePage((p) => Math.max(1, p - 1))} disabled={revenuePage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Previous</button>
+                  {Array.from({ length: Math.min(5, revenueTotalPages) }, (_, i) => {
+                    const start = Math.max(1, Math.min(revenuePage - 2, revenueTotalPages - 4));
+                    const p = start + i;
+                    if (p > revenueTotalPages) return null;
+                    return (
+                      <button key={p} onClick={() => setRevenuePage(p)} className={`relative inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium ${p === revenuePage ? "border-indigo-500 bg-indigo-50 text-indigo-600" : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"}`}>{p}</button>
+                    );
+                  })}
+                  <button onClick={() => setRevenuePage((p) => Math.min(revenueTotalPages, p + 1))} disabled={revenuePage === revenueTotalPages} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Next</button>
+                </div>
+              </div>
+            )}
+            </>
           ) : (
             <div className="flex justify-center py-8 text-gray-400">
               No revenue data available

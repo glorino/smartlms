@@ -45,8 +45,12 @@ export async function GET() {
       })
       .reduce((sum, p) => sum + Number(p.amount), 0);
 
-    const pending = purchases.filter((p) => p.status === "PENDING").length;
-    const withdrawn = 0;
+    const pendingAmount = await prisma.purchase.aggregate({
+      where: { status: "PENDING", course: { instructorId: userId } },
+      _sum: { amount: true },
+    });
+    const pending = pendingAmount._sum.amount || 0;
+    const withdrawn = 0; // No withdrawal tracking exists yet; nothing has been withdrawn
 
     const monthlyData = (() => {
       const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

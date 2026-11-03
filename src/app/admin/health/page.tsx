@@ -70,7 +70,7 @@ function getDbStatusDisplay(status: string) {
 }
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+  return `₦${amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export default function AdminHealthPage() {
