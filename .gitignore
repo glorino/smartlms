@@ -54,3 +54,4 @@ prisma/migrations/
 
 .vercel
 .env*
+!.env.example

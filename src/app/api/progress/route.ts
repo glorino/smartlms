@@ -115,15 +115,23 @@ export async function POST(request: Request) {
         userId_lessonId: { userId, lessonId },
       },
       update: {
-        completed: completed ?? true,
-        watchTime: timeSpent ? { increment: timeSpent } : undefined,
+        // Only touch `completed` when the client explicitly sends it, so
+        // time-only heartbeat requests don't mark the lesson complete.
+        ...(completed !== undefined ? { completed: !!completed } : {}),
+        watchTime:
+          typeof timeSpent === "number" && Number.isFinite(timeSpent) && timeSpent > 0
+            ? { increment: Math.floor(timeSpent) }
+            : undefined,
         completedAt: completed ? new Date() : undefined,
       },
       create: {
         userId,
         lessonId,
-        completed: completed ?? true,
-        watchTime: timeSpent || 0,
+        completed: completed ?? false,
+        watchTime:
+          typeof timeSpent === "number" && Number.isFinite(timeSpent) && timeSpent > 0
+            ? Math.floor(timeSpent)
+            : 0,
         completedAt: completed ? new Date() : undefined,
       },
     });
@@ -155,7 +163,7 @@ export async function POST(request: Request) {
       },
     });
 
-    if (completed || completed === undefined) {
+    if (completed) {
       await checkAndAwardFirstLesson(userId, prisma);
       await checkAndAwardStreak7(userId, prisma);
     }

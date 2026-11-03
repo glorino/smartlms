@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
-import { getSettings } from "@/lib/settings";
+import { getSettings, type AppSettings } from "@/lib/settings";
+
+const mutatingMethods = ["POST", "PUT", "DELETE", "PATCH"];
 
 const publicRoutes = [
   "/",
@@ -52,31 +54,112 @@ export default auth(async (req) => {
   const { pathname } = req.nextUrl;
   const method = req.method;
 
+  // Settings (cached ~60s by getSettings) drive maintenance mode and the
+  // feature toggles below. Fail open: never block the app because settings
+  // could not be read.
+  let settings: AppSettings | null = null;
+  try {
+    settings = await getSettings();
+  } catch {
+    settings = null;
+  }
+
+  const role = (req.auth?.user as any)?.role;
+
   // Maintenance mode: block non-admins (admins keep access so they can turn it off).
   const maintenanceExempt =
     pathname === "/maintenance" ||
     pathname === "/login" ||
     pathname.startsWith("/api/auth/") ||
     pathname.startsWith("/api/payments/webhook");
-  if (!maintenanceExempt) {
-    try {
-      const settings = await getSettings();
-      if (settings.maintenanceMode) {
-        const role = (req.auth?.user as any)?.role;
-        if (role !== "ADMIN") {
-          if (pathname.startsWith("/api/")) {
-            return NextResponse.json(
-              { error: "Platform is under maintenance" },
-              { status: 503 }
-            );
-          }
-          return NextResponse.redirect(
-            new URL("/maintenance", req.nextUrl.origin)
+  if (settings?.maintenanceMode && !maintenanceExempt && role !== "ADMIN") {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { error: "Platform is under maintenance" },
+        { status: 503 }
+      );
+    }
+    return NextResponse.redirect(
+      new URL("/maintenance", req.nextUrl.origin)
+    );
+  }
+
+  // Feature toggles from the admin settings page. These are enforced for
+  // everyone (including admins) so a disabled feature is really disabled.
+  // enableDarkMode is purely cosmetic and is intentionally not enforced here.
+  if (settings) {
+    if (
+      settings.chatEnabled === false &&
+      (pathname === "/api/chat" || pathname.startsWith("/api/chat/"))
+    ) {
+      return NextResponse.json({ error: "Chat is disabled" }, { status: 403 });
+    }
+
+    if (
+      settings.aiEnabled === false &&
+      (pathname === "/api/ai" || pathname.startsWith("/api/ai/"))
+    ) {
+      return NextResponse.json(
+        { error: "AI features are disabled" },
+        { status: 403 }
+      );
+    }
+
+    if (settings.quizzesEnabled === false) {
+      // Quiz taking lives on /quiz/[id]; send users back to their dashboard.
+      if (pathname === "/quiz" || pathname.startsWith("/quiz/")) {
+        return NextResponse.redirect(
+          new URL("/dashboard", req.nextUrl.origin)
+        );
+      }
+      // Block creating quizzes and submitting attempts (GETs stay open so
+      // dashboards can still list existing quizzes).
+      if (
+        pathname === "/api/quizzes" ||
+        pathname.startsWith("/api/quizzes/")
+      ) {
+        if (mutatingMethods.includes(method)) {
+          return NextResponse.json(
+            { error: "Quizzes are disabled" },
+            { status: 403 }
           );
         }
       }
-    } catch {
-      // Fail open: never block the app because settings could not be read.
+    }
+
+    if (settings.liveClassesEnabled === false) {
+      if (
+        pathname === "/live-classes" ||
+        pathname.startsWith("/live-classes/")
+      ) {
+        return NextResponse.redirect(
+          new URL("/courses", req.nextUrl.origin)
+        );
+      }
+      // Block hosting/joining live classes; listings stay readable.
+      if (
+        (pathname === "/api/live-classes" ||
+          pathname.startsWith("/api/live-classes/")) &&
+        mutatingMethods.includes(method)
+      ) {
+        return NextResponse.json(
+          { error: "Live classes are disabled" },
+          { status: 403 }
+        );
+      }
+    }
+
+    if (
+      settings.certificatesEnabled === false &&
+      pathname === "/api/certificates" &&
+      method === "POST"
+    ) {
+      // Only generation is disabled: viewing and verifying existing
+      // certificates must keep working.
+      return NextResponse.json(
+        { error: "Certificates are disabled" },
+        { status: 403 }
+      );
     }
   }
 
@@ -118,7 +201,6 @@ export default auth(async (req) => {
     return NextResponse.next();
   }
 
-  const mutatingMethods = ["POST", "PUT", "DELETE", "PATCH"];
   if (mutatingMethods.includes(method)) {
     const protectedPaths = [
       /^\/api\/reviews$/,

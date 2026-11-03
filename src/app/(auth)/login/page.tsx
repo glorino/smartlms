@@ -180,6 +180,18 @@ function LoginForm() {
             </p>
           </div>
 
+          {/* GitHub sign-in is opt-in: only render when the NextAuth GitHub
+              provider is actually configured (see src/lib/auth.ts). */}
+          {process.env.NEXT_PUBLIC_GITHUB_ENABLED === "true" && (
+            <button
+              type="button"
+              onClick={() => signIn("github")}
+              className="mb-4 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-gray-200 bg-white py-3.5 text-sm font-bold text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            >
+              Continue with GitHub
+            </button>
+          )}
+
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200" />

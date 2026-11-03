@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { decrypt } from "@/lib/crypto";
 
 export interface AppSettings {
   smtpHost?: string;
@@ -32,6 +33,13 @@ function asObject(value: any): Record<string, any> {
     : {};
 }
 
+// Decrypts a stored secret; falls back to "" so env defaults still apply.
+// decrypt() returns plaintext values unchanged, so legacy unencrypted
+// rows and values that fail to decrypt keep working.
+function secret(value: unknown): string {
+  return typeof value === "string" && value ? decrypt(value) : "";
+}
+
 export async function getSettings(): Promise<AppSettings> {
   if (cachedSettings && Date.now() - cacheTime < CACHE_TTL) {
     return cachedSettings;
@@ -53,7 +61,7 @@ export async function getSettings(): Promise<AppSettings> {
       smtpHost: email.smtpHost || process.env.SMTP_HOST,
       smtpPort: email.smtpPort || process.env.SMTP_PORT,
       smtpUser: email.smtpUser || process.env.SMTP_USER,
-      smtpPass: email.smtpPass || process.env.SMTP_PASS,
+      smtpPass: secret(email.smtpPass) || process.env.SMTP_PASS,
       fromName: email.fromName,
       fromEmail: email.fromEmail || process.env.SMTP_FROM,
       // Admin UI stores these as flutterwavePublicKey/SecretKey/EncryptionKey;
@@ -63,16 +71,16 @@ export async function getSettings(): Promise<AppSettings> {
         payment.flutterwavePublicKey ||
         process.env.NEXT_PUBLIC_FLWPUBK,
       flwSecretKey:
-        payment.flwSecretKey ||
-        payment.flutterwaveSecretKey ||
+        secret(payment.flwSecretKey) ||
+        secret(payment.flutterwaveSecretKey) ||
         process.env.FLWSECK,
       flwEncryptionKey:
-        payment.flwEncryptionKey ||
-        payment.flutterwaveEncryptionKey ||
+        secret(payment.flwEncryptionKey) ||
+        secret(payment.flutterwaveEncryptionKey) ||
         process.env.FLW_ENCRYPTION_KEY,
       currency: payment.currency || "NGN",
       commissionRate: Number(payment.commissionRate) || 0,
-      openaiKey: apiKeys.openaiKey || process.env.OPENAI_API_KEY,
+      openaiKey: secret(apiKeys.openaiKey) || process.env.OPENAI_API_KEY,
       // Admin UI stores these as enable*; the *Enabled aliases are accepted too.
       chatEnabled: features.enableChat ?? features.chatEnabled ?? true,
       liveClassesEnabled:

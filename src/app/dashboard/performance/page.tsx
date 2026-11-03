@@ -49,6 +49,8 @@ interface LessonProgress {
   id: string;
   completedAt: string | null;
   completed: boolean;
+  /** Accumulated seconds actually spent watching/viewing the lesson. */
+  watchTime: number;
 }
 
 export default function PerformancePage() {
@@ -109,13 +111,14 @@ export default function PerformancePage() {
       : "No data yet";
 
   // Real lesson completions (the /api/lesson-progress endpoint returns one
-  // record per lesson with `completed` and `completedAt`).
+  // record per lesson with `completed`, `completedAt` and `watchTime`).
   const completedLessons = lessonProgress.filter((p) => p.completed && p.completedAt);
 
-  // No per-lesson duration is exposed by the API, so use a fixed estimate
-  // per completed lesson instead of inventing per-day numbers.
-  const HOURS_PER_LESSON = 0.5;
-  const totalHours = completedLessons.length * HOURS_PER_LESSON;
+  // Real tracked learning time: watchTime is accumulated in seconds by the
+  // learn page (30s heartbeats + "Mark Complete"). Includes partial time on
+  // lessons not yet completed.
+  const totalWatchSeconds = lessonProgress.reduce((acc, p) => acc + (p.watchTime || 0), 0);
+  const totalHours = totalWatchSeconds / 3600;
 
   const completedCourses = enrollments.filter((e) => e.status === "COMPLETED").length;
   const totalCourses = enrollments.length;
@@ -202,20 +205,23 @@ export default function PerformancePage() {
     }
   }
 
-  // Hours per bucket = 0.5h for each lesson completed inside that bucket.
+  // Hours per bucket = the real watchTime of lessons completed inside that
+  // bucket (watchTime is attributed to the day the lesson was completed).
   // Days/periods with no completions honestly show 0.
   const learningData = buckets.map((bucket) => ({
     day: bucket.label,
-    hours: completedLessons.reduce((acc, p) => {
-      const completedAt = new Date(p.completedAt as string);
-      return completedAt >= bucket.start && completedAt <= bucket.end
-        ? acc + HOURS_PER_LESSON
-        : acc;
-    }, 0),
+    hours:
+      completedLessons.reduce((acc, p) => {
+        const completedAt = new Date(p.completedAt as string);
+        return completedAt >= bucket.start && completedAt <= bucket.end
+          ? acc + (p.watchTime || 0)
+          : acc;
+      }, 0) / 3600,
   }));
 
   const maxHours = Math.max(0, ...learningData.map((d) => d.hours));
-  const formatHours = (h: number) => `${Number.isInteger(h) ? h : h.toFixed(1)}h`;
+  const formatHours = (h: number) =>
+    h === 0 ? "0h" : Number.isInteger(h) ? `${h}h` : h < 0.1 ? "<0.1h" : `${h.toFixed(1)}h`;
 
   return (
     <div className="space-y-6">
@@ -306,10 +312,10 @@ export default function PerformancePage() {
                 </CardTitle>
                 <CardDescription>
                   {timeRange === "week"
-                    ? "Hours from lesson completions each day"
+                    ? "Tracked watch time for lessons completed each day"
                     : timeRange === "month"
-                      ? "Hours from lesson completions, grouped by week"
-                      : "Hours from lesson completions, grouped by month"}
+                      ? "Tracked watch time, grouped by week"
+                      : "Tracked watch time, grouped by month"}
                 </CardDescription>
               </div>
               <div className="flex gap-1 rounded-lg border border-gray-200 bg-white p-1">

@@ -5,58 +5,73 @@ import GitHub from "next-auth/providers/github";
 import bcrypt from "bcryptjs";
 import prisma from "./prisma";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
+// OAuth providers are optional: only register them when their credentials are
+// actually configured, so NextAuth never receives undefined values.
+const providers: any[] = [
+  Google({
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  }),
+];
+
+// GitHub is only enabled when both env vars are set (e.g. it is not configured
+// on Vercel). This also keeps NextAuth from exposing a broken "sign in with
+// GitHub" provider.
+if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+  providers.push(
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    }),
-    Credentials({
-      name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+    })
+  );
+}
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
-        });
+providers.push(
+  Credentials({
+    name: "credentials",
+    credentials: {
+      email: { label: "Email", type: "email" },
+      password: { label: "Password", type: "password" },
+    },
+    async authorize(credentials) {
+      if (!credentials?.email || !credentials?.password) {
+        return null;
+      }
 
-        if (!user) {
-          return null;
-        }
+      const user = await prisma.user.findUnique({
+        where: { email: credentials.email as string },
+      });
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
+      if (!user) {
+        return null;
+      }
 
-        if (!isPasswordValid) {
-          return null;
-        }
+      const isPasswordValid = await bcrypt.compare(
+        credentials.password as string,
+        user.password
+      );
 
-        if (user.isBlocked) {
-          throw new Error("Your account has been blocked. Contact support.");
-        }
+      if (!isPasswordValid) {
+        return null;
+      }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.avatar,
-          role: user.role,
-        };
-      },
-    }),
-  ],
+      if (user.isBlocked) {
+        throw new Error("Your account has been blocked. Contact support.");
+      }
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.avatar,
+        role: user.role,
+      };
+    },
+  })
+);
+
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  providers,
   session: {
     strategy: "jwt",
   },

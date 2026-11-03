@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
@@ -167,6 +167,69 @@ export default function CourseLearnPage() {
   const [assignmentSubmitting, setAssignmentSubmitting] = useState(false);
   const [submittedAssignments, setSubmittedAssignments] = useState<Set<string>>(new Set());
 
+  // Learning-time tracking: seconds spent viewing the current lesson.
+  // lessonStartRef marks when the current lesson became visible (set in the
+  // effect below); reportedSecondsRef tracks how many seconds have already
+  // been reported to the server so heartbeats and "Mark Complete" never
+  // double-count.
+  const lessonStartRef = useRef<number>(0);
+  const reportedSecondsRef = useRef<number>(0);
+
+  const sendWatchTime = (lessonId: string, seconds: number) => {
+    if (!lessonId || seconds <= 0) return;
+    fetch("/api/progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lessonId, courseId, timeSpent: seconds }),
+    }).catch(() => {});
+  };
+
+  // Seconds viewed since the last report for the current lesson.
+  const pendingWatchTime = () => {
+    if (!lessonStartRef.current) return 0;
+    const elapsed = Math.floor((Date.now() - lessonStartRef.current) / 1000);
+    return Math.max(0, elapsed - reportedSecondsRef.current);
+  };
+
+  const flushWatchTime = (lessonId: string | null | undefined) => {
+    if (!lessonId) return;
+    const pending = pendingWatchTime();
+    if (pending > 0) {
+      reportedSecondsRef.current += pending;
+      sendWatchTime(lessonId, pending);
+    }
+  };
+
+  // Start the timer when a lesson is shown; when the lesson changes (or the
+  // page unmounts) flush any time still owed for the lesson being left.
+  useEffect(() => {
+    const lessonId = currentLesson?.id;
+    if (!lessonId) return;
+    lessonStartRef.current = Date.now();
+    reportedSecondsRef.current = 0;
+    return () => {
+      // Report time still owed for the lesson being left.
+      flushWatchTime(lessonId);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentLesson?.id, courseId]);
+
+  // Heartbeat: report accumulated time every ~30 seconds so watch time is
+  // tracked even if the user never clicks "Mark Complete".
+  useEffect(() => {
+    if (!currentLesson?.id) return;
+    const lessonId = currentLesson.id;
+    const interval = setInterval(() => {
+      const pending = pendingWatchTime();
+      if (pending >= 30) {
+        reportedSecondsRef.current += pending;
+        sendWatchTime(lessonId, pending);
+      }
+    }, 10000); // check every 10s, send once 30s+ has accumulated
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentLesson?.id, courseId]);
+
   useEffect(() => {
     async function loadCourse() {
       try {
@@ -291,6 +354,9 @@ export default function CourseLearnPage() {
 
   const markComplete = async () => {
     if (currentLesson) {
+      // Time not yet reported (heartbeats cover earlier chunks).
+      const pending = pendingWatchTime();
+      reportedSecondsRef.current += pending;
       setCompletedLessons((prev) => new Set(prev).add(currentLesson.id));
       try {
         await fetch("/api/progress", {
@@ -300,6 +366,7 @@ export default function CourseLearnPage() {
             lessonId: currentLesson.id,
             courseId,
             completed: true,
+            ...(pending > 0 ? { timeSpent: pending } : {}),
           }),
         });
       } catch (err) {

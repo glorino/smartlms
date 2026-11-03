@@ -17,6 +17,7 @@ export async function GET() {
         id: true,
         completedAt: true,
         completed: true,
+        watchTime: true,
       },
       orderBy: { completedAt: "desc" },
     });
